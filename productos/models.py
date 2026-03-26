@@ -7,7 +7,7 @@ class CategoriaProducto(models.Model):
     nombre_categoria = models.CharField(max_length=50)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_categorias_productos'
 
     def __str__(self):
@@ -31,7 +31,7 @@ class Finca(models.Model):
     departamento = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_fincas'
     
     def __str__(self):
@@ -49,7 +49,7 @@ class Producto(models.Model):
     peso_kg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_productos'
 
     def finca(self):
@@ -73,7 +73,7 @@ class ImagenesProducto(models.Model):
     es_principal = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_imagenes_productos'
 
 
@@ -87,7 +87,7 @@ class ProductoFinca(models.Model):
     fecha_cosecha = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_productos_fincas'
 
     def __str__(self):

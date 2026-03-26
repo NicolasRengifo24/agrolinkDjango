@@ -1,0 +1,75 @@
+<div class="row g-4 mb-5 fade-admin">
+
+    <!-- Clientes -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="kpi-admin">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-number text-primary">{{ total_clientes }}</div>
+                    <div class="kpi-label">Clientes</div>
+                    <div class="kpi-trend">
+                        <i class="bi bi-people-fill text-primary"></i> Total registrados
+                    </div>
+                </div>
+                <div class="kpi-icon-admin bg-primary">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productores -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="kpi-admin">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-number text-success">{{ total_productores }}</div>
+                    <div class="kpi-label">Productores</div>
+                    <div class="kpi-trend">
+                        <i class="bi bi-person-badge text-success"></i> Activos
+                    </div>
+                </div>
+                <div class="kpi-icon-admin bg-success">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transportistas -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="kpi-admin">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-number text-warning">{{ total_transportistas }}</div>
+                    <div class="kpi-label">Transportistas</div>
+                    <div class="kpi-trend">
+                        <i class="bi bi-truck text-warning"></i> En servicio
+                    </div>
+                </div>
+                <div class="kpi-icon-admin bg-warning">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asesores -->
+    <div class="col-xl-3 col-lg-6">
+        <div class="kpi-admin">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="kpi-number text-purple">{{ total_asesores }}</div>
+                    <div class="kpi-label">Asesores</div>
+                    <div class="kpi-trend">
+                        <i class="bi bi-briefcase-fill"></i> Disponibles
+                    </div>
+                </div>
+                <div class="kpi-icon-admin bg-purple">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

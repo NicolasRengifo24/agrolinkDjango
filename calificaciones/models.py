@@ -7,5 +7,5 @@ class Calificacion(models.Model):
     promedio = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_calificacion'

@@ -1,0 +1,64 @@
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form id="formEditarUsuario">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="editId" name="id">
+
+                    <div class="mb-3">
+                        <label>Nombre</label>
+                        <input type="text" class="form-control" id="editNombre" name="nombre" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Teléfono</label>
+                        <input type="text" class="form-control" id="editTelefono" name="telefono">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Rol</label>
+                        <select class="form-control" id="editRol" name="rol">
+                            <option value="cliente">Cliente</option>
+                            <option value="productor">Productor</option>
+                            <option value="transportista">Transportista</option>
+                            <option value="asesor">Asesor</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Estado</label>
+                        <select class="form-control" id="editEstado" name="estado">
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

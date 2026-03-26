@@ -1,0 +1,48 @@
+<div class="tab-pane fade" id="asesores">
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Especialidad</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaAsesores">
+
+                {% for a in asesores %} 
+
+                <!-- Asesor 1 -->
+                <tr>
+                    <td>#{{ forloop.counter }}</td>
+                    <td>{{ a.id_usuario.id }}</td>
+                    <td>{{ a.id_usuario.nombre }}</td>
+                    <td>{{ a.id_usuario.correo }}</td>
+                    <td>{{ a.id_usuario.especialidad }}</td>
+                    <td>
+                        {% if a.id_usuario.estado %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="alert('Función en desarrollo')">Ver</button>
+                        <button class="btn btn-warning btn-sm" onclick="alert('Función en desarrollo')">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="alert('Función en desarrollo')">Eliminar</button>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>

@@ -1,0 +1,54 @@
+<aside id="sidebar">
+
+    <div class="brand-admin">
+        <i class="bi bi-shield-check fs-2 text-success"></i>
+        <div>
+            <div class="brand-title-admin">Agrolink Admin</div>
+            <div class="role-badge">Super Admin</div>
+        </div>
+    </div>
+
+    <nav>
+
+        <a href="/usuarios/"
+            class="nav-item {% if active == 'usuarios' %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span class="nav-label">Usuarios</span>
+        </a>
+
+        <a href="/productos_admin/"  
+            class="nav-item {% if active == 'productos' %}active{% endif %}">
+            <i class="bi bi-box-seam"></i>
+            <span class="nav-label">Productos</span>
+        </a>
+
+        <a href="/pedidos_admin/"
+            class="nav-item {% if active == 'pedidos' %}active{% endif %}">
+            <i class="bi bi-cart-check"></i>
+            <span class="nav-label">Pedidos</span>
+        </a>
+
+        <a href="/envios_admin/"
+            class="nav-item {% if active == 'envios' %}active{% endif %}">
+            <i class="bi bi-truck"></i>
+            <span class="nav-label">Envíos</span>
+        </a>
+
+        <a href='/servicios_admin/'
+            class="nav-item {% if active == 'servicios' %}active{% endif %}">
+            <i class="bi bi-briefcase"></i>
+            <span class="nav-label">Servicios</span>
+        </a>
+
+        <form action=# method="post" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="nav-item text-danger"
+                    style="border:none;background:none;width:100%;text-align:left;">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="nav-label">Cerrar Sesión</span>
+            </button>
+        </form>
+
+    </nav>
+
+</aside>

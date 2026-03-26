@@ -1,6 +1,5 @@
 from django.db import models
 from usuarios.models import Cliente
-
 # Create your models here.
 
 class Compra(models.Model):
@@ -15,7 +14,7 @@ class Compra(models.Model):
     metodo_pago = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_compras'
 
 
@@ -28,5 +27,5 @@ class DetallesCompra(models.Model):
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_detalles_compra'

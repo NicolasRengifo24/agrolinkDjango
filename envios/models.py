@@ -14,7 +14,7 @@ class Vehiculo(models.Model):
     placa_vehiculo = models.CharField(max_length=15, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_vehiculos'
 
 
@@ -43,7 +43,7 @@ class Envio(models.Model):
     tarifa_por_kg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_envios'
 
 

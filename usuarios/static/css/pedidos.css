@@ -1,0 +1,67 @@
+/* KPI BASE */
+.kpi-card{
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.kpi-card:hover{
+    transform: translateY(-5px);
+}
+
+/* CONTENIDO */
+.kpi-content{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.kpi-card h3{
+    margin:0;
+    font-weight:700;
+}
+
+.kpi-card p{
+    margin:0;
+    color:#777;
+}
+
+/* ICONO */
+.kpi-icon{
+    font-size:30px;
+    padding:15px;
+    border-radius:10px;
+    color:white;
+}
+
+/* COLORES */
+.kpi-green{
+    border-left:5px solid #2ecc71;
+}
+.kpi-green .kpi-icon{
+    background:#2ecc71;
+}
+
+.kpi-blue{
+    border-left:5px solid #3498db;
+}
+.kpi-blue .kpi-icon{
+    background:#3498db;
+}
+
+.kpi-orange{
+    border-left:5px solid #f39c12;
+}
+.kpi-orange .kpi-icon{
+    background:#f39c12;
+}
+
+.kpi-purple{
+    border-left:5px solid #9b59b6;
+}
+.kpi-purple .kpi-icon{
+    background:#9b59b6;
+}
+

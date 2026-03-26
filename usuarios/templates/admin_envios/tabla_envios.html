@@ -1,0 +1,64 @@
+<div class="card p-4">
+
+  <h5 class="mb-3">Gestión de Envíos</h5>
+
+  <div class="table-responsive">
+    <table class="table table-hover">
+
+      <thead class="table-dark">
+        <tr>
+          <th>#Envio</th>
+          <th>Pedido</th>
+          <th>Transportista</th>
+          <th>Estado</th>
+          <th>Seguimiento</th>
+          <th>Distancia</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for e in envios %}
+        <tr>
+
+          <td>#ENV-{{ e.id_envio }}</td>
+
+          <td>Pedido #{{ e.id_pedido.id_pedido }}</td>
+
+          <td>
+            {{ e.id_transportista.nombre }} {{ e.id_transportista.apellido }}
+          </td>
+
+          <!-- ESTADO DINÁMICO -->
+          <td>
+            {% if e.estado == "pendiente" %}
+              <span class="badge bg-secondary">Pendiente</span>
+            {% elif e.estado == "en_camino" %}
+              <span class="badge bg-warning text-dark">En camino</span>
+            {% elif e.estado == "entregado" %}
+              <span class="badge bg-success">Entregado</span>
+            {% else %}
+              <span class="badge bg-dark">Desconocido</span>
+            {% endif %}
+          </td>
+
+          <td>#TRK-{{ e.id_envio }}</td>
+
+          <td>{{ e.distancia_km }} km</td>
+
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="verEnvio({{ e.id_envio }})">
+              <i class="bi bi-eye"></i>
+            </button>
+          </td>
+
+        </tr>
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+  </div>
+
+</div>

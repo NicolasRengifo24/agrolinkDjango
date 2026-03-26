@@ -1,0 +1,33 @@
+{% extends "base/base_admin.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/envios.css' %}">
+{% endblock %}
+
+{% block title %}Envíos{% endblock %}
+
+{% block content %}
+
+<div class="envios-page">    
+
+<!-- KPIs -->
+{% include "admin_envios/kpis.html" %}
+
+<!-- Filtros (opcional) -->
+{% include "admin_envios/filtros.html" %}
+
+<!-- Tabla -->
+{% include "admin_envios/tabla_envios.html" %}
+
+<!-- Modal -->
+{% include "admin_envios/modal_envios.html" %}
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/envios.js' %}"></script>
+{% endblock %}

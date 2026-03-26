@@ -1,0 +1,79 @@
+<div class="card-glass p-4">
+
+    <h5 class="mb-4">Catálogo de Productos</h5>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Stock</th>
+                    <th>Precio</th>
+                    <th>Imagen</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for p in productos %}
+                <tr class="producto-item" data-stock="{{ p.stock }}">
+                    
+                    <td>{{ forloop.counter }}</td>
+
+                    <td>
+                        <strong>{{ p.nombre_producto }}</strong><br>
+                        <small class="text-muted">
+                            {{ p.descripcion_producto|default:"Sin descripción" }}
+                        </small>
+                    </td>
+
+                    <td>
+                        {{ p.id_categoria.nombre_categoria }}
+                    </td>
+
+                    <td class="text-center">
+                        {{ p.stock|default:"0" }}
+                        {% if p.stock > 0 %}
+                            <span class="badge bg-success">Disponible</span>
+                        {% else %}
+                            <span class="badge bg-danger">Agotado</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-success fw-bold">
+                        ${{ p.precio }}
+                    </td>
+
+                    <!-- IMAGEN -->
+                    <td class="text-center">
+                        {% if p.imagen_principal_url %}
+                            <img src="{{ p.imagen_principal_url }}" width="50" height="50" style="object-fit:cover;">
+                        {% else %}
+                            <span class="badge bg-secondary">Sin imagen</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- ACCIONES -->
+                    <td>
+                        <button class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+
+                        <button class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
