@@ -22,9 +22,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('usuarios.urls')),  # 👈 login, register
-    path('productos/', include('productos.urls')),  # 👈 productos
     
+    path('', include('productos.urls')),        # raíz para productos
+    path('', include('usuarios.urls')) # prefijo para usuarios
 ]
+
+    
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

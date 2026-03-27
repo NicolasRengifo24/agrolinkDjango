@@ -1,12 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import User
+
 
 # Create your models here.
 
 class Usuario(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     id_usuario = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50)
     nombre_usuario = models.CharField(unique=True, max_length=100)
-    contrasena_usuario = models.CharField(max_length=200)
     apellido = models.CharField(max_length=50)
     correo = models.CharField(unique=True, max_length=100)
     ciudad = models.CharField(max_length=50)

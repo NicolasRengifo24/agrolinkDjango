@@ -1,0 +1,36 @@
+body {
+    height: 100vh;
+    background: linear-gradient(to bottom, #e8f5e9, #ffffff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.text-agro {
+    color: #3A7D44 !important;
+}
+
+.btn-agro {
+    background-color: #3A7D44;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-agro:hover {
+    background-color: #2F6638;
+    color: #fff;
+}
+
+.input-agro:focus {
+    border-color: #3A7D44 !important;
+    box-shadow: 0 0 5px rgba(58, 125, 68, 0.5) !important;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    padding: 35px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+}

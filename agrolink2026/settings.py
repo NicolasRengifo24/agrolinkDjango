@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'servicios',
     'usuarios',
     'pedidos',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [
@@ -84,9 +85,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_agrolink',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }
@@ -113,10 +114,20 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-co'
+
+USE_L10N = True
+
 
 TIME_ZONE = 'UTC'
 

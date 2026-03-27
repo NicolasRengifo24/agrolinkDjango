@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Producto | Agrolink</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- AOS -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/estilos_detalle_producto.css' %}">
+     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+
+    
+</head>
+<body>
+
+{% include 'components/navbar.html' %}
+
+
+{% block content %}
+{% endblock %}
+
+{% include 'components/footer.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true });
+    function changeImg(el){ document.getElementById("main-img").src = el.src; }
+</script>
+
+<!-- Script para prevenir acceso desde caché después de logout -->
+<script>
+    // Prevenir que la página se cargue desde el caché del navegador
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            // La página se cargó desde el caché (botón atrás)
+            window.location.reload();
+        }
+    });
+
+    // Prevenir navegación hacia atrás después de logout
+    window.addEventListener('load', function() {
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener('popstate', function() {
+            window.history.pushState(null, "", window.location.href);
+        });
+    });
+</script>
+</body>
+</html>

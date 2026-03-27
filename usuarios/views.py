@@ -5,6 +5,12 @@ from productos.models import Producto
 from pedidos.models import Compra
 from envios.models import Envio
 from servicios.models import Servicio
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+
+
+
+
 #  Esto Es Navegacion
 def inicio_usuarios(request):
     return render(request,'usuarios/login.html')
@@ -17,80 +23,55 @@ def mostrar_registro_usuarios(request):
 
 # Esto Son Metodos 
 
-def login(request):
-    if request.method=='POST':
-        cedula = request.POST.get("txt_documento")
-        contrasena = request.POST.get("txt_clave")
-
-        usuario = Usuario.objects.filter(cedula = cedula,contrasena = contrasena).first()
-
-        if usuario is not None:
-            return redirect('inicio.html')
-        else: 
-            return redirect('register.html')
-
-
-
 
 def registrar_usuario(request):
     if request.method == 'POST':
+        nombre = request.POST.get('txt_nombre')
+        apellido = request.POST.get('txt_apellido')
+        username = request.POST.get('txt_nombreUsuario')
+        correo = request.POST.get('txt_correo')
+        password = request.POST.get('txt_contrasena')
+        telefono = request.POST.get('txt_telefono')
+        documento = request.POST.get('txt_documento')
+        ciudad = request.POST.get('txt_ciudad')
+        departamento = request.POST.get('txt_departamento')
+        direccion = request.POST.get('txt_direccion')
+        rol = request.POST.get('role')
 
-        # 🔹 datos base
-        nombre = request.POST.get("txt_nombre")
-        apellido = request.POST.get("txt_apellido")
-        documento = request.POST.get("txt_documento")  
-        nombreUsuario = request.POST.get("txt_nombreUsuario")
-        correo = request.POST.get("txt_correo")
-        contrasena = request.POST.get("txt_contrasena")
-        telefono = request.POST.get("txt_telefono")
-        ciudad = request.POST.get("txt_ciudad")
-        departamento = request.POST.get("txt_departamento")
-        direccion = request.POST.get("txt_direccion")
-        rol = request.POST.get("role")
+        # Validar que no exista el usuario en auth_user
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "El usuario ya existe")
+            return redirect('mostrar_registro_usuarios')
 
-        # 1. CREAR USUARIO (OBLIGATORIO)
-        usuario = Usuario.objects.create(
-            nombre=nombre,
-            apellido=apellido,
-            nombre_usuario=nombreUsuario,
-            telefono=telefono,
-            departamento=departamento,
-            ciudad=ciudad,
-            correo=correo,
-            contrasena_usuario=contrasena,
-            direccion=direccion,
-            cedula=documento,
-            rol=rol
+        # Crear User estándar (contraseña encriptada automáticamente)
+        user = User.objects.create_user(
+            username=username,
+            email=correo,
+            password=password,
+            first_name=nombre,
+            last_name=apellido
         )
 
-        # 2. CREAR SEGÚN ROL
-        if rol == "CLIENTE":
-            Cliente.objects.create(
-                id_usuario=usuario,
-                preferencias=request.POST.get("txt_preferencias")
-            )
+        # Crear Usuario extendido con todos los campos obligatorios
+        Usuario.objects.create(
+            user=user,
+            nombre=nombre,
+            apellido=apellido,
+            nombre_usuario=username,   # <- campo único
+            correo=correo,
+            cedula=documento,
+            ciudad=ciudad,
+            departamento=departamento,
+            direccion=direccion,
+            telefono=telefono,
+            rol=rol,
+            estado=True
+        )
 
-        elif rol == "PRODUCTOR":
-            Productor.objects.create(
-                id_usuario=usuario,
-                tipo_cultivo=request.POST.get("txt_tipoCultivo")
-            )
+        messages.success(request, "Usuario registrado correctamente. Ya puedes iniciar sesión.")
+        return redirect('login_view')
 
-        elif rol == "TRANSPORTISTA":
-            Transportista.objects.create(
-                id_usuario=usuario,
-                zonas_entrega=request.POST.get("txt_zonasEntrega")
-            )
-
-        elif rol == "SERVICIO":
-            Asesor.objects.create(
-                id_usuario=usuario,
-                tipo_asesoria=request.POST.get("txt_tipoAsesoria")
-            )
-
-    return redirect('mostrar_registro_usuarios')
-
-
+    return render(request, 'usuarios/registro.html')
 
 
 # Navegacion vistas admin
@@ -166,9 +147,10 @@ def ver_lista_servicios_admin(request):
 
 
 #admin crea usuario
+
+
 def crear_usuario_admin(request):
     if request.method == 'POST':
-        
         nombre = request.POST.get('txt_nombre')
         apellido = request.POST.get('txt_apellido')
         username = request.POST.get('txt_nombreUsuario')
@@ -181,46 +163,53 @@ def crear_usuario_admin(request):
         direccion = request.POST.get('txt_direccion')
         rol = request.POST.get('role')
 
-        # ✅ VALIDACIÓN CORRECTA
-        if Usuario.objects.filter(nombre_usuario=username).exists():
+        # ✅ Validación correcta
+        if User.objects.filter(username=username).exists():
             messages.error(request, "El usuario ya existe")
-            return redirect('crear_usuario')  # vuelve al formulario admin
+            return redirect('crear_usuario')
 
-        # ✅ CREAR USUARIO
-        usuario = Usuario.objects.create(
+        # ✅ Crear User estándar (contraseña encriptada automáticamente)
+        user = User.objects.create_user(
+            username=username,
+            email=correo,
+            password=password,   # Django la encripta
+            first_name=nombre,
+            last_name=apellido
+        )
+
+        # ✅ Crear Usuario extendido (datos adicionales)
+        Usuario.objects.create(
+            user=user,
             nombre=nombre,
             apellido=apellido,
-            nombre_usuario=username,
+            nombre_usuario=username,   # <- aquí llenas el campo único
             correo=correo,
-            telefono=telefono,
             cedula=documento,
             ciudad=ciudad,
             departamento=departamento,
             direccion=direccion,
-            contrasena_usuario=password,
-            rol=rol
+            telefono=telefono,
+            rol=rol,
+            estado=True
         )
 
-        # CREAR SEGÚN ROL 
-        if rol == "CLIENTE":
+        # ✅ Crear según rol
+        if rol.upper() == "CLIENTE":
             Cliente.objects.create(
                 id_usuario=usuario,
                 preferencias=request.POST.get("txt_preferencias")
             )
-
-        elif rol == "PRODUCTOR":
+        elif rol.upper() == "PRODUCTOR":
             Productor.objects.create(
                 id_usuario=usuario,
                 tipo_cultivo=request.POST.get("txt_tipoCultivo")
             )
-
-        elif rol == "TRANSPORTISTA":
+        elif rol.upper() == "TRANSPORTISTA":
             Transportista.objects.create(
                 id_usuario=usuario,
                 zonas_entrega=request.POST.get("txt_zonasEntrega")
             )
-
-        elif rol == "SERVICIO":
+        elif rol.upper() == "SERVICIO":
             Asesor.objects.create(
                 id_usuario=usuario,
                 tipo_asesoria=request.POST.get("txt_tipoAsesoria")
@@ -230,3 +219,52 @@ def crear_usuario_admin(request):
         return redirect('ver_listas_usuarios_admin')
 
     return render(request, 'admin_usuarios/registrar_usuario.html')
+
+# esto es el login , la autenticacion de cada usuario 
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from .forms import LoginForm
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            
+            print("Intentando login con:", username, password)
+
+
+            user = authenticate(request, username=username, password=password)
+            print("Resultado de authenticate:", user)
+
+            if user:
+                login(request, user)
+                try:
+                    usuario = Usuario.objects.get(user=user)
+                except Usuario.DoesNotExist:
+                    messages.error(request, "No se encontró información extendida del usuario")
+                    return redirect('login_view')
+
+                rol = usuario.rol.upper()
+                messages.success(request, f"Login correcto. Rol detectado: {rol}")
+                print(f"ROL DETECTADO: '{usuario.rol}'")
+
+                if rol == 'CLIENTE':
+                    return redirect('inicio')             # productos/inicio
+                elif rol == 'ADMINISTRADOR':
+                    return redirect('inicio_usuarios')    # usuarios/inicio_usuarios
+                else:
+                    messages.error(request, f"Rol desconocido: {rol}")
+                    return redirect('login_view')
+            else:
+                messages.error(request, "Credenciales inválidas")
+    else:
+        form = LoginForm()
+    return render(request, 'usuarios/login.html', {'form': form})
+
+def reset_password(request):
+    return render(request, 'usuarios/reset_password.html')

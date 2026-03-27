@@ -4,6 +4,7 @@ from pedidos.models import DetallesCompra
 from usuarios.models import Usuario
 from django.db.models import Sum
 
+
 def inicio(request):
 
     # obtenemos los usuarios y usamos la funcion count
@@ -74,7 +75,15 @@ def detalle_producto(request, id):
     producto = Producto.objects.prefetch_related('imagenProducto').filter(
         id_producto=id
     ).first()
+    
+    relacionados = []
+    if producto and producto.id_categoria:
+        relacionados = Producto.objects.prefetch_related('imagenProducto').filter(
+            id_categoria=producto.id_categoria
+        ).exclude(id_producto=producto.id_producto)[:4]  # limitar a 4 productos
+
 
     return render(request, 'productos/detalle_producto.html', {
-        'producto': producto
+        'producto': producto,
+        'relacionados' : relacionados,
     })

@@ -1,0 +1,167 @@
+{% load static %}
+{% load humanize %}
+
+
+<div class="container" style="margin-top:120px;">
+    <div class="breadcrumb-custom">
+        <a href="">Inicio</a> /
+        <a href="#">{{ producto.nombre_producto }}</a>
+    </div>
+
+    <div class="row">
+        <!-- Columna izquierda: imagen principal + miniaturas -->
+        <div class="col-md-6" data-aos="fade-right">
+            <div class="product-gallery text-center">
+                {% with producto.imagen_principal as img %}
+                {% if img %}
+                <!-- Imagen principal grande -->
+                <img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre_producto }}" class="img-fluid w-100 mb-3"
+                    style="height:100%; object-fit:contain;">
+                {% endif %}
+
+                <!-- Miniaturas debajo -->
+                <div class="row mt-3 thumbs g-2 justify-content-center">
+                    {% for img in producto.imagenProducto.all %}
+                    <div class="col-3">
+                        <img src="{{ img.url_imagen.url }}" class="img-fluid rounded" onclick="changeImg(this)"
+                            alt="Miniatura del producto" style="cursor:pointer; max-height:100px; object-fit:cover;">
+                    </div>
+                    {% empty %}
+                    <p>No hay imágenes disponibles.</p>
+                    {% endfor %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Columna derecha: información del producto -->
+        <div class="col-md-6" data-aos="fade-left">
+            <div class="product-info">
+                <h2 class="product-title">{{ producto.nombre_producto }}</h2>
+
+                <div class="d-flex align-items-center mt-2">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star text-warning"></i>
+                    <span class="ms-2 text-muted">(120 opiniones)</span>
+                </div>
+
+                <p class="product-price mt-3">{{ producto.precio |floatformat:0 | intcomma }}</p>
+
+                <form action="" method="post">
+                    <input type="hidden" name="idProducto" value="{{ producto.id_producto }}" />
+                    <div class="mt-4">
+                        <label for="cantidad" class="form-label fw-semibold">Selecciona cantidad:</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="number" id="cantidad" name="cantidad" class="form-control w-25" min="1"
+                                max="{{ producto.stock }}" value="1" />
+                            <div>
+                                <button class="btn-buy" type="submit">
+                                    <i class="bi bi-cart-plus me-2"></i> Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <form action="{% url 'detalle_producto' producto.id_producto %}" method="get" class="mt-2">
+                    <input type="hidden" name="idProducto" value="{{ producto.id_producto }}" />
+                    <button class="btn btn-outline-success w-100 mt-2" type="submit">
+                        <i class="bi bi-bag-check me-2"></i> Comprar ahora
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="details-box mt-5" data-aos="fade-up">
+    <h4 class="fw-bold">Descripción del producto</h4>
+    <p class="mt-2">{{ producto.descripcion_producto }}</p>
+
+    <h5 class="fw-bold mt-4">Presentación del producto</h5>
+    <div class="d-flex align-items-center gap-3 mt-3">
+        <div class="bg-light rounded p-3 text-center flex-fill">
+            <i class="bi bi-box-seam text-success fs-4"></i>
+            <div class="mt-2">
+                <strong>{{ producto.peso_kg }} kg</strong>
+                <br><small class="text-muted">Peso por unidad</small>
+            </div>
+        </div>
+        <div class="bg-light rounded p-3 text-center flex-fill">
+            <i class="bi bi-tag text-success fs-4"></i>
+            <div class="mt-2">
+                <strong>{{ producto.id_categoria.nombre_categoria }}</strong>
+                <br><small class="text-muted">Categoría</small>
+            </div>
+        </div>
+        <div class="bg-light rounded p-3 text-center flex-fill">
+            <i class="bi bi-shield-check text-success fs-4"></i>
+            <div class="mt-2">
+                <strong>Fresco</strong>
+                <br><small class="text-muted">Calidad garantizada</small>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mt-4">Información del productor</h5>
+    <div class="row g-3 mt-2">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-person-circle text-success me-2"></i>
+                <strong>{{ producto.id_usuario.id_usuario.nombre }}</strong>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-geo-alt text-success me-2"></i>
+                <span>{{ producto.id_usuario.id_usuario.ciudad }}</span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-house text-success me-2"></i>
+                <span>Finca:
+                    {% with primera_finca=producto.fincas.first %}
+                    {% if primera_finca %}
+                    <strong>{{ primera_finca.id_finca.nombre_finca }} </strong>
+                    {% else %}
+                    Sin finca asociada
+                    {% endif %}
+
+
+                </span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-map text-success me-2"></i>
+                <small class="text-muted">{{ primera_finca.id_finca.direccion_finca }}</small>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="fw-bold mt-5 mb-3" data-aos="fade-up">Productos relacionados</h3>
+<div class="row g-4">
+    {% for rel in relacionados %}
+    <div class="col-md-3 d-flex" data-aos="zoom-in">
+        <div class="product-card w-100 h-100 d-flex flex-column">
+            {% if rel.imagen_principal_url %}
+            <img src="{{ rel.imagen_principal_url }}" class="product-img" alt="{{ rel.nombre_producto }}"
+                style="width:100%; height:200px; object-fit:cover;">
+            {% else %}
+            <img src="{% static 'imag/placeholder.jpg' %}" class="product-img" alt="Producto relacionado"
+                style="width:100%; height:200px; object-fit:cover;">
+            {% endif %}
+            <div class="p-3 flex-grow-1 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="mb-2">{{ rel.nombre_producto|default:"Producto" }}</h5>
+                    <p class="text-muted">{{ rel.descripcion_producto|default:"Sin descripción" }}</p>
+                </div>
+                <a href="{% url 'detalle_producto' rel.id_producto %}" class="btn btn-success w-100 mt-2">Ver
+                    producto</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

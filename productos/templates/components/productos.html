@@ -1,14 +1,14 @@
 {% load static%}
+{% load humanize %}
 <div class="col-lg-3 col-md-4 col-sm-6">
     <div class="product-card h-100" data-aos="fade-up" data-aos-delay="100">
 
         <!-- Imagen del producto -->
         <div class="position-relative">
             {% if producto.imagen_principal_url %}
-            <img src="{{ producto.imagen_principal_url }}" alt="{{ producto.nombre_producto }}"      
-            alt="{{ producto.nombre_producto }}"
-            class="img-fluid"
-            style="object-fit: cover; height: 200px; width: 100%;">
+            <img src="{{ producto.imagen_principal_url }}" alt="{{ producto.nombre_producto }}"
+                alt="{{ producto.nombre_producto }}" class="img-fluid"
+                style="object-fit: cover; height: 200px; width: 100%;">
             {% else %}
             <img src="{% static 'img/default.jpg' %}" alt="Imagen no disponible">
             {% endif %}
@@ -16,18 +16,18 @@
 
 
 
-        <div class="position-absolute top-0 end-0 m-2">
-            {% if producto.stock > 0 %}
+            <div class="position-absolute top-0 end-0 m-2">
+                {% if producto.stock > 0 %}
                 <span class="badge bg-success">
                     {{ producto.stock }} unidades
                 </span>
-            {% else %}
+                {% else %}
                 <span class="badge bg-danger">
                     Agotado
                 </span>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
-    </div>
 
         <div class="p-3 d-flex flex-column h-100">
 
@@ -51,11 +51,11 @@
                 <small class="text-muted">
                     <i class="bi bi-geo-alt me-1"></i>
                     {% with primera_finca=producto.fincas.first %}
-                        {% if primera_finca %}
-                            {{ primera_finca.id_finca.nombre_finca }} - {{ primera_finca.id_finca.direccion_finca }}
-                        {% else %}
-                            Sin finca asociada
-                        {% endif %}
+                    {% if primera_finca %}
+                    {{ primera_finca.id_finca.nombre_finca }} - {{ primera_finca.id_finca.direccion_finca }}
+                    {% else %}
+                    Sin finca asociada
+                    {% endif %}
                     {% endwith %}
                 </small>
             </div>
@@ -73,7 +73,7 @@
 
                     <div>
                         <span class="fw-bold text-success fs-5">
-                            ${{ producto.precio }}
+                            ${{ producto.precio | floatformat:0 | intcomma }}
                         </span>
                         <br>
                         <small class="text-muted">
@@ -83,8 +83,7 @@
 
                     <div>
                         <a class="btn btn-outline-success btn-sm"
-                    
-                           style="border-radius: 8px;">
+                            href="{% url 'detalle_producto' producto.id_producto %}" style="border-radius: 8px;">
                             <i class="bi bi-eye me-1"></i>
                             Ver Producto
                         </a>
