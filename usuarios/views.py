@@ -122,7 +122,7 @@ def ver_listas_usuarios_admin(request):
     asesores = Asesor.objects.select_related('id_usuario').all()
     
     #conteo de usuarios
-    total_clientes =Cliente.objects.filter(id_usuario__estado=True).count()
+    total_clientes =Cliente.objects.filter().count()
     total_productores = Productor.objects.filter(id_usuario__estado=True).count()
     total_transportistas=Transportista.objects.filter(id_usuario__estado=True).count()
     total_asesores=Asesor.objects.filter(id_usuario__estado=True).count()
@@ -168,6 +168,7 @@ def ver_lista_servicios_admin(request):
 #admin crea usuario
 def crear_usuario_admin(request):
     if request.method == 'POST':
+        
         nombre = request.POST.get('txt_nombre')
         apellido = request.POST.get('txt_apellido')
         username = request.POST.get('txt_nombreUsuario')
@@ -180,29 +181,52 @@ def crear_usuario_admin(request):
         direccion = request.POST.get('txt_direccion')
         rol = request.POST.get('role')
 
-        # Validación básica
-        if Usuario.objects.filter(username=username).exists():
+        # ✅ VALIDACIÓN CORRECTA
+        if Usuario.objects.filter(nombre_usuario=username).exists():
             messages.error(request, "El usuario ya existe")
-            return redirect('registrar_usuario')
+            return redirect('crear_usuario')  # vuelve al formulario admin
 
-        # Crear usuario
+        # ✅ CREAR USUARIO
         usuario = Usuario.objects.create(
             nombre=nombre,
             apellido=apellido,
-            username=username,
+            nombre_usuario=username,
             correo=correo,
             telefono=telefono,
-            documento=documento,
+            cedula=documento,
             ciudad=ciudad,
             departamento=departamento,
             direccion=direccion,
+            contrasena_usuario=password,
             rol=rol
         )
 
-        # ⚠️ IMPORTANTE: guardar contraseña encriptada
-        
+        # CREAR SEGÚN ROL 
+        if rol == "CLIENTE":
+            Cliente.objects.create(
+                id_usuario=usuario,
+                preferencias=request.POST.get("txt_preferencias")
+            )
+
+        elif rol == "PRODUCTOR":
+            Productor.objects.create(
+                id_usuario=usuario,
+                tipo_cultivo=request.POST.get("txt_tipoCultivo")
+            )
+
+        elif rol == "TRANSPORTISTA":
+            Transportista.objects.create(
+                id_usuario=usuario,
+                zonas_entrega=request.POST.get("txt_zonasEntrega")
+            )
+
+        elif rol == "SERVICIO":
+            Asesor.objects.create(
+                id_usuario=usuario,
+                tipo_asesoria=request.POST.get("txt_tipoAsesoria")
+            )
 
         messages.success(request, "Usuario registrado correctamente")
-        return redirect('ver_listas_usuarios_admin')  # o donde quieras redirigir
+        return redirect('ver_listas_usuarios_admin')
 
     return render(request, 'admin_usuarios/registrar_usuario.html')
