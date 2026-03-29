@@ -1,0 +1,266 @@
+{% load static %}
+
+{% block title %}Crear Producto{% endblock %}
+
+{% block extra_head %}
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/crear_producto.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── Mensaje de Django para el toast JS ─────────────────── #}
+{% for message in messages %}
+  <span id="django-message"
+        data-msg="{{ message }}"
+        data-error="{% if message.tags == 'error' %}true{% else %}false{% endif %}"
+        style="display:none;">
+  </span>
+{% endfor %}
+
+<div class="wrapper">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
+                  10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4
+                  0h-2V8h2v8z"/>
+        <path d="M17 3.34A9.988 9.988 0 0 0 12 2C6.48 2 2 6.48 2
+                  12c0 1.94.55 3.75 1.5 5.28L17 3.34z" opacity=".3"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Crear Producto</h1>
+      <p>Registra un nuevo producto agrícola en el sistema</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form id="productoForm"
+          method="POST"
+          enctype="multipart/form-data"
+          action="{% url 'crear_producto_admin' %}"
+          novalidate>
+
+      {% csrf_token %}
+
+      {# ── Errores globales del form (opcional, para debug) ── #}
+      {% if form.errors or imagen_form.errors or finca_form.errors %}
+        <div style="background:#fdecea; border:1px solid var(--error); border-radius:var(--radius); padding:12px 16px; margin-bottom:20px; font-size:14px; color:var(--error);">
+          Por favor corrige los errores marcados en el formulario.
+        </div>
+      {% endif %}
+
+      <div class="section-title">Información básica</div>
+      <div class="grid-2">
+
+        {# Selector de productor #}
+        <div class="field col-full">
+          <label for="id_usuario">
+            Productor <span class="req">*</span>
+          </label>
+          <div class="select-wrap">
+            <select id="id_usuario" name="id_usuario" required>
+              <option value="" disabled {% if not form.id_usuario.value %}selected{% endif %}>
+                Seleccionar productor
+              </option>
+              {% for productor in form.id_usuario.field.queryset %}
+                <option value="{{ productor.pk }}"
+                  {% if form.id_usuario.value|stringformat:"s" == productor.pk|stringformat:"s" %}selected{% endif %}>
+                  {{ productor }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if form.id_usuario.errors %}
+            <span style="color:var(--error); font-size:12px;">{{ form.id_usuario.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        {# Nombre del producto #}
+        <div class="field col-full">
+          <label for="nombre_producto">
+            Nombre del producto <span class="req">*</span>
+          </label>
+          <input type="text"
+                  id="nombre_producto"
+                  name="nombre_producto"
+                  placeholder="Ej: Café especial tostado"
+                  value="{{ form.nombre_producto.value|default:'' }}"
+                  autocomplete="off"
+                  required/>
+          {% if form.nombre_producto.errors %}
+            <span style="color:var(--error); font-size:12px;">{{ form.nombre_producto.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        {# Categoría #}
+        <div class="field">
+          <label for="id_categoria">
+            Categoría <span class="req">*</span>
+          </label>
+          <div class="select-wrap">
+            <select id="id_categoria" name="id_categoria" required>
+              <option value="" disabled {% if not form.id_categoria.value %}selected{% endif %}>
+                Seleccionar categoría
+              </option>
+              {% for cat in form.id_categoria.field.queryset %}
+                <option value="{{ cat.pk }}"
+                  {% if form.id_categoria.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>
+                  {{ cat.nombre_categoria }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if form.id_categoria.errors %}
+            <span style="color:var(--error); font-size:12px;">{{ form.id_categoria.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        {# Precio #}
+        <div class="field">
+          <label for="precio">Precio unitario <span class="req">*</span></label>
+          <div class="unit-field">
+            <input type="number"
+                    id="precio" name="precio"
+                    placeholder="0.00" min="0" step="0.01"
+                    value="{{ form.precio.value|default:'' }}"
+                    required/>
+            <span class="unit-label">COP</span>
+          </div>
+          {% if form.precio.errors %}
+            <span style="color:var(--error); font-size:12px;">{{ form.precio.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+      </div><!-- /grid-2 -->
+
+      {# Descripción #}
+      <div class="field" style="margin-top:20px;">
+        <label for="descripcion_producto">Descripción</label>
+        <textarea id="descripcion_producto"
+                  name="descripcion_producto"
+                  placeholder="Describe el producto: variedades, proceso de cultivo, usos recomendados..."
+        >{{ form.descripcion_producto.value|default:'' }}</textarea>
+      </div>
+
+
+
+      <div class="section-title">Inventario</div>
+      <div class="grid-3">
+
+        <div class="field">
+          <label for="stock">Stock disponible <span class="req">*</span></label>
+          <div class="unit-field">
+            <input type="number"
+                    id="stock" name="stock"
+                    placeholder="0" min="0" step="1"
+                    value="{{ form.stock.value|default:'' }}"
+                    required/>
+            <span class="unit-label">und</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="peso_kg">Peso por unidad <span class="req">*</span></label>
+          <div class="unit-field">
+            <input type="number"
+                    id="peso_kg" name="peso_kg"
+                    placeholder="0.00" min="0" step="0.01"
+                    value="{{ form.peso_kg.value|default:'' }}"
+                    required/>
+            <span class="unit-label">kg</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cantidad_produccion">Cantidad de producción</label>
+          <div class="unit-field">
+            <input type="number"
+            id="cantidad_produccion" name="cantidad_produccion"
+            placeholder="0.00" min="0" step="0.01"
+            value="{{ finca_form.cantidad_produccion.value|default:'' }}"/>
+            <span class="unit-label">kg</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fecha_cosecha">Fecha de cosecha</label>
+          <input type="date"
+                  id="fecha_cosecha" name="fecha_cosecha"
+                  value="{{ finca_form.fecha_cosecha.value|default:'' }}"/>
+        </div>
+
+      </div><!-- /grid-3 -->
+
+
+      <div class="section-title">Imagen del producto</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file"
+                id="imagen_producto"
+                name="url_imagen"
+                accept="image/*"/>
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0
+                  0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <p><strong>Haz clic o arrastra</strong> una imagen aquí<br/>JPG, PNG, WEBP · Máx. 5 MB</p>
+        <img id="previewImg" class="upload-preview" alt="Vista previa"/>
+      </div>
+      {% if imagen_form.url_imagen.errors %}
+        <span style="color:var(--error); font-size:12px; margin-top:6px; display:block;">
+          {{ imagen_form.url_imagen.errors|join:", " }}
+        </span>
+      {% endif %}
+
+
+      <div class="section-title">Finca del productor <span class="req">*</span></div>
+      <div class="finca-grid" id="fincaGrid">
+        <p style="color: var(--text-muted); font-size:14px;">
+          Selecciona un productor para ver sus fincas.
+        </p>
+      </div>
+      {% if finca_form.id_finca.errors %}
+        <span style="color:var(--error); font-size:12px; margin-top:6px; display:block;">
+          {{ finca_form.id_finca.errors|join:", " }}
+        </span>
+      {% endif %}
+
+
+      <div class="actions">
+        <a href="{% url 'ver_lista_productos_admin' %}" class="btn btn-outline-secondary">
+          Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary">
+          Guardar producto
+        </button>
+      </div>
+
+    </form>
+  </div><!-- /card -->
+</div><!-- /wrapper -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  <span id="toastMsg"></span>
+</div>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+  {# JSON de fincas agrupadas por productor → lo consume crear_producto.js #}
+  <script>
+    const FINCAS_JSON = {{ fincas_json|safe }};
+  </script>
+  <script src="{% static 'js/crear_producto.js' %}"></script>
+{% endblock %}

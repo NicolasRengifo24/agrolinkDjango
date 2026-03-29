@@ -35,13 +35,9 @@
                         {{ p.id_categoria.nombre_categoria }}
                     </td>
 
-                    <td class="text-center">
+                    <td>
                         {{ p.stock|default:"0" }}
-                        {% if p.stock > 0 %}
-                            <span class="badge bg-success">Disponible</span>
-                        {% else %}
-                            <span class="badge bg-danger">Agotado</span>
-                        {% endif %}
+                    
                     </td>
 
                     <td class="text-success fw-bold">
