@@ -85,9 +85,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_agrolink',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }

@@ -1,0 +1,111 @@
+:root {
+    --color-primario: #2c3e50;
+    --color-secundario: #3498db;
+    --color-exito: #2ecc71;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image: url("/static/img/light_green_paint_background.jpg");
+
+}
+
+
+.navbar-custom { background: #2f6b31; ; box-shadow: 0 2px 12px rgba(247, 244, 244, 0.918); padding: 10px 0; }
+        .brand-logo { display: flex; align-items: center; gap: 8px; font-family: "Nunito", sans-serif; font-size: 2.4rem; font-weight: 700; color: #c6dc93; transition: all 0.3s ease; margin-left: -10px; }
+        .brand-logo img{
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            background: rgb(241, 235, 235);
+            padding: 2px;
+            position: relative;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(235, 200, 200, 0.795);
+        }
+
+        /* Borde degradado elegante */
+        .brand-logo img::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+            border-radius: 50%;
+            z-index: -1;
+            animation: rotateBorder 3s linear infinite;
+        }
+
+        @keyframes rotateBorder {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .brand-logo:hover img {
+            transform: scale(1.15);
+            box-shadow: 0 8px 25px #c6dc93;
+        }
+
+        .brand-logo:hover {
+            transform: translateY(-3px);
+        }
+
+        .brand-logo:hover img::before {
+            animation-duration: 1s;
+        }
+
+
+.card-viaje {
+    transition: all 0.3s ease;
+   
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #c6dc93;
+}
+
+.card-viaje:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.badge-estado {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+}
+
+.btn-aceptar {
+    background-color: var(--color-exito);
+    border: none;
+}
+
+.info-cliente,
+.info-vendedor {
+    border-radius: 8px;
+    padding: 15px;
+    background-color:#c6dc93;
+}
+
+.filtros {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.mapa-mini {
+    height: 120px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}

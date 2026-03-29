@@ -1,0 +1,90 @@
+{% load static %}
+<div class="col-lg-9 mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Viajes disponibles</h4>
+        <div>
+            <span class="badge bg-primary rounded-pill">{{envios.count}} viajes encontrados</span>
+        </div>
+    </div>
+    {% for envio in envios %}
+    <!-- Viaje 1 -->
+    <div class="card card-viaje">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-success badge-estado mb-2">Disponible</span>
+                            <h5>{{ envio.id_compra.detallescompra_set.first.id_producto.nombre_producto }}</h5>
+                            <p class="text-muted"> {{envio.id_compra.id_cliente.id_usuario.ciudad}}
+                                <i class="fas fa-arrow-right mx-2"></i>
+                                {% with detalle=envio.id_compra.detallescompra_set.first %}
+                                {{detalle.id_producto.finca.ciudad }}
+                                {% endwith %}
+                            </p>
+                        </div>
+                        <h4 class="text-dark">{{envio.costo_total}}</h4>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 info-cliente mb-3">
+                            <h6>Cliente</h6>
+                            <p class="mb-1"><strong>{{envio.id_compra.id_cliente.id_usuario.nombre}}
+                                    {{envio.id_compra.id_cliente.id_usuario.apellido}}</strong> </p>
+                            <p class="mb-1 small"><i
+                                    class="fas fa-phone me-2"></i>{{envio.id_compra.id_cliente.id_usuario.telefono}}</p>
+                            <p class="mb-0 small"><i
+                                    class="fas fa-map-marker-alt me-2"></i>{{envio.direccion_destino }} </p>
+                        </div>
+
+                        <div class="col-md-6 info-vendedor">
+                            <h6>Vendedor</h6>
+                            {% with detalle=envio.id_compra.detallescompra_set.first %}
+                            {% if detalle %}
+                            <p class="mb-1">
+                                <strong>{{ detalle.id_producto.id_usuario.id_usuario.nombre }} {{detalle.id_producto.id_usuario.id_usuario.apellido }}</strong>
+                            </p>
+                            <p class="mb-1 small">
+                                <i class="fas fa-phone me-2"></i>{{ detalle.id_producto.id_usuario.id_usuario.telefono }}
+                            </p>
+                            <p class="mb-0 small">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                {{ envio.direccion_origen }} - {{detalle.id_producto.finca.nombre_finca }}
+                            </p>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mapa-mini mb-3">
+                        <i class="fas fa-map-marked-alt fa-2x"></i>
+                        <!-- por ahora una imegen despues una ubicacion de google maps -->
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Detalles:</strong></p>
+                        <ul class="small ps-3">
+                            <li>Peso: {{envio.peso_total_kg}} Kilos</li>
+                            <li>Fecha recogida: {{envio.fecha_salida |date:"d M y"}}</li>
+                            <li>Fecha entrega:  {{envio.fecha_entrega |date:"d M y"}}</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-aceptar btn-success">
+                            <i class="fas fa-check-circle me-2"></i>Aceptar viaje
+                        </button>
+                        <button class="btn btn-outline" style="color: #1a512e;">
+                            <i class="fas fa-info-circle me-2"></i>Ver detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+</div>

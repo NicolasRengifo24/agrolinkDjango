@@ -1,0 +1,41 @@
+{% load static %}
+<div class="col-lg-3 mt-3">
+    <div class="filtros sticky-top" style="top: 10px; background-color: #c6dc93;">
+        <h5 class="mb-4"></i>Filtra tus viajes</h5>
+
+        <div class="mb-3">
+            <label class="form-label">Ubicación</label>
+            <input type="text" class="form-control" placeholder="Ciudad o dirección">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo de carga</label>
+            <select class="form-select">
+                <option selected>Todas</option>
+                <option>Liquidos</option>
+                <option>Refrigerados</option>
+                <option>Peredeceros</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Rango de peso (kg)</label>
+            <input type="range" class="form-range peso-slider" min="0" max="15000" step="100" value="0">
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <small class="text-muted">0 kg</small>
+                <span class="badge bg-success valor-peso">0 kg</span>
+                <small class="text-muted">15000 kg</small>
+            </div>
+        </div>
+
+
+        <button class="btn btn-success w-100 mt-2">
+            <i class="fas fa-search me-2"></i>Buscar viajes
+        </button>
+    </div>
+</div>

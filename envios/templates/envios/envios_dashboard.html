@@ -1,0 +1,15 @@
+{% extends 'base_interfaz_transportista.html' %}
+
+
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <!-- Filtros -->
+            {% include 'components/filtros_transportista.html'%}
+            
+            <!-- Lista de viajes -->
+            {% include 'components/lista_viajes.html'%}
+        </div>
+    </div>
+{% endblock %}
