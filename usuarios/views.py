@@ -8,10 +8,46 @@ from servicios.models import Servicio
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login , logout
+from django.contrib.auth.decorators import login_required
+
+from .forms import LoginForm
+
+
+
+# proteccion de las vistas , solicitando el rol correspondiente para que 
+# solo los usuarios administradores puedan acceder a las vistas 
+
+from functools import wraps
+from django.shortcuts import redirect
+from django.contrib import messages
+
+def admin_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login_view')
+        if not hasattr(request.user, 'usuario') or request.user.usuario.rol.upper() != "ADMINISTRADOR":
+            messages.error(request, "Acceso restringido solo para administradores.")
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+# pagina publica 
+def home(request):
+    return render(request, 'inicio.html')
+
 
 
 
 #  Esto Es Navegacion
+@login_required
+def inicio_cliente(request):
+    return render(request,'inicio.html')
+
+
 def inicio_usuarios(request):
     return render(request,'usuarios/login.html')
 
@@ -75,26 +111,28 @@ def registrar_usuario(request):
 
 
 # Navegacion vistas admin
+@admin_required
 def dashboard_admin(request):
     return render(request, 'admin_usuarios/dashboard.html')
-
+@admin_required
 def lista_productos_admin(request):
     return render(request, 'admin_productos/index.html')
-
+@admin_required
 def list_usuarios_admin(request):
     return render(request,'admin_usuarios/dashboard.html')
-
+@admin_required
 def lista_pedidos_admin(request):
     return render(request, 'admin_pedidos/pedidos.html')
-
+@admin_required
 def lista_envios_admin(request):
     return render(request, 'admin_envios/envios.html')
-
+@admin_required
 def lista_servicios_admin(request):
     return render(request, 'admin_servicios/servicios.html' )
 
 
-# Metodos Admin 
+# Metodos Admin
+@admin_required 
 def ver_listas_usuarios_admin(request):
     #tablas por rol de usuarios
     clientes = Cliente.objects.select_related('id_usuario').all()
@@ -119,24 +157,24 @@ def ver_listas_usuarios_admin(request):
         'total_transportistas': total_transportistas,
         'total_asesores': total_asesores,
     })
-    
+@admin_required
 def ver_lista_productos_admin(request):
     productos = Producto.objects.select_related('id_usuario', 'id_categoria').all()
     
     return render(request, 'admin_productos/index.html', {'productos': productos})
-
+@admin_required
 def ver_lista_pedidos_admin(request):
     compras = Compra.objects.select_related('id_cliente' 'id_compra'). all()
     
     return render(request, 'admin_pedidos/pedidos.html', {'compras': compras})
-
+@admin_required
 def ver_lista_envio_admin(request):
     envios = Envio.objects.select_related(
         'id_compra',
         'id_transportista'
     ).all()
     return render(request, 'admin_envios/envios.html')
-
+@admin_required
 def ver_lista_servicios_admin(request):
     servicios = Servicio.objects.select_related(
         'id_asesor',
@@ -148,7 +186,7 @@ def ver_lista_servicios_admin(request):
 
 #admin crea usuario
 
-
+@admin_required
 def crear_usuario_admin(request):
     if request.method == 'POST':
         nombre = request.POST.get('txt_nombre')
@@ -178,7 +216,7 @@ def crear_usuario_admin(request):
         )
 
         # ✅ Crear Usuario extendido (datos adicionales)
-        Usuario.objects.create(
+        usuario = Usuario.objects.create(
             user=user,
             nombre=nombre,
             apellido=apellido,
@@ -223,10 +261,6 @@ def crear_usuario_admin(request):
 # esto es el login , la autenticacion de cada usuario 
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from .forms import LoginForm
-
 
 def login_view(request):
     if request.method == 'POST':
@@ -235,12 +269,9 @@ def login_view(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             
-            print("Intentando login con:", username, password)
-
+            
 
             user = authenticate(request, username=username, password=password)
-            print("Resultado de authenticate:", user)
-
             if user:
                 login(request, user)
                 try:
@@ -265,6 +296,12 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'usuarios/login.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)   # elimina la sesión del usuario
+    return redirect('inicio_usuarios')
+
 
 def reset_password(request):
     return render(request, 'usuarios/reset_password.html')

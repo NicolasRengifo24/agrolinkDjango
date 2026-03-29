@@ -7,6 +7,8 @@ urlpatterns = [
     # Login y registro
     path('login/', views.login_view, name='login_view'),
     path('', views.inicio_usuarios, name='inicio_usuarios'),
+    
+    path('logout/', views.logout_view, name='logout_view'),
 
     
     path('registro/', views.mostrar_registro_usuarios, name='mostrar_registro_usuarios'),

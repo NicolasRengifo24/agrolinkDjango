@@ -46,15 +46,6 @@
     <form method="post" action="{% url 'login_view' %}">
       {% csrf_token %}
 
-      <!-- Mensajes de error / éxito -->
-      {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}" role="alert">
-        {{ message }}
-      </div>
-      {% endfor %}
-      {% endif %}
-
       <div class="mb-3">
         <label for="id_username" class="form-label text-agro">Usuario *</label>
         <input type="text" name="username" id="id_username" class="form-control" required>
@@ -73,16 +64,6 @@
 
       <button type="submit" class="btn btn-agro w-100 py-2 fs-5">Ingresar</button>
     </form>
-    {% if messages %}
-    <ul>
-      {% for message in messages %}
-      <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-
-    
-
 
     <p class="mt-4 text-center">
       ¿No tienes cuenta?

@@ -1,0 +1,95 @@
+{% block content %}
+
+<div class="container py-5" style="margin-top: 90px;">
+
+    <h1 class="cart-title text-center mb-5" data-aos="fade-down">🛒 Tu carrito de compras</h1>
+
+    <!-- Alertas de error/éxito -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Carrito vacío -->
+    <div th:if="${cartItems == null or #lists.isEmpty(cartItems)}" class="empty-cart-box">
+        <i class="bi bi-cart-x"></i>
+        <h3 class="fw-bold mt-3">Tu carrito está vacío</h3>
+        <p class="text-muted">Agrega productos y aparecerán aquí</p>
+        <a th:href="@{/}" class="btn btn-success px-4">Volver a comprar</a>
+    </div>
+
+    <!-- Carrito lleno -->
+    <div th:if="${cartItems != null and !#lists.isEmpty(cartItems)}" class="row g-4" id="cartContent">
+        <div class="col-lg-8">
+            <div id="cartItems">
+                <div th:each="item : ${cartItems}" class="mb-3">
+                    <div class="cart-card">
+                        <img th:src="${item.imagenUrl}" alt="imagen">
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold" th:text="${item.nombre}">Nombre</h5>
+                            <p class="text-muted mb-1" th:text="${item.descripcion}">Descripción</p>
+                            <div class="d-flex gap-2 align-items-center">
+                                <form th:action="@{/cliente/carrito/actualizar}" method="post" class="d-flex align-items-center">
+                                    <input type="hidden" name="idProducto" th:value="${item.id}" />
+                                    <button class="btn btn-outline-success qty-btn" type="button" onclick="this.closest('form').cantidad.stepDown();">−</button>
+                                    <input type="number" name="cantidad" min="1" th:value="${item.cantidad}" class="form-control mx-2" style="width:80px;" />
+                                    <button class="btn btn-outline-success qty-btn" type="button" onclick="this.closest('form').cantidad.stepUp();">+</button>
+                                    <button type="submit" class="btn btn-success ms-3">Actualizar</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <h5 class="fw-bold text-success" th:text="${#numbers.formatDecimal(item.subtotal,1,'POINT',2,'POINT')}">$0</h5>
+                            <form th:action="@{/cliente/carrito/quitar}" method="post">
+                                <input type="hidden" name="idProducto" th:value="${item.id}" />
+                                <button class="btn btn-sm btn-danger mt-2" type="submit">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="summary-box" data-aos="fade-left">
+                <h4 class="fw-bold mb-3">Resumen del Pedido</h4>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <strong th:text="${#numbers.formatDecimal(subtotal,1,'POINT',2,'POINT')}">$0</strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Envío:</span>
+                    <strong th:text="${#numbers.formatDecimal(envio,1,'POINT',2,'POINT')}">$0</strong>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <h5 class="fw-bold">Total:</h5>
+                    <h5 th:text="${#numbers.formatDecimal(total,1,'POINT',2,'POINT')}" class="fw-bold text-success">$0</h5>
+                </div>
+
+                <form th:action="@{/compras/crear}" method="get">
+                    <button class="checkout-btn w-100 mt-4" type="submit">Proceder al pago</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+
+</div>
+
+{% endblock %}
