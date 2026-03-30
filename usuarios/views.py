@@ -14,6 +14,11 @@ from django.contrib.auth.decorators import login_required
 
 from .forms import LoginForm
 
+from productos.models import Finca
+from . forms import ProductoForm, ImagenPrincipalForm, ProductoFincaForm
+
+
+
 
 
 # proteccion de las vistas , solicitando el rol correspondiente para que 
@@ -43,7 +48,7 @@ def home(request):
 
 
 #  Esto Es Navegacion
-@login_required
+#@login_required
 def inicio_cliente(request):
     return render(request,'inicio.html')
 
@@ -111,28 +116,28 @@ def registrar_usuario(request):
 
 
 # Navegacion vistas admin
-@admin_required
+#@admin_required
 def dashboard_admin(request):
     return render(request, 'admin_usuarios/dashboard.html')
-@admin_required
+#@admin_required
 def lista_productos_admin(request):
     return render(request, 'admin_productos/index.html')
-@admin_required
+#@admin_required
 def list_usuarios_admin(request):
     return render(request,'admin_usuarios/dashboard.html')
-@admin_required
+#@admin_required
 def lista_pedidos_admin(request):
     return render(request, 'admin_pedidos/pedidos.html')
-@admin_required
+#@admin_required
 def lista_envios_admin(request):
     return render(request, 'admin_envios/envios.html')
-@admin_required
+#@admin_required
 def lista_servicios_admin(request):
     return render(request, 'admin_servicios/servicios.html' )
 
 
 # Metodos Admin
-@admin_required 
+#@admin_required 
 def ver_listas_usuarios_admin(request):
     #tablas por rol de usuarios
     clientes = Cliente.objects.select_related('id_usuario').all()
@@ -157,24 +162,112 @@ def ver_listas_usuarios_admin(request):
         'total_transportistas': total_transportistas,
         'total_asesores': total_asesores,
     })
-@admin_required
+    
+    
+#@admin_required
 def ver_lista_productos_admin(request):
     productos = Producto.objects.select_related('id_usuario', 'id_categoria').all()
     
     return render(request, 'admin_productos/index.html', {'productos': productos})
-@admin_required
+    
+def crear_producto_admin(request):
+    producto_form = ProductoForm()
+    imagen_form   = ImagenPrincipalForm()
+    finca_form    = ProductoFincaForm()
+    productores   = Productor.objects.all()
+
+    if request.method == 'POST':
+        producto_form = ProductoForm(request.POST)
+        imagen_form   = ImagenPrincipalForm(request.POST, request.FILES)
+
+        productor_id = request.POST.get('id_usuario')
+        productor    = None
+        if productor_id:
+            try:
+                productor = Productor.objects.get(pk=productor_id)
+            except Productor.DoesNotExist:
+                pass
+
+        finca_form = ProductoFincaForm(request.POST, productor=productor, validate_finca=True)
+
+        # Debug temporal — quitar después de resolver
+        print("Producto errors:", producto_form.errors)
+        print("Imagen errors:  ", imagen_form.errors)
+        print("Finca errors:   ", finca_form.errors)
+
+        if producto_form.is_valid() and imagen_form.is_valid() and finca_form.is_valid():
+
+            # 1. Guardar producto
+            producto = producto_form.save()
+
+            # 2. Guardar imagen solo si se subió una
+            if request.FILES.get('url_imagen'):
+                imagen             = imagen_form.save(commit=False)
+                imagen.id_producto = producto
+                imagen.es_principal = 1
+                imagen.save()
+
+            # 3. Guardar relación producto ↔ finca
+            producto_finca             = finca_form.save(commit=False)
+            producto_finca.id_producto = producto
+            producto_finca.save()
+
+            messages.success(request, f'Producto "{producto.nombre_producto}" creado exitosamente.')
+            return redirect('ver_lista_productos_admin')
+
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
+
+    context = {
+        'form'       : producto_form,
+        'imagen_form': imagen_form,
+        'finca_form' : finca_form,
+        'productores': productores,
+        'fincas_json': _fincas_por_productor(),
+    }
+    return render(request, 'admin_productos/crear_producto.html', context)
+
+
+
+def _fincas_por_productor():
+    """
+    Devuelve un dict {id_productor: [lista de fincas]}
+    para que el JS pueda actualizar el selector de fincas
+    al cambiar el productor sin hacer una petición AJAX adicional.
+    """
+    import json
+    from collections import defaultdict
+
+    resultado = defaultdict(list)
+    fincas    = Finca.objects.select_related('id_usuario').values(
+        'id_finca', 'nombre_finca', 'departamento', 'ciudad', 'id_usuario'
+    )
+    for f in fincas:
+        resultado[f['id_usuario']].append({
+            'id'          : f['id_finca'],
+            'nombre'      : f['nombre_finca'] or 'Sin nombre',
+            'departamento': f['departamento'] or '',
+            'ciudad'      : f['ciudad'] or '',
+        })
+
+    return json.dumps(resultado)    
+    
+    
+    
+    return render(request, 'admin_productos/index.html', {'productos': productos})
+#@admin_required
 def ver_lista_pedidos_admin(request):
     compras = Compra.objects.select_related('id_cliente' 'id_compra'). all()
     
     return render(request, 'admin_pedidos/pedidos.html', {'compras': compras})
-@admin_required
+#@admin_required
 def ver_lista_envio_admin(request):
     envios = Envio.objects.select_related(
         'id_compra',
         'id_transportista'
     ).all()
     return render(request, 'admin_envios/envios.html')
-@admin_required
+#@admin_required
 def ver_lista_servicios_admin(request):
     servicios = Servicio.objects.select_related(
         'id_asesor',
@@ -186,7 +279,7 @@ def ver_lista_servicios_admin(request):
 
 #admin crea usuario
 
-@admin_required
+#@admin_required
 def crear_usuario_admin(request):
     if request.method == 'POST':
         nombre = request.POST.get('txt_nombre')
@@ -257,6 +350,46 @@ def crear_usuario_admin(request):
         return redirect('ver_listas_usuarios_admin')
 
     return render(request, 'admin_usuarios/registrar_usuario.html')
+
+
+def editar_usuario_admin(request, id):
+    usuario = Usuario.objects.get(id_usuario=id)
+    if request.method == 'POST':
+        usuario.nombre=request.POST.get('txt_nombre')
+        usuario.apellido=request.POST.get('txt_apellido')
+        usuario.correo=request.POST.get('txt_correo')
+        usuario.telefono=request.POST.get('txt_telefono')
+        usuario.ciudad=request.POST.get('txt_ciudad')
+        usuario.departamento=request.POST.get('txt_departamento')
+        usuario.direccion=request.POST.get('txt_direccion')
+        
+        usuario.save()
+        
+        messages.success(request, "Usuario actualizado correctamente")
+        return redirect('ver_listas_usuarios_admin')
+    return render(request, 'admin_usuarios/editar_usuario.html', {'usuario': usuario})
+
+def eliminar_usuario(request, id):
+    usuario = Usuario.objects.get(id_usuario=id)
+
+    Cliente.objects.filter(id_usuario=usuario).delete()
+    Productor.objects.filter(id_usuario=usuario).delete()
+    Transportista.objects.filter(id_usuario=usuario).delete()
+    Asesor.objects.filter(id_usuario=usuario).delete()
+
+    if usuario.user:
+        usuario.user.delete()
+    
+    usuario.delete()
+
+    messages.success(request, "Usuario eliminado correctamente")
+    return redirect('ver_listas_usuarios_admin')
+
+
+def ver_usuario(request, id):
+    usuario =Usuario.objects.get(id_usuario=id)
+    
+    return render(request, 'admin_usuarios/ver_usuario.html', {'usuario': usuario})
 
 # esto es el login , la autenticacion de cada usuario 
 

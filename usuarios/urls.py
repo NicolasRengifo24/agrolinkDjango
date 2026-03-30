@@ -25,4 +25,13 @@ urlpatterns = [
     path('envios_admin/', views.ver_lista_envio_admin, name='ver_lista_envios_admin'),
     path('servicios_admin/', views.ver_lista_servicios_admin, name='ver_lista_servicios_admin'),
     path('crear_usuario/', views.crear_usuario_admin, name='crear_usuario'),
-]
+    
+    path('editar_usuario/<int:id>/', views.editar_usuario_admin, name='editar_usuario'),
+    path('eliminar_usuario/<int:id>', views.eliminar_usuario, name='eliminar_usuario'),
+    path('ver_usuario/<int:id>/', views.ver_usuario, name='ver_usuario'),
+    
+    path('productos_admin/',views.ver_lista_productos_admin, name= 'ver_lista_productos_admin'),
+    path('formulario_producto_admin', views.crear_producto_admin, name= 'crear_producto_admin')
+    
+    
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

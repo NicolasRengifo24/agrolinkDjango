@@ -447,7 +447,7 @@ textarea {
   align-items: center;
   gap: 10px;
 }
-
+*
 .toast.show {
   opacity: 1;
   transform: translateY(0);
