@@ -33,8 +33,8 @@
                                     {{envio.id_compra.id_cliente.id_usuario.apellido}}</strong> </p>
                             <p class="mb-1 small"><i
                                     class="fas fa-phone me-2"></i>{{envio.id_compra.id_cliente.id_usuario.telefono}}</p>
-                            <p class="mb-0 small"><i
-                                    class="fas fa-map-marker-alt me-2"></i>{{envio.direccion_destino }} </p>
+                            <p class="mb-0 small"><i class="fas fa-map-marker-alt me-2"></i>{{envio.direccion_destino }}
+                            </p>
                         </div>
 
                         <div class="col-md-6 info-vendedor">
@@ -45,7 +45,7 @@
                                 <strong>{{ detalle.id_producto.id_usuario.id_usuario.nombre }} {{detalle.id_producto.id_usuario.id_usuario.apellido }}</strong>
                             </p>
                             <p class="mb-1 small">
-                                <i class="fas fa-phone me-2"></i>{{ detalle.id_producto.id_usuario.id_usuario.telefono }}
+                                <i class="fas fa-phone me-2"></i>{{ detalle.id_producto.id_usuario.id_usuario.telefono  }}
                             </p>
                             <p class="mb-0 small">
                                 <i class="fas fa-map-marker-alt me-2"></i>
@@ -58,17 +58,20 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="mapa-mini mb-3">
-                        <i class="fas fa-map-marked-alt fa-2x"></i>
+                    <div class="mapa-mini mb-3" id="map">
                         <!-- por ahora una imegen despues una ubicacion de google maps -->
                     </div>
+
+                    <button class="btn btn-primary btn-mapa" onclick="abrirMapa('{{ envio.id_envio }}')">
+                        Ver mapa
+                    </button>
 
                     <div class="mb-3">
                         <p class="mb-1"><strong>Detalles:</strong></p>
                         <ul class="small ps-3">
                             <li>Peso: {{envio.peso_total_kg}} Kilos</li>
                             <li>Fecha recogida: {{envio.fecha_salida |date:"d M y"}}</li>
-                            <li>Fecha entrega:  {{envio.fecha_entrega |date:"d M y"}}</li>
+                            <li>Fecha entrega: {{envio.fecha_entrega |date:"d M y"}}</li>
                         </ul>
                     </div>
 
@@ -85,6 +88,23 @@
         </div>
     </div>
     {% endfor %}
+
+    <div class="modal fade" id="mapModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Mapa del Envío</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="mapModalContainer" style="height: 500px;"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
 
 </div>

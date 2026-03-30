@@ -12,30 +12,40 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/envios.css'%}">
-    
+
+    <!--  mapa interactivo -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 </head>
 
 <body>
     <!-- Barra de navegación -->
-     {% include 'components/navbar_transportista.html'%}
-    
-    
-    
-  
-   
+    {% include 'components/navbar_transportista.html'%}
+
+
+
+
+
 
     <div class="container">
         <div class="row">
             <!-- Filtros -->
             {% include 'components/filtros_transportista.html'%}
-            
+
             <!-- Lista de viajes -->
             {% include 'components/lista_viajes.html'%}
         </div>
     </div>
 
 
-
+    <!--Script del mapa -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script id="envios-data" type="application/json">
+    {{ envios_json|safe }}
+    </script>
+    <script src="{% static 'script/mapa_script.js' %}"></script>
+    
+    <!--Bootstrap-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'script/envios_script.js' %}"></script>
 </body>

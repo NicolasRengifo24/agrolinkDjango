@@ -33,12 +33,12 @@
 
                 <!-- PERFIL -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" style="color:#c6dc93">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" >
                         <img src="https://i.pravatar.cc/40?img=10" class="profile-img me-2" alt="Perfil">
                         {% if user.is_authenticated %}
-                        <span>{{ user.first_name }}</span>
+                        <span style="color:#c6dc93">{{ user.first_name }}</span>
                         {% else %}
-                        <span>Visitante</span>
+                        <span style="color:#c6dc93">Visitante</span>
                         {% endif %}
                     </a>
 
