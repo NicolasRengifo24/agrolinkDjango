@@ -85,3 +85,9 @@ def lista_productos(request):
         promedio=Avg("calificaciones__puntaje")
     )
     return render(request, "productos/lista.html", {"productos": productos})
+
+from django.db.models import Avg
+
+productos = Producto.objects.all().annotate(
+    promedio=Avg('calificaciones__puntaje')
+)

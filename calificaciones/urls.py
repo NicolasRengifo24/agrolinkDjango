@@ -18,7 +18,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.lista_calificaciones, name='lista_calificaciones'),
-    path('crear/<int:producto_id>/', views.crear_calificacion, name='crear_calificacion'),
+    path('', views.lista_productos_calificados, name='lista_productos_calificados'),
+    path('calificar/<int:producto_id>/', views.agregar_calificacion, name='agregar_calificacion'),
 ]
 

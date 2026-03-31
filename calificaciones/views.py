@@ -1,20 +1,25 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from .models import Calificacion
 from productos.models import Producto
+from django.db.models import Avg
 
-def lista_calificaciones(request):
-    calificaciones = Calificacion.objects.select_related('producto', 'usuario').all().order_by('-fecha')
-    return render(request, "calificaciones/lista.html", {
-        "calificaciones": calificaciones
+
+def lista_productos_calificados(request):
+    productos = Producto.objects.all().annotate(
+        promedio=Avg('calificaciones__puntaje')  # 👈 ESTE ES EL CORRECTO
+    )
+
+    return render(request, 'calificaciones/lista.html', {
+        'productos': productos
     })
 
 
-def crear_calificacion(request, producto_id):
-    producto = Producto.objects.get(id=producto_id)
+def agregar_calificacion(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
 
-    if request.method == "POST":
-        puntaje = request.POST.get("puntaje")
-        comentario = request.POST.get("comentario")
+    if request.method == 'POST':
+        puntaje = request.POST['puntaje']
+        comentario = request.POST['comentario']
 
         Calificacion.objects.create(
             producto=producto,
@@ -23,8 +28,6 @@ def crear_calificacion(request, producto_id):
             comentario=comentario
         )
 
-        return redirect("lista_productos")
+        return redirect('lista_productos_calificados')
 
-    return render(request, "calificaciones/form.html", {
-        "producto": producto
-    })
+    return render(request, 'calificaciones/agregar.html', {'producto': producto})

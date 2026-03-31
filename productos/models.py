@@ -41,7 +41,6 @@ class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey('usuarios.Productor', models.DO_NOTHING, db_column='id_usuario')
     id_categoria = models.ForeignKey(CategoriaProducto, models.DO_NOTHING, db_column='id_categoria')
-    id_calificacion = models.ForeignKey('calificaciones.Calificacion', models.DO_NOTHING, db_column='id_calificacion', blank=True, null=True)
     precio = models.DecimalField(max_digits=12, decimal_places=0, blank=True, null=True)
     nombre_producto = models.CharField(max_length=100)
     descripcion_producto = models.CharField(max_length=255, blank=True, null=True)

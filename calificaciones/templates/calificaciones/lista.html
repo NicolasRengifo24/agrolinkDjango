@@ -1,53 +1,30 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/calificaciones.css' %}">
-<a href="{% url 'crear_calificacion' producto.id %}" class="btn-calificar">
-    ⭐ Calificar
-</a>
 
-<div class="contenedor-calificaciones">
+<div class="container">
+    <h1>🌱 Productos Calificados</h1>
 
-    <h2 class="titulo">⭐ Opiniones de clientes</h2>
+    <div class="grid">
+        {% for producto in productos %}
+        <div class="card">
+            <img src="{{ producto.imagen.url }}" alt="">
+            <h2>{{ producto.nombre }}</h2>
+            <p>{{ producto.descripcion }}</p>
 
-    {% for calificacion in calificaciones %}
-    <div class="card-calificacion">
-
-        <!-- HEADER -->
-        <div class="header-calificacion">
-
-            <div class="usuario">
-                <div class="avatar">👤</div>
-                <span>{{ calificacion.usuario.username }}</span>
-            </div>
-
-            <!-- ESTRELLAS -->
-            <div class="estrellas">
+            <div class="stars">
                 {% for i in "12345" %}
-                    {% if calificacion.puntaje >= forloop.counter %}
-                        <span class="estrella llena">★</span>
+                    {% if forloop.counter <= producto.promedio|default:0 %}
+                        <span class="star filled">★</span>
                     {% else %}
-                        <span class="estrella">☆</span>
+                        <span class="star">☆</span>
                     {% endif %}
                 {% endfor %}
             </div>
 
+            <p class="promedio">Promedio: {{ producto.promedio|default:"0"|floatformat:1 }}</p>
+
+            <a href="{% url 'agregar_calificacion' producto.id %}" class="btn">Calificar</a>
         </div>
-
-        <!-- PRODUCTO -->
-        <h4 class="producto">{{ calificacion.producto.nombre }}</h4>
-
-        <!-- COMENTARIO -->
-        <div class="comentario">
-            "{{ calificacion.comentario }}"
-        </div>
-
-        <!-- FECHA -->
-        <div class="fecha">
-            {{ calificacion.fecha|date:"d/m/Y H:i" }}
-        </div>
-
+        {% endfor %}
     </div>
-    {% empty %}
-        <p class="sin-comentarios">No hay calificaciones aún 😢</p>
-    {% endfor %}
-
 </div>
