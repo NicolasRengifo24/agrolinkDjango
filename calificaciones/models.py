@@ -10,4 +10,4 @@ class Calificacion(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.producto.nombre} - {self.puntaje}⭐"
+        return f"{self.producto.nombre} - {self.puntaje}"
