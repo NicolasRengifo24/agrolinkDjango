@@ -1,34 +1,104 @@
-{% load static%}
+{% load static %}
+
+<style>
+/* ⭐ ESTRELLAS */
+.star {
+    color: #ccc;
+    font-size: 16px;
+}
+
+.filled {
+    color: #ffc107;
+}
+
+/* 🎨 TARJETA */
+.product-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #fff;
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* 📄 DESCRIPCIÓN */
+.product-description {
+    font-size: 14px;
+    min-height: 40px;
+}
+
+/* ⭐ CONTENEDOR ESTRELLAS */
+.estrellas {
+    font-size: 14px;
+    display: inline-block;
+}
+
+/* 🧾 BADGES */
+.badge {
+    font-size: 12px;
+}
+
+/* 🖼 IMAGEN */
+.product-img {
+    object-fit: cover;
+    height: 200px;
+    width: 100%;
+}
+</style>
+
+
 <div class="col-lg-3 col-md-4 col-sm-6">
     <div class="product-card h-100" data-aos="fade-up" data-aos-delay="100">
 
         <!-- Imagen del producto -->
         <div class="position-relative">
             {% if producto.imagen_principal_url %}
-            <img src="{{ producto.imagen_principal_url }}" alt="{{ producto.nombre_producto }}"      
-            alt="{{ producto.nombre_producto }}"
-            class="img-fluid"
-            style="object-fit: cover; height: 200px; width: 100%;">
+                <img src="{{ producto.imagen_principal_url }}" 
+                     alt="{{ producto.nombre_producto }}"
+                     class="img-fluid product-img">
             {% else %}
-            <img src="{% static 'img/default.jpg' %}" alt="Imagen no disponible">
+                <img src="{% static 'img/default.jpg' %}" 
+                     alt="Imagen no disponible"
+                     class="img-fluid product-img">
             {% endif %}
 
+            <!-- ⭐ ESTRELLAS -->
+            <div class="estrellas position-absolute bottom-0 start-0 bg-white px-2 py-1 m-2 rounded shadow-sm">
+                {% with promedio=producto.promedio_estrellas|default:0 %}
+                    
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= promedio %}
+                            <span class="star filled">★</span>
+                        {% else %}
+                            <span class="star">☆</span>
+                        {% endif %}
+                    {% endfor %}
 
+                    <small class="text-muted ms-1">
+                        {{ promedio|floatformat:1 }} ({{ producto.total_calificaciones }})
+                    </small>
 
+                {% endwith %}
+            </div>
 
-        <div class="position-absolute top-0 end-0 m-2">
-            {% if producto.stock > 0 %}
-                <span class="badge bg-success">
-                    {{ producto.stock }} unidades
-                </span>
-            {% else %}
-                <span class="badge bg-danger">
-                    Agotado
-                </span>
-            {% endif %}
+            <!-- Stock -->
+            <div class="position-absolute top-0 end-0 m-2">
+                {% if producto.stock > 0 %}
+                    <span class="badge bg-success">
+                        {{ producto.stock }} unidades
+                    </span>
+                {% else %}
+                    <span class="badge bg-danger">
+                        Agotado
+                    </span>
+                {% endif %}
+            </div>
         </div>
-    </div>
 
+        <!-- Contenido -->
         <div class="p-3 d-flex flex-column h-100">
 
             <!-- Nombre -->
@@ -38,7 +108,7 @@
 
             <!-- Descripción -->
             <p class="text-muted product-description">
-                {{ producto.descripcion_producto }}
+                {{ producto.descripcion_producto|truncatewords:12 }}
             </p>
 
             <!-- Productor -->
@@ -81,9 +151,10 @@
                         </small>
                     </div>
 
+                    <!-- Botón -->
                     <div>
-                        <a class="btn btn-outline-success btn-sm"
-                    
+                        <a href="{% url 'detalle_producto' producto.id_producto %}" 
+                           class="btn btn-outline-success btn-sm"
                            style="border-radius: 8px;">
                             <i class="bi bi-eye me-1"></i>
                             Ver Producto
