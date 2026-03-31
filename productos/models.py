@@ -68,7 +68,7 @@ class Producto(models.Model):
 
 class ImagenesProducto(models.Model):
     id_imagen = models.AutoField(primary_key=True)
-    id_producto = models.ForeignKey(Producto, models.DO_NOTHING, db_column='id_producto',related_name='imagenProducto')
+    id_producto = models.ForeignKey(Producto, models.CASCADE, db_column='id_producto',related_name='imagenProducto')
     url_imagen = models.ImageField(upload_to='productos/')
     es_principal = models.IntegerField(blank=True, null=True)
 
@@ -81,8 +81,8 @@ class ImagenesProducto(models.Model):
 
 class ProductoFinca(models.Model):
     id_producto_finca = models.AutoField(primary_key=True)
-    id_finca = models.ForeignKey(Finca, models.DO_NOTHING, db_column='id_finca',related_name='productos_finca' )
-    id_producto = models.ForeignKey(Producto, models.DO_NOTHING, db_column='id_producto',related_name='fincas'  )
+    id_finca = models.ForeignKey(Finca, models.CASCADE, db_column='id_finca',related_name='productos_finca' )
+    id_producto = models.ForeignKey(Producto, models.CASCADE, db_column='id_producto',related_name='fincas'  )
     cantidad_produccion = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     fecha_cosecha = models.DateField(blank=True, null=True)
 

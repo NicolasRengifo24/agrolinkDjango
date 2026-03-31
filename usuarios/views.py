@@ -1,21 +1,21 @@
-from django.shortcuts import render , redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Usuario, Cliente, Productor, Asesor, Administrador,Transportista
-from productos.models import Producto
-from pedidos.models import Compra
+
+from pedidos.models import Compra, DetallesCompra
+from django.http import JsonResponse
 from envios.models import Envio
 from servicios.models import Servicio
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login , logout
 from django.contrib.auth.decorators import login_required
 
 from .forms import LoginForm
 
-from productos.models import Finca
-from . forms import ProductoForm, ImagenPrincipalForm, ProductoFincaForm
+from productos.models import Producto, ImagenesProducto, ProductoFinca,Finca
+from . forms import ProductoForm, ImagenPrincipalForm, ProductoFincaForm, ProductoEditarForm
 
 
 
@@ -25,8 +25,6 @@ from . forms import ProductoForm, ImagenPrincipalForm, ProductoFincaForm
 # solo los usuarios administradores puedan acceder a las vistas 
 
 from functools import wraps
-from django.shortcuts import redirect
-from django.contrib import messages
 
 def admin_required(view_func):
     @wraps(view_func)
@@ -198,21 +196,21 @@ def crear_producto_admin(request):
         if producto_form.is_valid() and imagen_form.is_valid() and finca_form.is_valid():
 
             # 1. Guardar producto
-            producto = producto_form.save()
+            producto_editado = producto_form.save()
 
             # 2. Guardar imagen solo si se subió una
             if request.FILES.get('url_imagen'):
                 imagen             = imagen_form.save(commit=False)
-                imagen.id_producto = producto
+                imagen.id_producto = producto_editado
                 imagen.es_principal = 1
                 imagen.save()
 
             # 3. Guardar relación producto ↔ finca
             producto_finca             = finca_form.save(commit=False)
-            producto_finca.id_producto = producto
+            producto_finca.id_producto = producto_editado
             producto_finca.save()
 
-            messages.success(request, f'Producto "{producto.nombre_producto}" creado exitosamente.')
+            messages.success(request, f'Producto_editado "{Producto.nombre_producto}" creado exitosamente.')
             return redirect('ver_lista_productos_admin')
 
         else:
@@ -230,43 +228,180 @@ def crear_producto_admin(request):
 
 
 def _fincas_por_productor():
-    """
-    Devuelve un dict {id_productor: [lista de fincas]}
-    para que el JS pueda actualizar el selector de fincas
-    al cambiar el productor sin hacer una petición AJAX adicional.
-    """
-    import json
-    from collections import defaultdict
+    
+        import json
+        from collections import defaultdict
 
-    resultado = defaultdict(list)
-    fincas    = Finca.objects.select_related('id_usuario').values(
-        'id_finca', 'nombre_finca', 'departamento', 'ciudad', 'id_usuario'
-    )
-    for f in fincas:
-        resultado[f['id_usuario']].append({
-            'id'          : f['id_finca'],
-            'nombre'      : f['nombre_finca'] or 'Sin nombre',
-            'departamento': f['departamento'] or '',
-            'ciudad'      : f['ciudad'] or '',
+        resultado = defaultdict(list)
+        fincas = Finca.objects.select_related('id_usuario').values(
+            'id_finca', 'nombre_finca', 'departamento', 'ciudad', 'id_usuario'
+        )
+        for f in fincas:
+            resultado[f['id_usuario']].append({
+                
+                'id': f['id_finca'],
+                'nombre': f['nombre_finca'] or 'Sin nombre',
+                'departamento': f['departamento'] or '',
+                'ciudad': f['ciudad'] or '',
         })
 
-    return json.dumps(resultado)    
+        return json.dumps(resultado)
+
+        
+
+
+
+
+def editar_producto_admin(request, id):
+    producto       = get_object_or_404(Producto, pk=id)   # ← objeto existente
+    producto_finca = producto.fincas.select_related('id_finca').first()
+    imagen_actual  = producto.imagenProducto.filter(es_principal=1).first()
+
+    producto_form = ProductoEditarForm(instance=producto)
+    finca_form    = ProductoFincaForm(instance=producto_finca, productor=producto.id_usuario)
+    imagen_form   = ImagenPrincipalForm()
+
+    if request.method == 'POST':
+        producto_form = ProductoEditarForm(request.POST, instance=producto)
+        finca_form    = ProductoFincaForm(
+            request.POST,
+            instance       = producto_finca,
+            productor      = producto.id_usuario,
+            validate_finca = True,
+        )
+        imagen_form = ImagenPrincipalForm(request.POST, request.FILES)
+        
+        
+        print("POST data:", request.POST)
+        print("Producto valid:", producto_form.is_valid())
+        print("Producto errors:", producto_form.errors)
+        print("Finca valid:", finca_form.is_valid())
+        print("Finca errors:", finca_form.errors)
+        print("Imagen valid:", imagen_form.is_valid())
+        print("Imagen errors:", imagen_form.errors)
+
+        if producto_form.is_valid() and finca_form.is_valid():
+
+            producto_form.save()   # ← no reasignes la variable producto
+
+            pf             = finca_form.save(commit=False)
+            pf.id_producto = producto
+            pf.save()
+
+            if request.FILES.get('url_imagen'):
+                if imagen_actual:
+                    imagen_actual.url_imagen = request.FILES['url_imagen']
+                    imagen_actual.save()
+                else:
+                    ImagenesProducto.objects.create(
+                        id_producto  = producto,
+                        url_imagen   = request.FILES['url_imagen'],
+                        es_principal = 1,
+                    )
+
+            messages.success(request, f'Producto "{producto.nombre_producto}" actualizado exitosamente.')
+            return redirect('ver_lista_productos_admin')
+
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
+
+    context = {
+        'producto'      : producto,
+        'producto_finca': producto_finca,
+        'imagen_actual' : imagen_actual,
+        'form'          : producto_form,
+        'imagen_form'   : imagen_form,
+        'finca_form'    : finca_form,
+        'fincas_json'   : _fincas_por_productor(),
+    }
+    return render(request, 'admin_productos/editar_producto.html', context)
+
+def eliminar_Producto_admin(request, id):
+    producto = get_object_or_404(Producto, id_producto=id)
     
-    
-    
-    return render(request, 'admin_productos/index.html', {'productos': productos})
+    producto.delete()
+
+    messages.success(request, "Producto eliminado correctamente")
+    return redirect('ver_lista_productos_admin')
+
+
 #@admin_required
 def ver_lista_pedidos_admin(request):
-    compras = Compra.objects.select_related('id_cliente' 'id_compra'). all()
-    
+    compras = Compra.objects.select_related('id_cliente').prefetch_related('detallescompra_set')
+
     return render(request, 'admin_pedidos/pedidos.html', {'compras': compras})
+
+def ver_detalle_compra_admin(request, id):
+    compra = get_object_or_404(Compra.objects.select_related('id_cliente'),id_compra=id)
+    
+    detalles = DetallesCompra.objects.select_related('id_producto').filter(id_compra=compra.id_compra)
+    
+    
+    
+    context={ 'compra': compra, 'detalles': detalles}
+    
+    return render(request, 'admin_pedidos/detalle_compra.html', context)
+    
+
+
+
+
 #@admin_required
 def ver_lista_envio_admin(request):
     envios = Envio.objects.select_related(
         'id_compra',
-        'id_transportista'
+        'id_transportista',
+        'id_vehiculo'
     ).all()
-    return render(request, 'admin_envios/envios.html')
+    return render(request, 'admin_envios/envios.html', {'envios': envios})
+
+
+def obtener_envio(request, id):
+    envio = get_object_or_404(
+        Envio.objects.select_related(
+            'id_transportista__id_usuario',
+            'id_vehiculo'
+        ),
+        id_envio=id
+    )
+
+    data = {
+        "id_envio": envio.id_envio,
+        "estado_envio": envio.estado_envio,
+        "numero_seguimiento": envio.numero_seguimiento,
+        "distancia_km": float(envio.distancia_km or 0),
+        "peso_total_kg": float(envio.peso_total_kg or 0),
+
+        "fecha_salida": str(envio.fecha_salida or ""),
+        "fecha_entrega": str(envio.fecha_entrega or ""),
+
+        "direccion_origen": envio.direccion_origen or "",
+        "direccion_destino": envio.direccion_destino or "",
+
+        "latitud_origen": envio.latitud_origen or 0,
+        "longitud_origen": envio.longitud_origen or 0,
+        "latitud_destino": envio.latitud_destino or 0,
+        "longitud_destino": envio.longitud_destino or 0,
+
+        "costo_base": float(envio.costo_base or 0),
+        "costo_peso": float(envio.costo_peso or 0),
+        "costo_total": float(envio.costo_total or 0),
+
+        # 🔥 AQUÍ ESTÁ LA CORRECCIÓN
+        "transportista": (
+            f"{envio.id_transportista.id_usuario.nombre} {envio.id_transportista.id_usuario.apellido}"
+            if envio.id_transportista else ""
+        ),
+
+        "vehiculo": (
+            f"{envio.id_vehiculo.tipo_vehiculo} - {envio.id_vehiculo.placa_vehiculo}"
+            if envio.id_vehiculo else "No asignado"
+        )
+    }
+
+    return JsonResponse(data)
+
+
 #@admin_required
 def ver_lista_servicios_admin(request):
     servicios = Servicio.objects.select_related(
@@ -275,6 +410,23 @@ def ver_lista_servicios_admin(request):
     ).all()
     
     return render(request, 'admin_servicios/servicios.html', {'servicios': servicios})
+
+
+def cambiar_estado_servicio(request, servicio_id):
+    
+    servicio = get_object_or_404(Servicio.objects.select_related('id_asesor__id_usuario'), id_servicio=servicio_id)
+
+    servicio.estado = servicio.id_asesor.id_usuario.estado  # True o False
+    servicio.save()
+    
+    return redirect('ver_lista_servicios_admin')
+
+def eliminar_servicio_admin(request, servicio_id):
+    servicio = get_object_or_404(Servicio, id_servicio=servicio_id)
+    servicio.delete()
+    messages.success(request, "servicio eliminado correctamente")
+    return redirect('ver_lista_servicios_admin')
+    
 
 
 #admin crea usuario

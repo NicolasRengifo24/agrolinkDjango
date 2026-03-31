@@ -21,17 +21,26 @@ urlpatterns = [
     path('usuario/', views.list_usuarios_admin, name='lista_usuarios_admin'),
     path('usuarios/', views.ver_listas_usuarios_admin, name='ver_listas_usuarios_admin'),
     path('productos_admin/', views.ver_lista_productos_admin, name='ver_lista_productos_admin'),
-    path('pedidos_admin/', views.ver_lista_pedidos_admin, name='ver_lista_pedidos_admin'),
-    path('envios_admin/', views.ver_lista_envio_admin, name='ver_lista_envios_admin'),
-    path('servicios_admin/', views.ver_lista_servicios_admin, name='ver_lista_servicios_admin'),
-    path('crear_usuario/', views.crear_usuario_admin, name='crear_usuario'),
     
+    path('envios_admin/', views.ver_lista_envio_admin, name='ver_lista_envios_admin'),
+    
+    
+    path('crear_usuario/', views.crear_usuario_admin, name='crear_usuario'),
     path('editar_usuario/<int:id>/', views.editar_usuario_admin, name='editar_usuario'),
-    path('eliminar_usuario/<int:id>', views.eliminar_usuario, name='eliminar_usuario'),
+    path('eliminar_usuario/<int:id>/', views.eliminar_usuario, name='eliminar_usuario'),
     path('ver_usuario/<int:id>/', views.ver_usuario, name='ver_usuario'),
     
     path('productos_admin/',views.ver_lista_productos_admin, name= 'ver_lista_productos_admin'),
-    path('formulario_producto_admin', views.crear_producto_admin, name= 'crear_producto_admin')
+    path('formulario_producto_admin/', views.crear_producto_admin, name= 'crear_producto_admin'),
+    path('productos_admin/<int:id>/editar/', views.editar_producto_admin, name='editar_producto_admin'),
+    path('producto/<int:id>/eliminar/', views.eliminar_Producto_admin, name= 'eliminar_producto_admin'),
     
+    path('pedidos_admin/', views.ver_lista_pedidos_admin, name='ver_lista_pedidos_admin'),
+    path('compra/<int:id>/', views.ver_detalle_compra_admin, name= 'ver_detalle_compra'),
+    path('envio/<int:id>/', views.obtener_envio, name='obtener_envio'),
+    
+    path('servicios_admin/', views.ver_lista_servicios_admin, name='ver_lista_servicios_admin'),
+    path('servicios/cambiar_estado/<int:servicio_id>/', views.cambiar_estado_servicio, name='cambiar_estado_servicio'),
+    path('servicios/eliminar/<int:servicio_id>/', views.eliminar_servicio_admin, name='eliminar_servicio_admin'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

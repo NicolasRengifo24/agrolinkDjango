@@ -1,0 +1,144 @@
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/detalle_compra.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="detalle-compra">
+
+  <!-- Encabezado -->
+  <div class="detalle-compra__header" style="display:flex; justify-content:space-between; align-items:center;">
+    <a href="{% url 'ver_lista_pedidos_admin' %}" class="btn btn-volver">
+      <i class="bi bi-arrow-left"></i> Volver</a>
+    <h4 class="detalle-compra__titulo">Detalle de Compra #{{ compra.id_compra }}</h4>
+    <span class="detalle-compra__badge">
+      {{ compra.fecha_hora_compra|date:"d/m/Y H:i" }}
+    </span>
+  </div>
+
+  <div class="detalle-compra__body">
+
+    <!-- Info del cliente -->
+    <div class="detalle-compra__info">
+
+      <div class="info-item">
+        <span class="info-item__label">Cliente</span>
+        <span class="info-item__value">
+          {{ compra.id_cliente.nombre|default:"" }} 
+          {{ compra.id_cliente.apellido|default:"" }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="info-item__label">Fecha</span>
+        <span class="info-item__value">
+          {{ compra.fecha_hora_compra|date:"d/m/Y H:i" }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="info-item__label">Dirección de entrega</span>
+        <span class="info-item__value">
+          {{ compra.direccion_entrega|default:"No registrada" }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="info-item__label">Método de pago</span>
+        <span class="info-item__value">
+          {{ compra.metodo_pago|default:"No definido" }}
+        </span>
+      </div>
+
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="detalle-compra__tabla-wrap">
+      <table class="detalle-compra__tabla">
+
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Imagen</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio unitario</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for d in detalles %}
+          <tr>
+            <td class="td-num">{{ d.id_producto.id_producto }}</td>
+
+            <td class="td-imagen">
+              {% with imagen=d.id_producto.imagenProducto.first %}
+              {% if imagen %}
+                <img src="{{ imagen.url_imagen.url }}" class="producto-imagen">
+              {% else %}
+                <div class="producto-imagen-placeholder">Sin imagen</div>
+              {% endif %}
+              {% endwith %}
+              
+
+            </td>
+
+            <td class="td-producto">
+              {{ d.id_producto.nombre_producto|default:"Producto sin nombre" }}
+            </td>
+
+            <td class="td-cantidad">{{ d.cantidad }}</td>
+
+            <td class="td-precio">
+              ${{ d.precio_unitario }}
+            </td>
+
+            <td class="td-subtotal">
+              ${{ d.subtotal|default:d.precio_unitario }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" style="text-align:center; padding:24px; color:gray;">
+              No hay productos en esta compra.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+
+    <!-- Totales -->
+    <div class="detalle-compra__totales">
+
+      <div class="totales-fila">
+        <span class="totales-fila__label">Subtotal</span>
+        <span class="totales-fila__valor">${{ compra.subtotal }}</span>
+      </div>
+
+      <div class="totales-fila">
+        <span class="totales-fila__label">Impuestos</span>
+        <span class="totales-fila__valor">${{ compra.impuestos }}</span>
+      </div>
+
+      <div class="totales-fila">
+        <span class="totales-fila__label">Envío</span>
+        <span class="totales-fila__valor">
+          ${{ compra.valor_envio|default:"0" }}
+        </span>
+      </div>
+
+      <div class="totales-fila totales-fila--total">
+        <span class="totales-fila__label">Total</span>
+        <span class="totales-fila__valor">${{ compra.total }}</span>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

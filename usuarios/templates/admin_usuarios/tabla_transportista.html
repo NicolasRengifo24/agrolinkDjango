@@ -19,7 +19,7 @@
 
                 {% for t in transportistas %}
                 <tr>
-                    <td>#{{ forloop.counter }}</td>
+                    <td>#{{ t.id_usuario.id_usuario }}</td>
                     
                     <td>{{ t.id_usuario.nombre }}</td>
                     <td>{{ t.id_usuario.correo }}</td>
@@ -33,9 +33,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        <button class="btn btn-info btn-sm" onclick="alert('Función en desarrollo')">Ver</button>
-                        <button class="btn btn-warning btn-sm" onclick="alert('Función en desarrollo')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="alert('Función en desarrollo')">Eliminar</button>
+                        <a href="{% url 'ver_usuario' t.id_usuario.id_usuario %}" class="btn btn-info btn-sm">Ver</a>
+                        <a href="{% url 'editar_usuario' t.id_usuario.id_usuario %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'eliminar_usuario' t.id_usuario.id_usuario %}" class="btn btn-danger btn-sm">Eliminar</a>
                     </td>
                 </tr>
                 {% endfor %}

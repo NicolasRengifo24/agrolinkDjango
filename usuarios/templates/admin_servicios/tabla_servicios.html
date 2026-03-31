@@ -1,3 +1,4 @@
+
 <div class="card-servicios fade-admin">
 
   <div class="header-servicios">
@@ -25,7 +26,7 @@
         {% for s in servicios %}
         <tr class="servicio-item">
 
-          <td>#{{ forloop.counter }}</td>
+          <td>#{{ s.id_servicio }}</td>
 
           
           <td>
@@ -45,24 +46,23 @@
 
           
           <td>
-            {% if s.estado == "activo" %}
-              <span class="badge bg-success">Activo</span>
-            {% elif s.estado == "inactivo" %}
-              <span class="badge bg-danger">Inactivo</span>
-            {% else %}
-              <span class="badge bg-secondary">Sin estado</span>
-            {% endif %}
-          </td>
+    {% if s.estado %}
+        Activo
+    {% else %}
+        Inactivo
+    {% endif %}
+</td>
 
         
           <td>
-            <button class="btn btn-sm btn-primary" onclick="cambiarEstado({{ s.id_servicio }})">
+            <a href="{% url 'cambiar_estado_servicio' s.id_servicio %}" class="btn btn-sm btn-primary">
               <i class="bi bi-arrow-repeat"></i>
-            </button>
+            </a>
 
-            <button class="btn btn-sm btn-danger" onclick="confirmarEliminarServicio({{ s.id_servicio }})">
+            <a href="{% url 'eliminar_servicio_admin' s.id_servicio %}" class="btn btn-sm btn-danger"
+              onclick="return confirm('¿Estás seguro de eliminar este servicio?');">
               <i class="bi bi-trash"></i>
-            </button>
+            </a>   
           </td>
 
         </tr>
@@ -74,3 +74,4 @@
   </div>
 
 </div>
+

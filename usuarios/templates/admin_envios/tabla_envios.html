@@ -8,11 +8,13 @@
       <thead class="table-dark">
         <tr>
           <th>#Envio</th>
-          <th>Pedido</th>
+          <th>Compra</th>
           <th>Transportista</th>
+          <th>Vehículo</th>
           <th>Estado</th>
           <th>Seguimiento</th>
           <th>Distancia</th>
+          <th>Costo</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -22,31 +24,70 @@
         {% for e in envios %}
         <tr>
 
+          <!-- ID ENVIO -->
           <td>#ENV-{{ e.id_envio }}</td>
 
-          <td>Pedido #{{ e.id_pedido.id_pedido }}</td>
-
+          <!-- COMPRA -->
           <td>
-            {{ e.id_transportista.nombre }} {{ e.id_transportista.apellido }}
+            {% if e.id_compra %}
+              #{{ e.id_compra.id_compra }}
+            {% else %}
+              <span class="text-muted">Sin compra</span>
+            {% endif %}
           </td>
 
-          <!-- ESTADO DINÁMICO -->
+          <!-- TRANSPORTISTA -->
           <td>
-            {% if e.estado == "pendiente" %}
+            {% if e.id_transportista %}
+              {{ e.id_transportista.id_usuario.nombre }} {{ e.id_transportista.id_usuario.apellido }}
+            {% else %}
+              <span class="text-muted">No asignado</span>
+            {% endif %}
+          </td>
+
+          <!-- VEHICULO -->
+          <td>
+            {% if e.id_vehiculo %}
+              {{ e.id_vehiculo.tipo_vehiculo }} <br>
+              <small class="text-muted">{{ e.id_vehiculo.placa_vehiculo }}</small>
+            {% else %}
+              <span class="text-muted">No asignado</span>
+            {% endif %}
+          </td>
+
+          <!-- ESTADO -->
+          <td>
+            {% if e.estado_envio == "pendiente" %}
               <span class="badge bg-secondary">Pendiente</span>
-            {% elif e.estado == "en_camino" %}
+            {% elif e.estado_envio == "en_camino" %}
               <span class="badge bg-warning text-dark">En camino</span>
-            {% elif e.estado == "entregado" %}
+            {% elif e.estado_envio == "entregado" %}
               <span class="badge bg-success">Entregado</span>
             {% else %}
               <span class="badge bg-dark">Desconocido</span>
             {% endif %}
           </td>
 
-          <td>#TRK-{{ e.id_envio }}</td>
+          <!-- SEGUIMIENTO -->
+          <td>
+            {% if e.numero_seguimiento %}
+              {{ e.numero_seguimiento }}
+            {% else %}
+              <span class="text-muted">Sin código</span>
+            {% endif %}
+          </td>
 
-          <td>{{ e.distancia_km }} km</td>
+          <!-- DISTANCIA -->
+          <td>
+            {{ e.distancia_km|default:"0" }} km
+          </td>
 
+          <!-- COSTO -->
+          <td>
+            ${{ e.costo_total|default:"0" }}
+          </td>
+
+          <!-- ACCIONES -->
           <td>
             <button class="btn btn-sm btn-primary" onclick="verEnvio({{ e.id_envio }})">
               <i class="bi bi-eye"></i>

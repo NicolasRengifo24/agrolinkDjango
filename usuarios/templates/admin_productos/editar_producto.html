@@ -1,0 +1,256 @@
+{% load static %}
+
+
+{% block extra_head %}
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'css/crear_producto.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editar_producto.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="wrapper">
+
+    <!-- Encabezado -->
+    <div class="page-header">
+    <div class="header-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71
+                    7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41
+                    0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        </svg>
+    </div>
+    <div class="header-text">
+        <h1>Editar Producto</h1>
+        <p>
+        Modificando: <strong>{{ producto.nombre_producto }}</strong>
+        <span class="badge-estado">ID #{{ producto.id_producto }}</span>
+        </p>
+    </div>
+    </div>
+
+    <div class="card">
+    <form id="productoForm"
+            method="POST"
+            enctype="multipart/form-data"
+            action="{% url 'editar_producto_admin' producto.id_producto %}"
+            novalidate>
+
+        {% csrf_token %}
+
+        {# Errores del backend #}
+        {% if form.errors or finca_form.errors %}
+        <div style="background:#fdecea; border:1px solid var(--error);
+                    border-radius:var(--radius); padding:12px 16px;
+                    margin-bottom:20px; font-size:14px; color:var(--error);">
+            Por favor corrige los errores marcados en el formulario.
+        </div>
+        {% endif %}
+
+
+        
+        <div class="section-title">Información básica</div>
+        <div class="grid-2">
+
+        <div class="field col-full">
+            <label for="nombre_producto">Nombre del producto <span class="req">*</span></label>
+            <input type="text"
+                    id="nombre_producto"
+                    name="nombre_producto"
+                    value="{{ form.nombre_producto.value|default:producto.nombre_producto }}"
+                    placeholder="Ej: Café especial tostado"
+                    autocomplete="off"
+                    required/>
+            {% if form.nombre_producto.errors %}
+            <span style="color:var(--error);font-size:12px;">{{ form.nombre_producto.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="id_categoria">Categoría <span class="req">*</span></label>
+            <div class="select-wrap">
+            <select id="id_categoria" name="id_categoria" required>
+                <option value="" disabled>Seleccionar categoría</option>
+                {% for cat in form.id_categoria.field.queryset %}
+                <option value="{{ cat.pk }}"
+                    {% if form.id_categoria.value|stringformat:"s" == cat.pk|stringformat:"s" %}selected
+                    {% elif producto.id_categoria.pk == cat.pk %}selected{% endif %}>
+                    {{ cat.nombre_categoria }}
+                </option>
+                {% endfor %}
+            </select>
+            </div>
+            {% if form.id_categoria.errors %}
+            <span style="color:var(--error);font-size:12px;">{{ form.id_categoria.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="precio">Precio unitario <span class="req">*</span></label>
+            <div class="unit-field">
+            <input type="number"
+                    id="precio" name="precio"
+                    value="{{ form.precio.value|default:producto.precio }}"
+                    placeholder="0.00" min="0" step="0.01" required/>
+            <span class="unit-label">COP</span>
+            </div>
+            {% if form.precio.errors %}
+            <span style="color:var(--error);font-size:12px;">{{ form.precio.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        </div>
+
+        <div class="field" style="margin-top:20px;">
+        <label for="descripcion_producto">Descripción</label>
+        <textarea id="descripcion_producto"
+                    name="descripcion_producto"
+                    placeholder="Describe el producto...">{{ form.descripcion_producto.value|default:producto.descripcion_producto }}</textarea>
+        </div>
+
+
+        
+        <div class="section-title">Inventario</div>
+        <div class="grid-3">
+
+        <div class="field">
+            <label for="stock">Stock disponible <span class="req">*</span></label>
+            <div class="unit-field">
+            <input type="number"
+                    id="stock" name="stock"
+                    value="{{ form.stock.value|default:producto.stock }}"
+                    placeholder="0" min="0" step="1" required/>
+            <span class="unit-label">und</span>
+            </div>
+            {% if form.stock.errors %}
+            <span style="color:var(--error);font-size:12px;">{{ form.stock.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="peso_kg">Peso por unidad <span class="req">*</span></label>
+            <div class="unit-field">
+            <input type="number"
+                    id="peso_kg" name="peso_kg"
+                    value="{{ form.peso_kg.value|default:producto.peso_kg }}"
+                    placeholder="0.00" min="0" step="0.01" required/>
+            <span class="unit-label">kg</span>
+            </div>
+            {% if form.peso_kg.errors %}
+            <span style="color:var(--error);font-size:12px;">{{ form.peso_kg.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div class="field">
+            <label for="cantidad_produccion">Cantidad de producción</label>
+            <div class="unit-field">
+            <input type="number"
+                    id="cantidad_produccion" name="cantidad_produccion"
+                    value="{{ finca_form.cantidad_produccion.value|default:producto_finca.cantidad_produccion }}"
+                    placeholder="0.00" min="0" step="0.01"/>
+            <span class="unit-label">kg</span>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="fecha_cosecha">Fecha de cosecha</label>
+            <input type="date"
+                    id="fecha_cosecha" name="fecha_cosecha"
+                    value="{{ finca_form.fecha_cosecha.value|default:producto_finca.fecha_cosecha|date:'Y-m-d' }}"/>
+        </div>
+
+        </div>
+
+        
+        <div class="section-title">Imagen del producto</div>
+
+        <div class="imagen-actual">
+        {% if imagen_actual %}
+            <img src="{{ imagen_actual.url_imagen.url }}" alt="{{ producto.nombre_producto }}"/>
+        {% else %}
+            <div class="imagen-sin-foto">
+            <svg viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159
+                    5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182
+                    0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121
+                    3.75v13.5A.75.75 0 0120.25 18H3.75A.75.75 0 013
+                    17.25V3.75A.75.75 0 013.75 3z"/>
+            </svg>
+            </div>
+        {% endif %}
+        <div class="imagen-actual-info">
+            <strong>{% if imagen_actual %}Imagen actual{% else %}Sin imagen{% endif %}</strong>
+            <span>
+            {% if imagen_actual %}
+                Haz clic en "Cambiar imagen" para reemplazarla
+            {% else %}
+                Este producto no tiene imagen aún
+            {% endif %}
+            </span>
+            <button type="button" class="toggle-imagen" id="toggleBtn"
+                    onclick="toggleNuevaImagen()">
+            {% if imagen_actual %}Cambiar imagen{% else %}Subir imagen{% endif %}
+            </button>
+        </div>
+        </div>
+
+        <div class="nueva-imagen-zone" id="nuevaImagenZone">
+        <div class="upload-zone" id="uploadZone">
+            <input type="file"
+                    id="imagen_producto"
+                    name="url_imagen"
+                    accept="image/*"/>
+            <div class="upload-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25
+                    0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            </div>
+            <p><strong>Haz clic o arrastra</strong> la nueva imagen aquí<br/>
+                JPG, PNG, WEBP · Máx. 5 MB</p>
+            <img id="previewImg" class="upload-preview" alt="Vista previa"/>
+        </div>
+        </div>
+
+
+    
+        <div class="section-title">Finca asignada <span class="req">*</span></div>
+        <div class="finca-grid" id="fincaGrid">
+        <p style="color:var(--text-muted); font-size:14px;">Cargando fincas...</p>
+        </div>
+        {% if finca_form.id_finca.errors %}
+        <span style="color:var(--error); font-size:12px; margin-top:6px; display:block;">
+            {{ finca_form.id_finca.errors|join:", " }}
+        </span>
+        {% endif %}
+
+
+        
+        
+      
+        <div class="actions">
+        <a href="{% url 'ver_lista_productos_admin' %}" class="btn btn-secondary">
+            Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary">
+            Guardar cambios
+        </button>
+        </div>
+
+    </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+    <script>
+    const FINCAS_JSON     = {{ fincas_json|safe }};
+    const PRODUCTOR_ID    = "{{ producto.id_usuario.pk }}";
+    const FINCA_ACTUAL_ID = "{{ producto_finca.id_finca.pk|default:'' }}";
+    </script>
+    <script src="{% static 'js/editar_producto.js' %}"></script>
+{% endblock %}

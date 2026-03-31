@@ -1,6 +1,6 @@
 <div class="card-glass p-4">
 
-    <h5 class="mb-4">Catálogo de Productos</h5>
+    <h5 class="mb-4">Listado de Compras</h5>
 
     <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -8,60 +8,65 @@
             <thead class="table-dark">
                 <tr>
                     <th>#</th>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Stock</th>
-                    <th>Precio</th>
-                    <th>Imagen</th>
-                    <th>Acciones</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Subtotal</th>
+                    <th>Impuestos</th>
+                    <th>Envío</th>
+                    <th>Total</th>
+                    <th>Dirección</th>
+                    <th>Método de Pago</th>
                 </tr>
             </thead>
 
             <tbody>
 
-                {% for p in productos %}
-                <tr class="producto-item" data-stock="{{ p.stock }}">
-                    
-                    <td>{{ forloop.counter }}</td>
+                {% for c in compras %}
+                <tr>
+
+                    <td>{{ c.id_compra }}</td>
 
                     <td>
-                        <strong>{{ p.nombre_producto }}</strong><br>
-                        <small class="text-muted">
-                            {{ p.descripcion_producto|default:"Sin descripción" }}
-                        </small>
+                        {{ c.id_cliente.nombre }} 
+                        {{ c.id_cliente.apellido }}
                     </td>
 
                     <td>
-                        {{ p.id_categoria.nombre_categoria }}
+                        {{ c.fecha_hora_compra|date:"d/m/Y H:i" }}
                     </td>
 
-                    <td class="text-center">
-                        {{ p.stock|default:"0" }}
+                    <td class="text-success">
+                        ${{ c.subtotal }}
                     </td>
 
-                    <td class="text-success fw-bold">
-                        ${{ p.precio }}
-                    </td>
 
-                    <!-- IMAGEN -->
-                    <td class="text-center">
-                        {% if p.imagen_principal_url %}
-                            <img src="{{ p.imagen_principal_url }}" width="50" height="50" style="object-fit:cover;">
-                        {% else %}
-                            <span class="badge bg-secondary">Sin imagen</span>
-                        {% endif %}
-                    </td>
-
-                    <!-- ACCIONES -->
                     <td>
-                        <button class="btn btn-sm btn-primary">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-
-                        <button class="btn btn-sm btn-danger">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        ${{ c.impuestos }}
                     </td>
+
+                    <td>
+                        ${{ c.valor_envio|default:"0" }}
+                    </td>
+
+                    <td class="fw-bold text-primary">
+                        ${{ c.total }}
+                    </td>
+
+                    <td>
+                        {{ c.direccion_entrega|default:"No registrada" }}
+                    </td>
+
+                    <td>
+                        {{ c.metodo_pago|default:"No definido" }}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'ver_detalle_compra' c.id_compra %}" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i>
+                            Ver Detalle
+                        </a>
+                    </td>
+
 
                 </tr>
                 {% endfor %}

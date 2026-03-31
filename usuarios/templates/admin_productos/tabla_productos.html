@@ -55,13 +55,12 @@
 
                     <!-- ACCIONES -->
                     <td>
-                        <button class="btn btn-sm btn-primary">
+                        <a href="{% url 'editar_producto_admin' p.id_producto %}" class="btn btn-sm btn-primary">
                             <i class="bi bi-pencil"></i>
-                        </button>
-
-                        <button class="btn btn-sm btn-danger">
+                        </a>
+                        <a href="{% url 'eliminar_producto_admin' p.id_producto %}" class="btn btn-sm btn-danger">
                             <i class="bi bi-trash"></i>
-                        </button>
+                        </a>
                     </td>
 
                 </tr>

@@ -71,7 +71,6 @@ class ImagenPrincipalForm(forms.ModelForm):
     Subida de la imagen principal del producto.
     Se guarda en ImagenesProducto con es_principal=1.
     """
-
     class Meta:
         model  = ImagenesProducto
         fields = ['url_imagen']
@@ -84,6 +83,11 @@ class ImagenPrincipalForm(forms.ModelForm):
         labels = {
             'url_imagen': 'Imagen del producto',
         }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['url_imagen'].required = False    
+        
 
 
 class ProductoFincaForm(forms.ModelForm):
@@ -123,7 +127,19 @@ class ProductoFincaForm(forms.ModelForm):
             self.fields['id_finca'].queryset = Finca.objects.none()
         self.fields['cantidad_produccion'].required = False
         self.fields['fecha_cosecha'].required       = False    
+        
 
+class ProductoEditarForm(forms.ModelForm):
+    class Meta:
+        model  = Producto
+        fields = [
+            'id_categoria',
+            'nombre_producto',
+            'descripcion_producto',
+            'precio',
+            'stock',
+            'peso_kg',
+        ]
     
         
         

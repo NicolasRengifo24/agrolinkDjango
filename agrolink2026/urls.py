@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('productos.urls')),        # raíz para productos
     path('', include('usuarios.urls')), # prefijo para usuarios
     path('', include('envios.urls')), 
+    path('', include('pedidos.urls')),
 ]
 
     
