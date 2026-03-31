@@ -3,6 +3,7 @@ from .models import Producto, ProductoFinca,CategoriaProducto
 from pedidos.models import DetallesCompra
 from usuarios.models import Usuario
 from django.db.models import Sum
+from django.db.models import Avg
 
 def inicio(request):
 
@@ -78,3 +79,9 @@ def detalle_producto(request, id):
     return render(request, 'productos/detalle_producto.html', {
         'producto': producto
     })
+
+def lista_productos(request):
+    productos = Producto.objects.all().annotate(
+        promedio=Avg("calificaciones__puntaje")
+    )
+    return render(request, "productos/lista.html", {"productos": productos})
