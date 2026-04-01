@@ -5,7 +5,7 @@ from usuarios.models import Usuario
 import json
 
 # Create your views here.
-def inicio(request):
+def inicio_transportista(request):
     
     envios = Envio.objects.select_related(
         "id_compra__id_cliente",

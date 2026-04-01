@@ -1,6 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Producto, ProductoFinca,CategoriaProducto
-from pedidos.models import DetallesCompra
+from pedidos.models import DetallesCompra, Compra
 from usuarios.models import Usuario
 from django.db.models import Sum
 
@@ -76,3 +76,41 @@ def detalle_producto(request, id):
         'categorias' : categorias,
         
     })
+
+
+
+from django.shortcuts import get_object_or_404
+from usuarios.models import Cliente
+from pedidos.views import obtener_compra_activa
+from pedidos.utils import obtener_cliente_prueba
+
+
+
+def agregar_al_carrito(request, producto_id):
+
+    cliente = obtener_cliente_prueba()
+    compra = obtener_compra_activa(cliente)
+
+    producto = Producto.objects.get(id_producto=producto_id)
+    cantidad = int(request.POST.get('cantidad', 1))
+
+    detalle, created = DetallesCompra.objects.get_or_create(
+        id_compra=compra,
+        id_producto=producto,
+        defaults={
+            'cantidad': cantidad,
+            'precio_unitario': producto.precio,
+            'subtotal': producto.precio * cantidad
+        }
+    )
+
+    if not created:
+        detalle.cantidad += cantidad
+
+    detalle.subtotal = detalle.cantidad * detalle.precio_unitario
+    detalle.save()
+
+    # 🚨 NO TOCAR ESTADO AQUÍ
+    # compra.estado = 'procesando' ❌
+
+    return redirect('carrito')  # ✅ correcto
