@@ -1,0 +1,219 @@
+{% extends 'base_vehiculos.html' %}
+{% load static %}
+
+{% block title %}AgroLink - Mis Vehículos{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos de la página de vehículos */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-title {
+        border-left: 4px solid #2f6b31;
+        padding-left: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #c6dc93;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Mis vehículos -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold section-title">
+                <i class="bi bi-truck me-2"></i>Mis vehículos registrados
+            </h2>
+            <span class="badge bg-primary rounded-pill">{{ vehiculos|length }} vehículos</span>
+        </div>
+
+        <div class="row g-4" id="contenedor-vehiculos">
+            {% if vehiculos %}
+            {% for vehiculo in vehiculos %}
+            {% include 'components/tarjeta_vehiculo.html' with vehiculo=vehiculo %}
+            {% endfor %}
+            {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-truck"></i>
+                    <h5 class="mt-3">No tienes vehículos registrados</h5>
+                    <p class="text-muted">Agrega tu primer vehículo usando el formulario</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Formulario para agregar vehículo -->
+    <section class="mt-5">
+        {% include 'components/formulario_vehiculo.html' %}
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Actualizar valor del slider
+    function actualizarValorSlider(valor) {
+        const valorSpan = document.querySelector('.valor-peso');
+        if (valorSpan) {
+            valorSpan.textContent = `${valor} kg`;
+        }
+    }
+
+    // Evento para el slider de capacidad
+    document.addEventListener('DOMContentLoaded', function () {
+        const slider = document.querySelector('.peso-slider');
+        if (slider) {
+            slider.addEventListener('input', function (e) {
+                actualizarValorSlider(e.target.value);
+            });
+        }
+
+        // Inicializar el valor del slider
+        actualizarValorSlider(0);
+    });
+
+    // Función para agregar vehículo dinámicamente
+    document.getElementById('formAgregarVehiculo')?.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const tipo = document.getElementById('tipoVehiculo').value;
+        const placa = document.getElementById('placa').value;
+        const capacidad = document.querySelector('.peso-slider').value;
+
+        if (!tipo || !placa || capacidad === '0') {
+            mostrarError('Por favor completa todos los campos requeridos');
+            return;
+        }
+
+        // Aquí iría la lógica para guardar en backend
+        // Por ahora simulamos la creación de la tarjeta
+        const nuevaTarjeta = crearTarjetaHTML(tipo, placa, capacidad);
+        document.getElementById('contenedor-vehiculos').insertAdjacentHTML('beforeend', nuevaTarjeta);
+
+        // Limpiar formulario
+        this.reset();
+        actualizarValorSlider(0);
+
+        // Mostrar mensaje de éxito
+        mostrarExito('Vehículo registrado correctamente');
+    });
+
+    function crearTarjetaHTML(tipo, placa, capacidad) {
+        return `
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 hover-card">
+                    <div class="card-body">
+                        <div class="view-mode">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title fw-bold text-success mb-0">
+                                    <i class="bi bi-truck me-2"></i>${tipo}
+                                </h5>
+                                <span class="badge bg-success">Activo</span>
+                            </div>
+                            <div class="vehiculo-info mb-3">
+                                <p class="mb-2">
+                                    <i class="bi bi-upc-scan me-2 text-muted"></i>
+                                    <strong>Placa:</strong> ${placa}
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-speedometer2 me-2 text-muted"></i>
+                                    <strong>Capacidad:</strong> ${capacidad} kg
+                                </p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-warning btn-sm suspender-btn">
+                                    <i class="bi bi-pause-circle me-1"></i>Suspender
+                                </button>
+                                <button class="btn btn-danger btn-sm eliminar-btn">
+                                    <i class="bi bi-trash me-1"></i>Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function mostrarError(mensaje) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            ${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('#formAgregarVehiculo').insertAdjacentElement('beforebegin', alertDiv);
+        setTimeout(() => alertDiv.remove(), 3000);
+    }
+
+    function mostrarExito(mensaje) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="bi bi-check-circle me-2"></i>
+            ${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('#formAgregarVehiculo').insertAdjacentElement('beforebegin', alertDiv);
+        setTimeout(() => alertDiv.remove(), 3000);
+    }
+
+    // Eliminar vehículo (delegación de eventos)
+    document.getElementById('contenedor-vehiculos')?.addEventListener('click', function (e) {
+        const eliminarBtn = e.target.closest('.eliminar-btn');
+        if (eliminarBtn && confirm('¿Estás seguro de eliminar este vehículo?')) {
+            eliminarBtn.closest('.col-md-6').remove();
+        }
+
+        const suspenderBtn = e.target.closest('.suspender-btn');
+        if (suspenderBtn) {
+            const badge = suspenderBtn.closest('.card-body').querySelector('.badge');
+            if (badge.classList.contains('bg-success')) {
+                badge.classList.remove('bg-success');
+                badge.classList.add('bg-secondary');
+                badge.textContent = 'Suspendido';
+                suspenderBtn.textContent = 'Activar';
+                suspenderBtn.classList.remove('btn-warning');
+                suspenderBtn.classList.add('btn-success');
+            } else {
+                badge.classList.remove('bg-secondary');
+                badge.classList.add('bg-success');
+                badge.textContent = 'Activo';
+                suspenderBtn.textContent = 'Suspender';
+                suspenderBtn.classList.remove('btn-success');
+                suspenderBtn.classList.add('btn-warning');
+            }
+        }
+    });
+</script>
+{% endblock %}
