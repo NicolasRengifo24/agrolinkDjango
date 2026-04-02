@@ -9,34 +9,66 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/envios.css'%}">
-
+    <link rel="stylesheet" href="{% static 'css/estilos.css'%}">
     <!--  mapa interactivo -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
+    
+    <style>
+        /* Reset de márgenes para eliminar espacio en blanco */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Contenedor principal con flex para que el footer quede abajo */
+        .main-content {
+            flex: 1;
+            padding-top: 0;
+            margin-top: 0;
+        }
+        
+        /* Asegurar que el contenedor principal no tenga margen superior */
+        .container.mt-4, 
+        .container:first-of-type {
+            margin-top: 1.5rem !important;
+        }
+    </style>
 </head>
 
 <body>
     <!-- Barra de navegación -->
-    {% include 'components/navbar_transportista.html'%}
+    {% include 'components/navbar_transportista.html' %}
 
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="container mt-4">
+            <div class="row"> <!-- g-4 agrega gap entre columnas -->
+                <!-- Filtros -->
+                <div class="col-lg-3">
+                    {% include 'components/filtros_transportista.html' %}
+                </div>
 
-
-
-
-
-    <div class="container">
-        <div class="row">
-            <!-- Filtros -->
-            {% include 'components/filtros_transportista.html'%}
-
-            <!-- Lista de viajes -->
-            {% include 'components/lista_viajes.html'%}
+                <!-- Lista de viajes -->
+                <div class="col">
+                    {% include 'components/lista_viajes.html' %}    
+                </div>
+            </div>
         </div>
     </div>
 
+    {% include 'components/footer.html' %}
 
     <!--Script del mapa -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -44,10 +76,46 @@
     {{ envios_json|safe }}
     </script>
     <script src="{% static 'script/mapa_script.js' %}"></script>
-    
     <!--Bootstrap-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'script/envios_script.js' %}"></script>
 </body>
 
 </html>
+
+<style>
+    /* Eliminar espacios sobrantes */
+    .container {
+        max-width: 100% !important;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Asegurar que las columnas no tengan padding extra */
+    .col-lg-3, .col-lg-9 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Agregar espacio solo donde queremos */
+    .col-lg-3 {
+        padding-right: 1.5rem !important;
+    }
+    
+    @media (min-width: 992px) {
+        .col-lg-3 {
+            flex: 0 0 auto;
+            width: 280px; /* Ancho fijo para el filtro */
+        }
+        
+        .col-lg-9 {
+            flex: 1; /* Ocupa el resto */
+            width: auto;
+        }
+    }
+</style>

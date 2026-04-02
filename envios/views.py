@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from .models import Envio
+from .models import Envio , Vehiculo
 from productos.models import Producto,Finca
 from usuarios.models import Usuario
+
 import json
 
 # Create your views here.
@@ -32,5 +33,13 @@ def inicio_transportista(request):
 
     })
     
+
+def mostrar_vehiculos(request) :
+        
+    vehiculos = Vehiculo.objects.all()
+    
+    return render(request, 'vehiculos/vehiculos_dashboard.html',{
+        'vehiculos' : vehiculos,
+    })
     
     

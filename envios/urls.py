@@ -5,8 +5,8 @@ from . import views
 
 
 urlpatterns = [
-    path('transporte/', views.inicio_transportista, name='inicio_transportista'),
-    
+    path('transporte/', views.inicio, name='inicio'),
+    path('vehiculos',views.mostrar_vehiculos, name = 'mostrar_vehiculos'), 
     
 ] 
 
