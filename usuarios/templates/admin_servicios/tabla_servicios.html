@@ -55,6 +55,11 @@
 
         
           <td>
+
+            <a href="{% url 'ver_servicio' s.id_servicio %}" class="btn btn-sm btn-info">
+              <i class="bi bi-eye"></i>
+            </a>
+
             <a href="{% url 'cambiar_estado_servicio' s.id_servicio %}" class="btn btn-sm btn-primary">
               <i class="bi bi-arrow-repeat"></i>
             </a>

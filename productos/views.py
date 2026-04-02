@@ -79,38 +79,93 @@ def detalle_producto(request, id):
 
 
 
-from django.shortcuts import get_object_or_404
-from usuarios.models import Cliente
-from pedidos.views import obtener_compra_activa
-from pedidos.utils import obtener_cliente_prueba
-
-
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib import messages
+from pedidos.models import Compra, DetallesCompra
+from productos.models import Producto
+from decimal import Decimal
 
 def agregar_al_carrito(request, producto_id):
+    # 🧪 DEBUG (temporal)
+    print("AUTH:", request.user.is_authenticated)
+    print("USER:", request.user)
 
-    cliente = obtener_cliente_prueba()
-    compra = obtener_compra_activa(cliente)
+    try:
+        usuario = request.user.usuario
+        print("USUARIO OK:", usuario)
+    except Exception as e:
+        print("ERROR USUARIO:", e)
 
-    producto = Producto.objects.get(id_producto=producto_id)
+    try:
+        cliente = request.user.usuario.cliente
+        print("CLIENTE OK:", cliente)
+    except Exception as e:
+        print("ERROR CLIENTE:", e)
+
+    # 🔒 VALIDAR LOGIN
+    if not request.user.is_authenticated:
+        messages.warning(request, "Debe iniciar sesión como cliente")
+        return redirect('login_view')
+
+    # 🔒 VALIDAR QUE SEA CLIENTE
+    try:
+        usuario = request.user.usuario
+        cliente = usuario.cliente
+    except:
+        messages.error(request, "Debe iniciar sesión como cliente")
+        return redirect('login_view')
+    
+
+    # 📦 PRODUCTO
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+
+    # 🔢 CANTIDAD
     cantidad = int(request.POST.get('cantidad', 1))
 
+    # 🛒 CARRITO (Compra en estado carrito)
+    compra, created = Compra.objects.get_or_create(
+        id_cliente=cliente,
+        estado="carrito",
+        defaults={
+            "subtotal": 0,
+            "impuestos": 0,
+            "total": 0
+        }
+    )
+
+    # 📦 DETALLE
     detalle, created = DetallesCompra.objects.get_or_create(
         id_compra=compra,
         id_producto=producto,
         defaults={
-            'cantidad': cantidad,
-            'precio_unitario': producto.precio,
-            'subtotal': producto.precio * cantidad
+            "cantidad": cantidad,
+            "precio_unitario": producto.precio,
+            "subtotal": producto.precio * cantidad
         }
     )
 
+    # ➕ SI YA EXISTE → SUMA
     if not created:
         detalle.cantidad += cantidad
+        detalle.precio_unitario = producto.precio
+        detalle.subtotal = detalle.cantidad * detalle.precio_unitario
+        detalle.save()
 
-    detalle.subtotal = detalle.cantidad * detalle.precio_unitario
-    detalle.save()
+    # 🔄 ACTUALIZAR TOTALES
+    detalles = DetallesCompra.objects.filter(id_compra=compra)
+    subtotal = sum(d.subtotal for d in detalles)
+    impuestos = subtotal * Decimal('0.19')
+    total = subtotal + impuestos
 
-    # 🚨 NO TOCAR ESTADO AQUÍ
-    # compra.estado = 'procesando' ❌
+    compra.subtotal = subtotal
+    compra.impuestos = impuestos
+    compra.total = total
+    compra.save()
 
-    return redirect('carrito')  # ✅ correcto
+    # ✅ MENSAJE
+    messages.success(request, "Producto agregado al carrito")
+
+    return redirect('carrito')
+
+
+

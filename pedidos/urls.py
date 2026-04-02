@@ -4,6 +4,6 @@ from . import views
 urlpatterns = [
     path('carrito/', views.carrito, name= 'carrito'),
     
-    path('ajax/actualizar/', views.ajax_actualizar_detalle, name='ajax_actualizar'),
-    path('ajax/eliminar/', views.ajax_eliminar_detalle, name='ajax_eliminar'),
+    path('carrito/actualizar/<int:detalle_id>/', views.actualizar_carrito, name='actualizar_carrito'),
+    path('carrito/eliminar/<int:detalle_id>/', views.eliminar_del_carrito, name='eliminar_carrito'),
 ]

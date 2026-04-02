@@ -1,7 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+
+from django.contrib import messages
 from .models import Compra, DetallesCompra
 from usuarios.models import Cliente, Usuario
 from pedidos.utils import obtener_compra_activa
+
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -11,77 +14,43 @@ from decimal import Decimal
 
 
 def carrito(request):
-    cliente_prueba = Cliente.objects.first()
-    compra = obtener_compra_activa(cliente_prueba)
+
+    usuario = request.user.usuario
+    cliente = usuario.cliente
+
+    compra = Compra.objects.filter(
+        id_cliente=cliente,
+        estado="carrito"
+    ).first()
+
     detalles = DetallesCompra.objects.filter(id_compra=compra)
 
-    subtotal = sum(d.subtotal for d in detalles)
-    envio = compra.valor_envio or 0
-    total = compra.total
-
     return render(request, 'components/contenido_principal_carrito.html', {
-        'detalles': detalles,
         'compra': compra,
-        'subtotal': subtotal,
-        'envio': envio,
-        'total': total
+        'detalles': detalles
     })
     
 
-
-
-
-@require_POST
-def ajax_actualizar_detalle(request):
-    producto_id = request.POST.get('producto_id')
-    cantidad = int(request.POST.get('cantidad'))
-
-    compra = obtener_compra_activa(request.user.cliente)
-
-    detalle = DetallesCompra.objects.get(
-        id_compra=compra,
-        id_producto_id=producto_id
-    )
-
-    detalle.cantidad = cantidad
-    detalle.subtotal = Decimal(cantidad) * detalle.precio_unitario
+def actualizar_carrito(request, detalle_id):
+    detalle = get_object_or_404(DetallesCompra, id_detalle=detalle_id)
+    
+    nueva_cantidad = int(request.POST.get('cantidad',1))
+    
+    if nueva_cantidad <=0:
+        messages.error(request, "cantidad invalida")
+        return redirect('carrito')
+    
+    detalle.cantidad = nueva_cantidad
+    detalle.subtotal = detalle.cantidad * detalle.precio_unitario
     detalle.save()
+    
+    messages.success(request, "Stock actualizado")
+    return redirect('carrito')
 
-    # recalcular compra
-    detalles = DetallesCompra.objects.filter(id_compra=compra)
-    subtotal = sum(d.subtotal for d in detalles)
-
-    compra.subtotal = subtotal
-    compra.impuestos = subtotal * Decimal('0.19')
-    compra.total = subtotal + compra.impuestos + (compra.valor_envio or 0)
-    compra.save()
-
-    return JsonResponse({
-        'ok': True,
-        'subtotal_item': float(detalle.subtotal),
-        'total': float(compra.total)
-    })
-
-@require_POST
-def ajax_eliminar_detalle(request):
-    producto_id = request.POST.get('producto_id')
-
-    compra = obtener_compra_activa(request.user.cliente)
-
-    DetallesCompra.objects.filter(
-        id_compra=compra,
-        id_producto_id=producto_id
-    ).delete()
-
-    detalles = DetallesCompra.objects.filter(id_compra=compra)
-    subtotal = sum(d.subtotal for d in detalles)
-
-    compra.subtotal = subtotal
-    compra.impuestos = subtotal * Decimal('0.19')
-    compra.total = subtotal + compra.impuestos + (compra.valor_envio or 0)
-    compra.save()
-
-    return JsonResponse({
-        'ok': True,
-        'total': float(compra.total)
-    })    
+def eliminar_del_carrito(request, detalle_id):
+    detalle = get_object_or_404(DetallesCompra, id_detalle=detalle_id)
+    detalle.delete()
+    
+    messages.success(request, "Producto eliminado del carrito")
+    
+    return redirect('carrito')

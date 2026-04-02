@@ -7,7 +7,7 @@
     {% csrf_token %}
 </form>
 
-<link rel="stylesheet" href="{% static 'css/' %}">
+<link rel="stylesheet" href="{% static 'css/carrito.css' %}">
 
 <div class="container py-5" style="margin-top: 90px;">
 
@@ -45,14 +45,11 @@
                     </p>
 
                     <!-- INPUT AJAX -->
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="number"
-                                value="{{ item.cantidad }}"
-                                min="1"
-                                class="form-control cantidad-input"
-                                style="width:80px;"
-                                data-id="{{ item.id_producto.id }}">
-                    </div>
+                    <form action="{% url 'actualizar_carrito' item.id_detalle %}" method="POST">
+                    {% csrf_token %}
+                    <input type="number" name="cantidad" value="{{ item.cantidad }}" min="1">
+                    <button type="submit">Actualizar</button>
+                    </form>
                 </div>
 
                 <!-- PRECIO -->
@@ -62,10 +59,9 @@
                         $ {{ item.subtotal }}
                     </h5>
 
-                    <button class="btn btn-sm btn-danger mt-2 eliminar-btn"
-                            data-id="{{ item.id_producto.id }}">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <a href="{% url 'eliminar_carrito' item.id_detalle %}" class="btn btn-danger">
+                    Eliminar
+                    </a>
                 </div>
 
             </div>
@@ -98,6 +94,9 @@
                     </h5>
                 </div>
 
+                <a href=""
+                   class="checkout-btn w-100 mt-4">
+                    Proceder al pago
                 </a>
             </div>
         </div>
@@ -112,13 +111,4 @@
 
 </div>
 
-{% endblock %}
-
-{% block scripts %}
-<script>
-    const URL_ACTUALIZAR = "{% url 'ajax_actualizar' %}";
-    const URL_ELIMINAR = "{% url 'ajax_eliminar' %}";
-</script>
-
-<script src="{% static 'js/carrito.js' %}"></script>
 {% endblock %}

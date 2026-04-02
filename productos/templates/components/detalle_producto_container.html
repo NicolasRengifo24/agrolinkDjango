@@ -50,26 +50,30 @@
 
                 <p class="product-price mt-3">{{ producto.precio |floatformat:0 | intcomma }}</p>
 
-                <form action="{% url 'agregar_al_carrito' producto.id_producto %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="idProducto" value="{{ producto.id_producto }}" />
+                <form action="{% url 'agregar_carrito' producto.id_producto %}" method="post">
+    {% csrf_token %}
 
-                    <div class="mt-4">
-                        <label for="cantidad" class="form-label fw-semibold">Selecciona cantidad:</label>
+    <div class="mt-4">
+        <label for="cantidad" class="form-label fw-semibold">Selecciona cantidad:</label>
 
+        <div class="d-flex align-items-center gap-3">
+            <input 
+                type="number" 
+                id="cantidad" 
+                name="cantidad" 
+                class="form-control w-25" 
+                min="1"
+                max="{{ producto.stock }}" 
+                value="1"
+                required
+            />
 
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="number" id="cantidad" name="cantidad" class="form-control w-25" min="1"
-                                max="{{ producto.stock }}" value="1" />
-                            <div>
-                                
-                                <button class="btn-buy" type="submit">
-                                    <i class="bi bi-cart-plus me-2" ></i> Agregar al carrito
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+            <button class="btn-buy" type="submit">
+                <i class="bi bi-cart-plus me-2"></i> Agregar al carrito
+            </button>
+        </div>
+    </div>
+</form>
 
                 <form action="{% url 'detalle_producto' producto.id_producto %}" method="get" class="mt-2">
                     <input type="hidden" name="idProducto" value="{{ producto.id_producto }}" />

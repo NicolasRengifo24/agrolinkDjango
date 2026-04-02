@@ -12,7 +12,12 @@
     overflow: hidden;
 }
 
-/* barra superior tipo dashboard pro */
+/* Asegura que TODOS los KPIs tengan contexto */
+.envios-page .kpi-card {
+    position: relative;
+}
+
+/* IMPORTANTE: asegúrate que el contenedor tenga class="envios-page" */
 .envios-page .kpi-card::before {
     content: "";
     position: absolute;
@@ -62,11 +67,39 @@
 }
 
 /* =========================
-   COLORES KPI
+   NUEVOS KPIs
+========================= */
+
+/* TOTAL ENVIOS */
+.envios-page .kpi-card.kpi-blue-total::before {
+    background: linear-gradient(90deg,#1e90ff,#1c6ed5);
+}
+.envios-page .kpi-card.kpi-blue-total .kpi-icon {
+    background: linear-gradient(135deg,#1e90ff,#1c6ed5);
+}
+
+/* ENVIOS DEL MES */
+.envios-page .kpi-card.kpi-cyan::before {
+    background: linear-gradient(90deg,#00c9a7,#009688);
+}
+.envios-page .kpi-card.kpi-cyan .kpi-icon {
+    background: linear-gradient(135deg,#00c9a7,#009688);
+}
+
+/* COSTO DEL MES */
+.envios-page .kpi-card.kpi-red::before {
+    background: linear-gradient(90deg,#ff4d4f,#c0392b);
+}
+.envios-page .kpi-card.kpi-red .kpi-icon {
+    background: linear-gradient(135deg,#ff4d4f,#c0392b);
+}
+
+/* =========================
+   KPIs ORIGINALES (NO TOCAR)
 ========================= */
 
 /* AZUL */
-.envios-page .kpi-blue::before {
+.envios-page.kpi-blue::before {
     background: linear-gradient(90deg,#3498db,#2980b9);
 }
 .envios-page .kpi-blue .kpi-icon {

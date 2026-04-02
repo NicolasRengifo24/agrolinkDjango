@@ -40,7 +40,9 @@ urlpatterns = [
     path('envio/<int:id>/', views.obtener_envio, name='obtener_envio'),
     
     path('servicios_admin/', views.ver_lista_servicios_admin, name='ver_lista_servicios_admin'),
+    path('servicio/<int:id>/', views.ver_servicio_detalle, name='ver_servicio'),
     path('servicios/cambiar_estado/<int:servicio_id>/', views.cambiar_estado_servicio, name='cambiar_estado_servicio'),
     path('servicios/eliminar/<int:servicio_id>/', views.eliminar_servicio_admin, name='eliminar_servicio_admin'),
+    path('logout/', views.cerrar_sesion, name='logout'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

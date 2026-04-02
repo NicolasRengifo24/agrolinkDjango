@@ -40,9 +40,9 @@
             <span class="nav-label">Servicios</span>
         </a>
 
-        <form action=# method="post" style="margin:0">
+        <form action="{% url 'logout' %}" method="post" style="margin:0">
             {% csrf_token %}
-            <button type="submit" class="nav-item text-danger"
+            <button type="submit" class="nav-item text-danger "
                     style="border:none;background:none;width:100%;text-align:left;">
                 <i class="bi bi-box-arrow-right"></i>
                 <span class="nav-label">Cerrar Sesión</span>

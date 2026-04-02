@@ -1,12 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db.models import Sum
+from datetime import datetime
+
+
+
 from .models import Usuario, Cliente, Productor, Asesor, Administrador,Transportista
+from servicios.models import Servicio, Maquinas, Certificados
 
 from pedidos.models import Compra, DetallesCompra
 from django.http import JsonResponse
 from envios.models import Envio
 from servicios.models import Servicio
 from django.contrib.auth.models import User
+
 from django.contrib.auth.hashers import make_password
 
 from django.contrib.auth import authenticate, login , logout
@@ -29,12 +36,22 @@ from functools import wraps
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return redirect('login_view')
-        if not hasattr(request.user, 'usuario') or request.user.usuario.rol.upper() != "ADMINISTRADOR":
+
+        try:
+            usuario = request.user.usuario
+        except Usuario.DoesNotExist:
+            messages.error(request, "Usuario sin perfil asignado")
+            return redirect('home')
+
+        if usuario.rol.upper() != "ADMINISTRADOR":
             messages.error(request, "Acceso restringido solo para administradores.")
             return redirect('home')
+
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -46,7 +63,7 @@ def home(request):
 
 
 #  Esto Es Navegacion
-#@login_required
+@login_required
 def inicio_cliente(request):
     return render(request,'inicio.html')
 
@@ -63,6 +80,11 @@ def mostrar_registro_usuarios(request):
 # Esto Son Metodos 
 
 
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from usuarios.models import Usuario, Cliente, Productor, Transportista, Asesor, Administrador
+
 def registrar_usuario(request):
     if request.method == 'POST':
         nombre = request.POST.get('txt_nombre')
@@ -77,12 +99,12 @@ def registrar_usuario(request):
         direccion = request.POST.get('txt_direccion')
         rol = request.POST.get('role')
 
-        # Validar que no exista el usuario en auth_user
+        # Validar usuario existente
         if User.objects.filter(username=username).exists():
             messages.error(request, "El usuario ya existe")
             return redirect('mostrar_registro_usuarios')
 
-        # Crear User estándar (contraseña encriptada automáticamente)
+        # 🔐 Crear usuario de Django
         user = User.objects.create_user(
             username=username,
             email=correo,
@@ -91,12 +113,12 @@ def registrar_usuario(request):
             last_name=apellido
         )
 
-        # Crear Usuario extendido con todos los campos obligatorios
-        Usuario.objects.create(
+        # 👤 Crear usuario extendido
+        usuario = Usuario.objects.create(
             user=user,
             nombre=nombre,
             apellido=apellido,
-            nombre_usuario=username,   # <- campo único
+            nombre_usuario=username,
             correo=correo,
             cedula=documento,
             ciudad=ciudad,
@@ -107,6 +129,22 @@ def registrar_usuario(request):
             estado=True
         )
 
+        # 🎯 CREAR SEGÚN EL ROL
+        if rol == "CLIENTE":
+            Cliente.objects.create(id_usuario=usuario)
+
+        elif rol == "PRODUCTOR":
+            Productor.objects.create(id_usuario=usuario)
+
+        elif rol == "TRANSPORTISTA":
+            Transportista.objects.create(id_usuario=usuario)
+
+        elif rol == "ASESOR":
+            Asesor.objects.create(id_usuario=usuario)
+
+        elif rol == "ADMIN":
+            Administrador.objects.create(id_usuario=usuario)
+
         messages.success(request, "Usuario registrado correctamente. Ya puedes iniciar sesión.")
         return redirect('login_view')
 
@@ -114,28 +152,28 @@ def registrar_usuario(request):
 
 
 # Navegacion vistas admin
-#@admin_required
+@admin_required
 def dashboard_admin(request):
     return render(request, 'admin_usuarios/dashboard.html')
-#@admin_required
+@admin_required
 def lista_productos_admin(request):
     return render(request, 'admin_productos/index.html')
-#@admin_required
+@admin_required
 def list_usuarios_admin(request):
     return render(request,'admin_usuarios/dashboard.html')
-#@admin_required
+@admin_required
 def lista_pedidos_admin(request):
     return render(request, 'admin_pedidos/pedidos.html')
-#@admin_required
+@admin_required
 def lista_envios_admin(request):
     return render(request, 'admin_envios/envios.html')
-#@admin_required
+@admin_required
 def lista_servicios_admin(request):
     return render(request, 'admin_servicios/servicios.html' )
 
 
 # Metodos Admin
-#@admin_required 
+@admin_required 
 def ver_listas_usuarios_admin(request):
     #tablas por rol de usuarios
     clientes = Cliente.objects.select_related('id_usuario').all()
@@ -162,11 +200,24 @@ def ver_listas_usuarios_admin(request):
     })
     
     
-#@admin_required
+@admin_required
 def ver_lista_productos_admin(request):
     productos = Producto.objects.select_related('id_usuario', 'id_categoria').all()
     
-    return render(request, 'admin_productos/index.html', {'productos': productos})
+    total_producto = Producto.objects.filter().count()
+    stock_alto = Producto.objects.filter(stock__gte=100).count()
+    stock_bajo = Producto.objects.filter(stock__lt=50).count()
+    productores_activos= Producto.objects.values('id_usuario').distinct().count()
+    
+    context = {
+        'productos': productos,
+        'total_productos': total_producto,
+        'stock_alto': stock_alto,
+        'stock_bajo': stock_bajo,
+        'productores_activos': productores_activos
+    }
+    
+    return render(request, 'admin_productos/index.html', context )
     
 def crear_producto_admin(request):
     producto_form = ProductoForm()
@@ -325,11 +376,42 @@ def eliminar_Producto_admin(request, id):
     return redirect('ver_lista_productos_admin')
 
 
-#@admin_required
+
+@admin_required
 def ver_lista_pedidos_admin(request):
+
     compras = Compra.objects.select_related('id_cliente').prefetch_related('detallescompra_set')
 
-    return render(request, 'admin_pedidos/pedidos.html', {'compras': compras})
+    hoy = datetime.now()
+
+    
+    total_pedidos = Compra.objects.count()
+
+    total_ventas = Compra.objects.aggregate(
+        total=Sum('total')
+    )['total'] or 0
+
+    pedidos_mes = Compra.objects.filter(
+        fecha_hora_compra__year=hoy.year,
+        fecha_hora_compra__month=hoy.month
+    ).count()
+
+    ventas_mes = Compra.objects.filter(
+        fecha_hora_compra__year=hoy.year,
+        fecha_hora_compra__month=hoy.month
+    ).aggregate(
+        total=Sum('total')
+    )['total'] or 0
+
+    context = {
+        'compras': compras,
+        'total_pedidos': total_pedidos,
+        'total_ventas': total_ventas,
+        'pedidos_mes': pedidos_mes,
+        'ventas_mes': ventas_mes
+    }
+
+    return render(request, 'admin_pedidos/pedidos.html', context)
 
 def ver_detalle_compra_admin(request, id):
     compra = get_object_or_404(Compra.objects.select_related('id_cliente'),id_compra=id)
@@ -346,14 +428,64 @@ def ver_detalle_compra_admin(request, id):
 
 
 
-#@admin_required
+@admin_required
 def ver_lista_envio_admin(request):
     envios = Envio.objects.select_related(
         'id_compra',
         'id_transportista',
         'id_vehiculo'
     ).all()
-    return render(request, 'admin_envios/envios.html', {'envios': envios})
+    
+    hoy = datetime.now()
+
+    # 🔹 KPIs GENERALES
+    total_envios = Envio.objects.count()
+
+    envios_activos = Envio.objects.filter(
+        estado_envio="en_camino"
+    ).count()
+
+    envios_entregados = Envio.objects.filter(
+        estado_envio="entregado"
+    ).count()
+
+    envios_pendientes = Envio.objects.filter(
+        estado_envio="pendiente"
+    ).count()
+
+    costo_total_envios = Envio.objects.aggregate(
+        total=Sum('costo_total')
+    )['total'] or 0
+
+    
+    envios_mes = Envio.objects.filter(
+        fecha_salida__year=hoy.year,
+        fecha_salida__month=hoy.month
+    ).count()
+
+    costo_envios_mes = Envio.objects.filter(
+        fecha_salida__year=hoy.year,
+        fecha_salida__month=hoy.month
+    ).aggregate(
+        total=Sum('costo_total')
+    )['total'] or 0
+
+    context = {
+        'envios': envios,
+
+        # KPIs
+        'total_envios': total_envios,
+        'envios_activos': envios_activos,
+        'envios_entregados': envios_entregados,
+        'envios_pendientes': envios_pendientes,
+        'costo_total_envios': costo_total_envios,
+
+        # KPIs del mes
+        'envios_mes': envios_mes,
+        'costo_envios_mes': costo_envios_mes
+    }
+    
+    return render(request, 'admin_envios/envios.html', context )
 
 
 def obtener_envio(request, id):
@@ -387,7 +519,7 @@ def obtener_envio(request, id):
         "costo_peso": float(envio.costo_peso or 0),
         "costo_total": float(envio.costo_total or 0),
 
-        # 🔥 AQUÍ ESTÁ LA CORRECCIÓN
+        # 
         "transportista": (
             f"{envio.id_transportista.id_usuario.nombre} {envio.id_transportista.id_usuario.apellido}"
             if envio.id_transportista else ""
@@ -402,14 +534,52 @@ def obtener_envio(request, id):
     return JsonResponse(data)
 
 
-#@admin_required
+@admin_required
 def ver_lista_servicios_admin(request):
     servicios = Servicio.objects.select_related(
         'id_asesor',
         'id_asesor__id_usuario'
     ).all()
-    
-    return render(request, 'admin_servicios/servicios.html', {'servicios': servicios})
+
+    # 🔹 KPIs
+    total_servicios = Servicio.objects.count()
+
+    servicios_activos = Servicio.objects.filter(
+        estado__iexact="activo"
+    ).count()
+
+    servicios_inactivos = Servicio.objects.filter(
+        estado__iexact="inactivo"
+    ).count()
+
+    context = {
+        'servicios': servicios,
+
+        # KPIs
+        'total_servicios': total_servicios,
+        'servicios_activos': servicios_activos,
+        'servicios_inactivos': servicios_inactivos,
+    }
+
+    return render(request, 'admin_servicios/servicios.html', context)
+
+def ver_servicio_detalle(request, id):
+
+    servicio = get_object_or_404(Servicio, pk=id)
+
+    maquinas = Maquinas.objects.filter(
+        id_asesor=servicio.id_asesor
+    )
+
+    certificados = Certificados.objects.filter(
+        id_usuario=servicio.id_asesor
+    )
+
+    return render(request, 'admin_servicios/ver_servicio_admin.html', {
+        'servicio': servicio,
+        'maquinas': maquinas,
+        'certificados': certificados
+    })
 
 
 def cambiar_estado_servicio(request, servicio_id):
@@ -426,12 +596,16 @@ def eliminar_servicio_admin(request, servicio_id):
     servicio.delete()
     messages.success(request, "servicio eliminado correctamente")
     return redirect('ver_lista_servicios_admin')
+
+def cerrar_sesion(request):
+    logout(request)
+    return redirect('inicio/')
     
 
 
 #admin crea usuario
 
-#@admin_required
+@admin_required
 def crear_usuario_admin(request):
     if request.method == 'POST':
         nombre = request.POST.get('txt_nombre')
@@ -446,12 +620,12 @@ def crear_usuario_admin(request):
         direccion = request.POST.get('txt_direccion')
         rol = request.POST.get('role')
 
-        # ✅ Validación correcta
+        #  Validación correcta
         if User.objects.filter(username=username).exists():
             messages.error(request, "El usuario ya existe")
             return redirect('crear_usuario')
 
-        # ✅ Crear User estándar (contraseña encriptada automáticamente)
+        #  Crear User estándar (contraseña encriptada automáticamente)
         user = User.objects.create_user(
             username=username,
             email=correo,
@@ -460,7 +634,7 @@ def crear_usuario_admin(request):
             last_name=apellido
         )
 
-        # ✅ Crear Usuario extendido (datos adicionales)
+        #  Crear Usuario extendido (datos adicionales)
         usuario = Usuario.objects.create(
             user=user,
             nombre=nombre,
@@ -476,7 +650,7 @@ def crear_usuario_admin(request):
             estado=True
         )
 
-        # ✅ Crear según rol
+        #  Crear según rol
         if rol.upper() == "CLIENTE":
             Cliente.objects.create(
                 id_usuario=usuario,
@@ -572,7 +746,7 @@ def login_view(request):
                 if rol == 'CLIENTE':
                     return redirect('inicio')             # productos/inicio
                 elif rol == 'ADMINISTRADOR':
-                    return redirect('inicio_usuarios')    # usuarios/inicio_usuarios
+                    return redirect('usuarios')    # usuarios/inicio_usuarios
                 else:
                     messages.error(request, f"Rol desconocido: {rol}")
                     return redirect('login_view')

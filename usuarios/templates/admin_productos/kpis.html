@@ -4,7 +4,7 @@
         <div class="kpi-admin">
             <div class="d-flex justify-content-between">
                 <div>
-                    <div class="fs-2 fw-bold text-success">120</div>
+                    <div class="fs-2 fw-bold text-success">{{ total_productos }}</div>
                     <div>Total Productos</div>
                 </div>
                 <div class="kpi-icon-admin bg-success">
@@ -18,8 +18,8 @@
         <div class="kpi-admin">
             <div class="d-flex justify-content-between">
                 <div>
-                    <div class="fs-2 fw-bold text-primary">80</div>
-                    <div>Disponibles</div>
+                    <div class="fs-2 fw-bold text-primary">{{ stock_alto }}</div>
+                    <div>Alto Stock</div>
                 </div>
                 <div class="kpi-icon-admin bg-primary">
                     <i class="bi bi-check-circle"></i>
@@ -32,7 +32,7 @@
         <div class="kpi-admin">
             <div class="d-flex justify-content-between">
                 <div>
-                    <div class="fs-2 fw-bold text-warning">25</div>
+                    <div class="fs-2 fw-bold text-warning">{{ stock_bajo }}</div>
                     <div>Bajo Stock</div>
                 </div>
                 <div class="kpi-icon-admin bg-warning">
@@ -46,7 +46,7 @@
         <div class="kpi-admin">
             <div class="d-flex justify-content-between">
                 <div>
-                    <div class="fs-2 fw-bold" style="color:#9b59b6;">15</div>
+                    <div class="fs-2 fw-bold" style="color:#9b59b6;">{{ productores_activos }}</div>
                     <div>Productores</div>
                 </div>
                 <div class="kpi-icon-admin" style="background:#9b59b6;">

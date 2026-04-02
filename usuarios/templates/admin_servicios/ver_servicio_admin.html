@@ -1,0 +1,130 @@
+
+{% load static %}
+
+
+<link rel="stylesheet" href="{% static 'css/vista_detalle_servicio.css' %}">
+
+
+<div class="container mt-4">
+
+  <div class="card shadow-sm p-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4>
+        <i class="bi bi-briefcase"></i> Detalle del Servicio #{{ servicio.id_servicio }}
+      </h4>
+
+      <!-- ESTADO -->
+      {% if servicio.estado == "activo" %}
+        <span class="badge bg-success">Activo</span>
+      {% elif servicio.estado == "inactivo" %}
+        <span class="badge bg-danger">Inactivo</span>
+      {% else %}
+        <span class="badge bg-secondary">Sin estado</span>
+      {% endif %}
+    </div>
+
+    <hr>
+
+    <!-- INFO PRINCIPAL -->
+    <div class="row">
+
+      <!-- COLUMNA IZQUIERDA -->
+      <div class="col-md-6">
+
+        <p><strong>Categoría:</strong> {{ servicio.categoria|default:"No definida" }}</p>
+
+        <p><strong>Descripción:</strong><br>
+          {{ servicio.descripcion|default:"Sin descripción" }}
+        </p>
+
+      </div>
+
+      <!-- COLUMNA DERECHA -->
+      <div class="col-md-6">
+
+        <p>
+          <strong>Asesor:</strong>
+          {{ servicio.id_asesor.id_usuario.nombre }} 
+          {{ servicio.id_asesor.id_usuario.apellido }}
+        </p>
+
+        <p>
+          <strong>Email:</strong>
+          {{ servicio.id_asesor.id_usuario.email|default:"No disponible" }}
+        </p>
+
+      </div>
+
+    </div>
+
+    <hr>
+
+    <!-- MAQUINAS -->
+    <h5 class="mt-3"><i class="bi bi-gear"></i> Máquinas del Asesor</h5>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered mt-2">
+        <thead class="table-dark">
+          <tr>
+            <th>Tipo</th>
+            <th>Modelo</th>
+            <th>Documento</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for maquina in maquinas %}
+          <tr>
+            <td>{{ maquina.tipo_maquina }}</td>
+            <td>{{ maquina.modelo|default:"-" }}</td>
+            <td>{{ maquina.documento_propiedad }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center text-muted">Sin máquinas registradas</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CERTIFICADOS -->
+    <h5 class="mt-4"><i class="bi bi-award"></i> Certificados</h5>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered mt-2">
+        <thead class="table-dark">
+          <tr>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cert in certificados %}
+          <tr>
+            <td>{{ cert.tipo_certificado }}</td>
+            <td>{{ cert.descripcion_cert }}</td>
+            <td>{{ cert.fecha_expedicion }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-center text-muted">Sin certificados</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BOTÓN -->
+    <div class="text-end mt-3">
+      <a href="{% url 'ver_lista_servicios_admin' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
