@@ -6,16 +6,34 @@ from django.db import models
 
 
 class Vehiculo(models.Model):
+    # Definir choices como tupla (más simple)
+    ESTADOS = [
+        ('ACTIVO', 'Activo'),
+        ('SUSPENDIDO', 'Suspendido'),
+        ('MANTENIMIENTO', 'En Mantenimiento'),
+    ]
+    
     id_vehiculo = models.AutoField(primary_key=True)
     id_transportista = models.ForeignKey('usuarios.Transportista', models.DO_NOTHING, db_column='id_transportista')
     tipo_vehiculo = models.CharField(max_length=50, blank=True, null=True)
     capacidad_carga = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     documento_propiedad = models.CharField(max_length=250, blank=True, null=True)
     placa_vehiculo = models.CharField(max_length=15, blank=True, null=True)
+    
+    # Campo con choices - más simple sin subclase
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADOS,  # ← Usar la tupla
+        default='ACTIVO'
+    )
 
     class Meta:
         managed = True
         db_table = 'tb_vehiculos'
+    
+    def __str__(self):
+        return f"{self.placa_vehiculo} - {self.tipo_vehiculo}"
+
 
 
 

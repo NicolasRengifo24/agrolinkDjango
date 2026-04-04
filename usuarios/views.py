@@ -152,28 +152,28 @@ def registrar_usuario(request):
 
 
 # Navegacion vistas admin
-@admin_required
+#@admin_required
 def dashboard_admin(request):
     return render(request, 'admin_usuarios/dashboard.html')
-@admin_required
+#@admin_required
 def lista_productos_admin(request):
     return render(request, 'admin_productos/index.html')
-@admin_required
+#@admin_required
 def list_usuarios_admin(request):
     return render(request,'admin_usuarios/dashboard.html')
-@admin_required
+#@admin_required
 def lista_pedidos_admin(request):
     return render(request, 'admin_pedidos/pedidos.html')
-@admin_required
+#@admin_required
 def lista_envios_admin(request):
     return render(request, 'admin_envios/envios.html')
-@admin_required
+#@admin_required
 def lista_servicios_admin(request):
     return render(request, 'admin_servicios/servicios.html' )
 
 
 # Metodos Admin
-@admin_required 
+#@admin_required 
 def ver_listas_usuarios_admin(request):
     #tablas por rol de usuarios
     clientes = Cliente.objects.select_related('id_usuario').all()
@@ -200,7 +200,7 @@ def ver_listas_usuarios_admin(request):
     })
     
     
-@admin_required
+#@admin_required
 def ver_lista_productos_admin(request):
     productos = Producto.objects.select_related('id_usuario', 'id_categoria').all()
     
@@ -605,7 +605,7 @@ def cerrar_sesion(request):
 
 #admin crea usuario
 
-@admin_required
+#@admin_required
 def crear_usuario_admin(request):
     if request.method == 'POST':
         nombre = request.POST.get('txt_nombre')
@@ -746,7 +746,9 @@ def login_view(request):
                 if rol == 'CLIENTE':
                     return redirect('inicio')             # productos/inicio
                 elif rol == 'ADMINISTRADOR':
-                    return redirect('usuarios')    # usuarios/inicio_usuarios
+                    return redirect('usuarios')
+                elif rol == 'TRANSPORTISTA' :
+                    return redirect('inicio_transportista')
                 else:
                     messages.error(request, f"Rol desconocido: {rol}")
                     return redirect('login_view')

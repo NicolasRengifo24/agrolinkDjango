@@ -78,7 +78,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+
 <script>
     // Actualizar valor del slider
     function actualizarValorSlider(valor) {
@@ -101,119 +101,66 @@
         actualizarValorSlider(0);
     });
 
-    // Función para agregar vehículo dinámicamente
-    document.getElementById('formAgregarVehiculo')?.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const tipo = document.getElementById('tipoVehiculo').value;
-        const placa = document.getElementById('placa').value;
-        const capacidad = document.querySelector('.peso-slider').value;
-
-        if (!tipo || !placa || capacidad === '0') {
-            mostrarError('Por favor completa todos los campos requeridos');
-            return;
-        }
-
-        // Aquí iría la lógica para guardar en backend
-        // Por ahora simulamos la creación de la tarjeta
-        const nuevaTarjeta = crearTarjetaHTML(tipo, placa, capacidad);
-        document.getElementById('contenedor-vehiculos').insertAdjacentHTML('beforeend', nuevaTarjeta);
-
-        // Limpiar formulario
-        this.reset();
-        actualizarValorSlider(0);
-
-        // Mostrar mensaje de éxito
-        mostrarExito('Vehículo registrado correctamente');
-    });
-
-    function crearTarjetaHTML(tipo, placa, capacidad) {
-        return `
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0 hover-card">
-                    <div class="card-body">
-                        <div class="view-mode">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h5 class="card-title fw-bold text-success mb-0">
-                                    <i class="bi bi-truck me-2"></i>${tipo}
-                                </h5>
-                                <span class="badge bg-success">Activo</span>
-                            </div>
-                            <div class="vehiculo-info mb-3">
-                                <p class="mb-2">
-                                    <i class="bi bi-upc-scan me-2 text-muted"></i>
-                                    <strong>Placa:</strong> ${placa}
-                                </p>
-                                <p class="mb-2">
-                                    <i class="bi bi-speedometer2 me-2 text-muted"></i>
-                                    <strong>Capacidad:</strong> ${capacidad} kg
-                                </p>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-warning btn-sm suspender-btn">
-                                    <i class="bi bi-pause-circle me-1"></i>Suspender
-                                </button>
-                                <button class="btn btn-danger btn-sm eliminar-btn">
-                                    <i class="bi bi-trash me-1"></i>Eliminar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    function mostrarError(mensaje) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            ${mensaje}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('#formAgregarVehiculo').insertAdjacentElement('beforebegin', alertDiv);
-        setTimeout(() => alertDiv.remove(), 3000);
-    }
-
-    function mostrarExito(mensaje) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            <i class="bi bi-check-circle me-2"></i>
-            ${mensaje}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('#formAgregarVehiculo').insertAdjacentElement('beforebegin', alertDiv);
-        setTimeout(() => alertDiv.remove(), 3000);
-    }
-
-    // Eliminar vehículo (delegación de eventos)
-    document.getElementById('contenedor-vehiculos')?.addEventListener('click', function (e) {
-        const eliminarBtn = e.target.closest('.eliminar-btn');
-        if (eliminarBtn && confirm('¿Estás seguro de eliminar este vehículo?')) {
-            eliminarBtn.closest('.col-md-6').remove();
-        }
-
-        const suspenderBtn = e.target.closest('.suspender-btn');
-        if (suspenderBtn) {
-            const badge = suspenderBtn.closest('.card-body').querySelector('.badge');
-            if (badge.classList.contains('bg-success')) {
-                badge.classList.remove('bg-success');
-                badge.classList.add('bg-secondary');
-                badge.textContent = 'Suspendido';
-                suspenderBtn.textContent = 'Activar';
-                suspenderBtn.classList.remove('btn-warning');
-                suspenderBtn.classList.add('btn-success');
-            } else {
-                badge.classList.remove('bg-secondary');
-                badge.classList.add('bg-success');
-                badge.textContent = 'Activo';
-                suspenderBtn.textContent = 'Suspender';
-                suspenderBtn.classList.remove('btn-success');
-                suspenderBtn.classList.add('btn-warning');
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
         }
+        return cookieValue;
+    }
+
+    // Cambiar estado del vehículo
+    function cambiarEstadoVehiculo(vehiculoId) {
+        fetch(`/vehiculos/cambiar-estado/${vehiculoId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Recargar para mostrar el cambio
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar el estado');
+        });
+    }
+
+    // Asignar eventos a los botones
+    document.addEventListener('DOMContentLoaded', function() {
+        // Botones suspender
+        document.querySelectorAll('.suspender-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const vehiculoId = this.getAttribute('data-id');
+                if (confirm('¿Estás seguro de suspender este vehículo?')) {
+                    cambiarEstadoVehiculo(vehiculoId);
+                }
+            });
+        });
+        
+        // Botones activar
+        document.querySelectorAll('.activar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const vehiculoId = this.getAttribute('data-id');
+                if (confirm('¿Estás seguro de activar este vehículo?')) {
+                    cambiarEstadoVehiculo(vehiculoId);
+                }
+            });
+        });
     });
+
 </script>
-{% endblock %}

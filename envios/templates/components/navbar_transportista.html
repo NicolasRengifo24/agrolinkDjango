@@ -17,20 +17,31 @@
 
                 <!-- INICIO -->
                 <li class="nav-item">
-                    <a class="nav-link active-link" style="color:#c6dc93; font-weight:600;">Inicio</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'inicio_transportista' %}active-link{% endif %}" 
+                       href="{% url 'inicio_transportista' %}">
+                        <i class="bi bi-house-door me-1"></i> Inicio
+                    </a>
+                </li>
+
+                <!-- MIS ENVÍOS -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'mis_envios' %}active-link{% endif %}" 
+                       href="{% url 'mis_envios' %}">
+                        <i class="bi bi-box me-1"></i> Mis Envíos
+                    </a>
                 </li>
 
                 <!-- MIS VEHÍCULOS -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'mostrar_vehiculos'%}" style="color:#c6dc93; font-weight:600;">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'mostrar_vehiculos' %}active-link{% endif %}" 
+                       href="{% url 'mostrar_vehiculos' %}">
                         <i class="bi bi-truck me-1"></i> Mis Vehículos
                     </a>
                 </li>
 
                 <!-- PERFIL + DROPDOWN -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown"
-                        role="button">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" role="button">
                         <div class="profile-img-wrapper">
                             <img src="https://i.pravatar.cc/40?img=10" class="profile-img" alt="Perfil">
                             <span class="online-dot"></span>
@@ -48,7 +59,7 @@
                         {% if user.is_authenticated %}
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Mi perfil</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configuración</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-truck-front me-2"></i>Mis envíos</a></li>
+                        
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -82,12 +93,10 @@
 </nav>
 
 <style>
-
     /* === FONDO Y SOMBRA === */
     .navbar-custom {
         background: linear-gradient(135deg, #2f6b31 0%, #0e2a1c 100%);
         padding: 0.1rem 0;
-        /* Reduce de 0.8rem a 0.4rem */
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
         border-bottom: 1px solid rgba(198, 220, 147, 0.2);
         position: sticky;
@@ -140,6 +149,7 @@
         align-items: center;
         gap: 6px;
         background: transparent;
+        position: relative;
     }
 
     .navbar-nav .nav-link i {
@@ -157,7 +167,7 @@
         transform: translateX(3px);
     }
 
-    /* Link activo (Inicio) */
+    /* === INDICADOR ACTIVO (la rallita) === */
     .active-link {
         position: relative;
         background: rgba(198, 220, 147, 0.1);
@@ -169,11 +179,24 @@
         bottom: -4px;
         left: 50%;
         transform: translateX(-50%);
-        width: 30px;
+        width: 40px;
         height: 3px;
         background: #c6dc93;
         border-radius: 3px;
         box-shadow: 0 0 5px #c6dc93;
+        animation: slideIn 0.3s ease;
+    }
+
+    /* Animación para la rallita */
+    @keyframes slideIn {
+        from {
+            width: 0;
+            opacity: 0;
+        }
+        to {
+            width: 40px;
+            opacity: 1;
+        }
     }
 
     /* === PERFIL === */
@@ -309,7 +332,6 @@
             opacity: 0;
             transform: translateY(10px);
         }
-
         to {
             opacity: 1;
             transform: translateY(0);

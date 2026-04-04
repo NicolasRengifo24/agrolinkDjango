@@ -6,41 +6,53 @@
             <div class="view-mode">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <h5 class="card-title fw-bold text-success mb-0">
-                        <i class="bi bi-truck me-2"></i>{{ vehiculo.tipo }}
+                        <i class="bi bi-truck me-2"></i>{{ vehiculo.tipo_vehiculo }}
                     </h5>
-                    <span class="badge {% if vehiculo.activo %}bg-success{% else %}bg-secondary{% endif %}">
-                        {% if vehiculo.activo %}Activo{% else %}Suspendido{% endif %}
+                    <span class="badge {% if vehiculo.estado == 'ACTIVO' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if vehiculo.estado == 'ACTIVO' %}Activo{% else %}Suspendido{% endif %}
                     </span>
                 </div>
-                
+
                 <div class="vehiculo-info mb-3">
                     <p class="mb-2">
                         <i class="bi bi-upc-scan me-2 text-muted"></i>
-                        <strong>Placa:</strong> {{ vehiculo.placa }}
+                        <strong>Placa:</strong> {{ vehiculo.placa_vehiculo }}
                     </p>
                     <p class="mb-2">
                         <i class="bi bi-speedometer2 me-2 text-muted"></i>
-                        <strong>Capacidad:</strong> {{ vehiculo.capacidad }} kg
+                        <strong>Capacidad:</strong> {{ vehiculo.capacidad_carga | floatformat:0 }} kg
                     </p>
-                    <p class="mb-2">
-                        <i class="bi bi-calendar-check me-2 text-muted"></i>
-                        <strong>Registro:</strong> {{ vehiculo.fecha_registro|date:"d/m/Y" }}
-                    </p>
+
                 </div>
-                
+
                 <div class="d-flex gap-2">
-                    {% if vehiculo.activo %}
-                        <button class="btn btn-warning btn-sm suspender-btn" data-id="{{ vehiculo.id }}">
+                    {% if vehiculo.estado == 'ACTIVO' %}
+                    <form method="post" action="{% url 'cambiar_estado_vehiculo' vehiculo.id_vehiculo %}"
+                        style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning btn-sm w-100"
+                            onclick="return confirm('¿Suspender este vehículo?')">
                             <i class="bi bi-pause-circle me-1"></i>Suspender
                         </button>
+                    </form>
                     {% else %}
-                        <button class="btn btn-success btn-sm activar-btn" data-id="{{ vehiculo.id }}">
+                    <form method="post" action="{% url 'cambiar_estado_vehiculo' vehiculo.id_vehiculo %}"
+                        style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm w-100"
+                            onclick="return confirm('¿Activar este vehículo?')">
                             <i class="bi bi-play-circle me-1"></i>Activar
                         </button>
+                    </form>
                     {% endif %}
-                    <button class="btn btn-danger btn-sm eliminar-btn" data-id="{{ vehiculo.id }}">
-                        <i class="bi bi-trash me-1"></i>Eliminar
-                    </button>
+
+                    <form method="post" action="{% url 'eliminar_vehiculo' vehiculo.id_vehiculo %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm w-100"
+                            onclick="return confirm('¿Eliminar este vehículo?')">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -51,10 +63,12 @@
     .hover-card {
         transition: transform 0.2s, box-shadow 0.2s;
     }
+
     .hover-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
     }
+
     .vehiculo-info i {
         width: 24px;
     }

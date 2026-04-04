@@ -1,0 +1,49 @@
+/* static/css/pages/vehiculos.css */
+/* Estilos específicos para la página de vehículos */
+
+/* Estado vacío */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--color-gray-200) 100%);
+    border-radius: var(--border-radius-lg);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-md);
+    opacity: 0.7;
+}
+
+.empty-state h5 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-gray-700);
+}
+
+.empty-state p {
+    color: var(--color-gray-600);
+}
+
+/* Contador de vehículos */
+.vehiculos-count {
+    background-color: var(--color-primary);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Grid de vehículos */
+.vehiculos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .vehiculos-grid {
+        grid-template-columns: 1fr;
+    }
+}
