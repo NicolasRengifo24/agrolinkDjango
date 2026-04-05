@@ -103,9 +103,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_agrolink',
         'USER': 'root',
-        'PASSWORD': '1234',
+        'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }
@@ -167,8 +167,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 NGROK_URL = "https://uncaricatured-pronunciatory-waldo.ngrok-free.dev"
 
 # ePayco - MODO PRUEBA
-
-EPAYCO_P_CUST_ID_CLIENT = os.getenv("EPAYCO_P_CUST_ID_CLIENT")
-EPAYCO_PUBLIC_KEY       = os.getenv("EPAYCO_PUBLIC_KEY")
-EPAYCO_PRIVATE_KEY      = os.getenv("EPAYCO_PRIVATE_KEY")
+EPAYCO_P_CUST_ID_CLIENT = "1578302"
+EPAYCO_PUBLIC_KEY       = "4a8276127cf46bf07c05c5125fd9237f"           # ← esta va en el botón
+EPAYCO_PRIVATE_KEY      = "d7a699bae786d86c29a1a388072a1582"
 EPAYCO_TEST             = True

@@ -102,46 +102,72 @@ def respuesta_pago(request):
 @csrf_exempt
 def confirmacion_pago(request):
 
+    print("====================================")
+    print("🔥 WEBHOOK EPAYCO LLAMADO")
+    print("Método:", request.method)
+
     if request.method == "POST":
 
         data = request.POST
+
+        print("📦 DATA RECIBIDA:")
+        print(data)
 
         ref = data.get("x_ref_payco")
         estado = data.get("x_cod_transaction_state")
         factura = data.get("x_id_invoice")
 
-        print("Confirmación ePayco:", data)
+        print("🔎 ref_payco:", ref)
+        print("🔎 estado:", estado)
+        print("🔎 factura:", factura)
 
         try:
             compra_id = int(factura.split("_")[1])
             compra = Compra.objects.get(id_compra=compra_id)
-        except:
+            print("✅ Compra encontrada:", compra.id_compra)
+        except Exception as e:
+            print("❌ ERROR buscando compra:", str(e))
             return JsonResponse({"status": "error compra no encontrada"})
 
-        #  VALIDAR ESTADO
+        # 🔥 VALIDAR ESTADO
         if estado == "1":  # APROBADO
+            print("💰 PAGO APROBADO")
 
             compra.estado = "pagado"
             compra.metodo_pago = "epayco"
             compra.save()
 
-            #  CREAR ENVÍO AUTOMÁTICO
+            # 🚚 CREAR ENVÍO
             Envio.objects.create(
                 id_compra=compra,
                 estado_envio="pendiente",
                 direccion_destino=compra.direccion_entrega
             )
 
-        elif estado == "2":  # RECHAZADO
+            print("🚚 Envío creado correctamente")
+
+        elif estado == "2":
+            print("❌ PAGO RECHAZADO")
             compra.estado = "rechazado"
             compra.save()
 
-        elif estado == "3":  # PENDIENTE
+        elif estado == "3":
+            print("⏳ PAGO PENDIENTE")
             compra.estado = "pendiente"
             compra.save()
+            
+        elif estado == "11":
+            print("PAGO CANCELADO POR EL USUARIO")
+            compra.estado = "cancelado"
+            compra.save()    
 
+        else:
+            print("⚠️ ESTADO DESCONOCIDO:", estado)
+
+        print("====================================")
         return JsonResponse({"status": "ok"})
 
+    print("⚠️ Método no permitido")
     return JsonResponse({"error": "metodo no permitido"})
 
 

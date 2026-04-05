@@ -744,18 +744,15 @@ def login_view(request):
                 print(f"ROL DETECTADO: '{usuario.rol}'")
 
                 if rol == 'CLIENTE':
-                    return redirect('inicio')             # productos/inicio
+                    return redirect('inicio') 
+                # productos/inicio
                 elif rol == 'ADMINISTRADOR':
-<<<<<<< HEAD
+                    return redirect('usuarios')
+
                     return redirect('usuarios')
                 elif rol == 'TRANSPORTISTA' :
                     return redirect('inicio_transportista')
-=======
-                    return redirect('usuarios')  
-                # usuarios/inicio_usuarios
-                elif rol == 'TRANSPORTISTA':                         # falta para que inicie sesion asesor y productor y 
-                    return redirect('inicio_transportista')          #que redireccione a su respectivo template  
->>>>>>> 52a6628 (implementacion de epayco pasarela de pago)
+
                 else:
                     messages.error(request, f"Rol desconocido: {rol}")
                     return redirect('login_view')

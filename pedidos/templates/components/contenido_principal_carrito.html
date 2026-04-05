@@ -106,7 +106,7 @@ var handler = ePayco.checkout.configure({
     test: true
 });
 
-document.getElementById("btn-pagar").addEventListener("click", function () {
+document.getElementById("btn-pagar").onclick = function () {
 
     handler.open({
         name: "Agrolink",
@@ -128,15 +128,9 @@ document.getElementById("btn-pagar").addEventListener("click", function () {
         confirmation: "{{ url_confirmacion }}",
 
         name_billing: "Cliente Test",
-        email_billing: "test@test.com",
-        mobilephone_billing: "3000000000",
-
-        //  CLAVES PARA EVITAR BLOQUEO
-        enable_test_mode: true,
-        extra1: "sin_3ds"
+        email_billing: "test@test.com"
     });
-
-});
+};
 </script>
 
     </div>

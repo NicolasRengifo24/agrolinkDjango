@@ -26,8 +26,17 @@
         {% endif %}
 
         <div class="info">
-            <p><strong>Referencia:</strong></p>
+            <p><strong>Referencia ePayco:</strong></p>
             <span>{{ data.x_ref_payco }}</span>
+
+            <p><strong>Factura:</strong></p>
+            <span>{{ data.x_id_invoice }}</span>
+
+            <p><strong>Valor:</strong></p>
+            <span>$ {{ data.x_amount }}</span>
+
+            <p><strong>Estado código:</strong></p>
+            <span>{{ data.x_cod_transaction_state }}</span>
         </div>
 
         <a href="{% url 'inicio' %}" class="btn-volver">
