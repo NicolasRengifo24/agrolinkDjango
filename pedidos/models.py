@@ -9,7 +9,7 @@ class Compra(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     impuestos = models.DecimalField(max_digits=10, decimal_places=2)
     valor_envio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    estado = models.CharField(max_length=20, default='carrito')
+    estado = models.CharField(max_length=20, default='')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     direccion_entrega = models.CharField(max_length=200, blank=True, null=True)
     metodo_pago = models.CharField(max_length=50, blank=True, null=True)
@@ -30,3 +30,6 @@ class DetallesCompra(models.Model):
     class Meta:
         managed = True
         db_table = 'tb_detalles_compra'
+        
+        
+

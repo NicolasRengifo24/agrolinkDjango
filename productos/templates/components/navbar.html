@@ -121,11 +121,15 @@
 
 
                 <!-- MIS PEDIDOS -->
+                {% if request.user.is_authenticated and request.user.usuario.rol == "CLIENTE" %}
                 <li class="nav-item me-3">
-                    <a class="nav-link" style="color:#2f6b31; font-weight:600;">
-                        <i class="bi bi-box-seam me-1"></i>Mis Pedidos
+                    <a href="{% url 'mis_pedidos' %}" 
+                    class="nav-link" 
+                    style="color:#2f6b31; font-weight:600;">
+                    <i class="bi bi-box-seam me-1"></i>Mis Pedidos
                     </a>
                 </li>
+                {% endif %}
 
                 <!-- CARRITO -->
                 <li class="nav-item position-relative me-3">

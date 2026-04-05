@@ -1,0 +1,79 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f7fa;
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* CARD */
+.pedido-card {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* HEADER */
+.pedido-header {
+    background: #2c5364;
+    color: white;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ESTADOS */
+.estado {
+    padding: 5px 10px;
+    border-radius: 10px;
+    text-transform: capitalize;
+}
+
+.estado.pagado {
+    background: #28a745;
+}
+
+.estado.pendiente {
+    background: #ffc107;
+}
+
+.estado.rechazado {
+    background: #dc3545;
+}
+
+/* BODY */
+.pedido-body {
+    padding: 15px;
+}
+
+.producto {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.producto img {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* FOOTER */
+.pedido-footer {
+    padding: 10px 15px;
+    background: #f1f1f1;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}

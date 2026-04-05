@@ -86,7 +86,7 @@ from productos.models import Producto
 from decimal import Decimal
 
 def agregar_al_carrito(request, producto_id):
-    # 🧪 DEBUG (temporal)
+    #  DEBUG (temporal)
     print("AUTH:", request.user.is_authenticated)
     print("USER:", request.user)
 
@@ -102,12 +102,12 @@ def agregar_al_carrito(request, producto_id):
     except Exception as e:
         print("ERROR CLIENTE:", e)
 
-    # 🔒 VALIDAR LOGIN
+    #  VALIDAR LOGIN
     if not request.user.is_authenticated:
         messages.warning(request, "Debe iniciar sesión como cliente")
         return redirect('login_view')
 
-    # 🔒 VALIDAR QUE SEA CLIENTE
+    #  VALIDAR QUE SEA CLIENTE
     try:
         usuario = request.user.usuario
         cliente = usuario.cliente
@@ -116,13 +116,13 @@ def agregar_al_carrito(request, producto_id):
         return redirect('login_view')
     
 
-    # 📦 PRODUCTO
+    #  PRODUCTO
     producto = get_object_or_404(Producto, id_producto=producto_id)
 
-    # 🔢 CANTIDAD
+    #  CANTIDAD
     cantidad = int(request.POST.get('cantidad', 1))
 
-    # 🛒 CARRITO (Compra en estado carrito)
+    #  CARRITO (Compra en estado carrito)
     compra, created = Compra.objects.get_or_create(
         id_cliente=cliente,
         estado="carrito",
@@ -133,7 +133,7 @@ def agregar_al_carrito(request, producto_id):
         }
     )
 
-    # 📦 DETALLE
+    #  DETALLE
     detalle, created = DetallesCompra.objects.get_or_create(
         id_compra=compra,
         id_producto=producto,
@@ -144,14 +144,14 @@ def agregar_al_carrito(request, producto_id):
         }
     )
 
-    # ➕ SI YA EXISTE → SUMA
+    #  SI YA EXISTE → SUMA
     if not created:
         detalle.cantidad += cantidad
         detalle.precio_unitario = producto.precio
         detalle.subtotal = detalle.cantidad * detalle.precio_unitario
         detalle.save()
 
-    # 🔄 ACTUALIZAR TOTALES
+    #  ACTUALIZAR TOTALES
     detalles = DetallesCompra.objects.filter(id_compra=compra)
     subtotal = sum(d.subtotal for d in detalles)
     impuestos = subtotal * Decimal('0.19')
@@ -162,7 +162,7 @@ def agregar_al_carrito(request, producto_id):
     compra.total = total
     compra.save()
 
-    # ✅ MENSAJE
+    #  MENSAJE
     messages.success(request, "Producto agregado al carrito")
 
     return redirect('carrito')

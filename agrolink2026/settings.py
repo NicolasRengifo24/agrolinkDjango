@@ -12,6 +12,15 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from django.template.context_processors import media
+# dotenv ¿Qué hace?
+#Carga el archivo .env al entorno de Python
+#Traducción:
+#“haz que Python pueda leer el .env”
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +35,16 @@ SECRET_KEY = 'django-insecure-n&+=0l%guuaa8p##42pv#_s+lcm3&^!r^+j&5r_k(h-4z)=y2p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'uncaricatured-pronunciatory-waldo.ngrok-free.dev'
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://uncaricatured-pronunciatory-waldo.ngrok-free.dev'
+]
+
 
 
 # Application definition
@@ -144,3 +162,13 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+#Ngrok expone tu servidor local de forma rapida y segura
+NGROK_URL = "https://uncaricatured-pronunciatory-waldo.ngrok-free.dev"
+
+# ePayco - MODO PRUEBA
+
+EPAYCO_P_CUST_ID_CLIENT = os.getenv("EPAYCO_P_CUST_ID_CLIENT")
+EPAYCO_PUBLIC_KEY       = os.getenv("EPAYCO_PUBLIC_KEY")
+EPAYCO_PRIVATE_KEY      = os.getenv("EPAYCO_PRIVATE_KEY")
+EPAYCO_TEST             = True
