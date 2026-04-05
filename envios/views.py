@@ -7,6 +7,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
 
 import json
+from datetime import datetime
+import random
+import string
 
 # Create your views here.
 def inicio_transportista(request):
@@ -17,12 +20,24 @@ def inicio_transportista(request):
         "id_transportista"
     ).all()
     
+    # Obtener vehículos activos del transportista actual
+    vehiculos_activos = []
+    if request.user.is_authenticated:
+        try:
+            usuario_obj = Usuario.objects.get(user=request.user)
+            transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+            vehiculos_activos = Vehiculo.objects.filter(
+                id_transportista=transportista_obj,
+                estado='ACTIVO'
+            )
+        except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+            pass
+    
     data_envios = []
-
     for envio in envios:
         if envio.latitud_origen and envio.longitud_origen:
             data_envios.append({
-                "id" : envio.id_envio,
+                "id": envio.id_envio,
                 "origen": [envio.latitud_origen, envio.longitud_origen],
                 "destino": [envio.latitud_destino, envio.longitud_destino],
                 "numero": envio.numero_seguimiento
@@ -33,6 +48,7 @@ def inicio_transportista(request):
     return render(request, 'envios/envios_dashboard.html',{
     'envios' : envios,
     'envios_json' : json.dumps(data_envios),
+    'vehiculos_activos': vehiculos_activos,
 
     })
     
@@ -162,5 +178,117 @@ def eliminar_vehiculo(request, vehiculo_id):
 @login_required
 def mis_envios(request):
     """Vista para mostrar los envíos del transportista"""
-    # Tu lógica aquí
-    return render(request, 'envios/mis_envios.html')
+
+    return render(request, 'envios/mis_envios_dashboard.html')
+
+@login_required
+def aceptar_viaje(request, envio_id):
+    """Acepta un viaje y asigna vehículo, fechas y número de seguimiento"""
+    
+    if request.method == 'POST':
+        try:
+            # Obtener el transportista actual
+            usuario_obj = Usuario.objects.get(user=request.user)
+            transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+            
+            # Obtener el envío
+            envio = get_object_or_404(Envio, id_envio=envio_id)
+            
+            # Verificar que el envío esté disponible (no asignado)
+            if envio.id_transportista:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Este envío ya fue asignado a otro transportista'
+                }, status=400)
+            
+            # Obtener datos del formulario
+            vehiculo_id = request.POST.get('vehiculo_id')
+            fecha_recoleccion = request.POST.get('fecha_recoleccion')
+            fecha_entrega_estimada = request.POST.get('fecha_entrega_estimada')
+            
+            # Validar que se seleccionó un vehículo
+            if not vehiculo_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Debes seleccionar un vehículo'
+                }, status=400)
+            
+            # Obtener el vehículo y verificar que pertenece al transportista
+            vehiculo = get_object_or_404(
+                Vehiculo, 
+                id_vehiculo=vehiculo_id, 
+                id_transportista=transportista_obj
+            )
+            
+            # Validar que el vehículo no esté suspendido
+            if vehiculo.estado != 'ACTIVO':
+                return JsonResponse({
+                    'success': False,
+                    'message': f'El vehículo {vehiculo.placa_vehiculo} está suspendido. No puede ser asignado.'
+                }, status=400)
+            
+            # Validar fechas
+            if not fecha_recoleccion or not fecha_entrega_estimada:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Debes seleccionar ambas fechas'
+                }, status=400)
+            
+            # Generar número de seguimiento único
+            numero_seguimiento = generar_numero_seguimiento()
+            
+            # Calcular costo total
+            distancia_km = envio.distancia_km or 0
+            peso_total_kg = envio.peso_total_kg or 0
+            
+            # Tarifas
+            tarifa_por_km = 3000  # $3,000 por km
+            tarifa_por_kg = 200   # $200 por kg
+            
+            costo_distancia = distancia_km * tarifa_por_km
+            costo_peso = peso_total_kg * tarifa_por_kg
+            costo_total = costo_distancia + costo_peso
+            
+            # Actualizar el envío
+            envio.id_transportista = transportista_obj
+            envio.id_vehiculo = vehiculo
+            envio.estado_envio = 'Asignado'
+            envio.fecha_salida = fecha_recoleccion
+            envio.fecha_entrega = fecha_entrega_estimada
+            envio.numero_seguimiento = numero_seguimiento
+            envio.tarifa_por_km = tarifa_por_km
+            envio.tarifa_por_kg = tarifa_por_kg
+            envio.costo_total = costo_total
+            envio.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Viaje aceptado exitosamente. Número de seguimiento: {numero_seguimiento}',
+                'numero_seguimiento': numero_seguimiento,
+                'costo_total': f'{costo_total:,.0f}'
+            })
+            
+        except Vehiculo.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Vehículo no encontrado o no te pertenece'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error al aceptar el viaje: {str(e)}'
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+def generar_numero_seguimiento():
+    """Genera un número de seguimiento único"""
+    while True:
+        # Formato: AGRO-YYYYMMDD-XXXXX
+        fecha_actual = datetime.now().strftime('%Y%m%d')
+        random_chars = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        numero = f"AGRO-{fecha_actual}-{random_chars}"
+        
+        # Verificar que no exista
+        if not Envio.objects.filter(numero_seguimiento=numero).exists():
+            return numero
