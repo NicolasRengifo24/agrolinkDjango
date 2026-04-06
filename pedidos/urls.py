@@ -11,6 +11,8 @@ urlpatterns = [
     path('confirmacion-pago/', views.confirmacion_pago, name='confirmacion_pago'),
     
     path('mis-pedidos/', views.mis_pedidos, name='mis_pedidos'),
+    path('seleccionar-destino/', views.seleccionar_destino, name='seleccionar_destino'),
+    
 
     
 ]

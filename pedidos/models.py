@@ -13,6 +13,8 @@ class Compra(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     direccion_entrega = models.CharField(max_length=200, blank=True, null=True)
     metodo_pago = models.CharField(max_length=50, blank=True, null=True)
+    latitud_destino = models.FloatField(blank=True, null=True)
+    longitud_destino = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -26,6 +28,7 @@ class DetallesCompra(models.Model):
     cantidad = models.IntegerField()
     precio_unitario = models.DecimalField(max_digits=12, decimal_places=2)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    distancia_km = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = True

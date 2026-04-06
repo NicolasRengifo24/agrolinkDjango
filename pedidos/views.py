@@ -9,6 +9,7 @@ from usuarios.models import Cliente, Usuario
 from envios.models import Envio
 from decimal import Decimal
 import time
+import requests
 
 # Create your views here.
 
@@ -52,7 +53,7 @@ def carrito(request):
     'subtotal': compra.subtotal if compra else 0,
     'ref_pago': referencia_unica,
     'epayco_key': settings.EPAYCO_PUBLIC_KEY,
-    'total_epayco': str(compra.total).replace(',', '.') if compra else '0',
+    'total_epayco': f"{compra.total:.2f}" if compra else '0.00',
 
     #  NUEVO
     'url_respuesta': f"{settings.NGROK_URL}/respuesta-pago/",
@@ -201,4 +202,71 @@ def mis_pedidos(request):
 
     return render(request, "pedidos/mis_pedidos.html", {
         "pedidos": pedidos
+    })
+    
+    
+@login_required
+def seleccionar_destino(request):
+    """Vista para que el cliente seleccione su ubicación de entrega en el mapa"""
+    
+    usuario = request.user.usuario
+    
+    # Validar que sea cliente
+    if usuario.rol.upper() != "CLIENTE":
+        messages.error(request, "Solo los clientes pueden seleccionar destino")
+        return redirect('inicio')
+    
+    try:
+        cliente = usuario.cliente
+    except:
+        messages.error(request, "Perfil de cliente no encontrado")
+        return redirect('inicio')
+    
+    # Buscar compra activa en carrito
+    compra = Compra.objects.filter(
+        id_cliente=cliente,
+        estado="carrito"
+    ).first()
+    
+    if not compra:
+        messages.warning(request, "No tienes productos en el carrito")
+        return redirect('carrito')
+    
+    # Si ya tiene coordenadas guardadas, mostrarlas en el mapa
+    latitud_existente = compra.latitud_destino
+    longitud_existente = compra.longitud_destino
+    direccion_existente = compra.direccion_entrega
+    
+    if request.method == 'POST':
+        latitud = request.POST.get('latitud')
+        longitud = request.POST.get('longitud')
+        direccion = request.POST.get('direccion', '')
+        
+        if not latitud or not longitud:
+            messages.error(request, 'Debes seleccionar una ubicación en el mapa')
+            return render(request, 'pedidos/seleccionar_destino.html', {
+                'compra': compra,
+                'latitud_existente': latitud_existente,
+                'longitud_existente': longitud_existente,
+                'direccion_existente': direccion_existente,
+            })
+        
+        try:
+            # Guardar coordenadas en la compra
+            compra.latitud_destino = float(latitud)
+            compra.longitud_destino = float(longitud)
+            compra.direccion_entrega = direccion
+            compra.save()
+            
+            messages.success(request, '📍 Ubicación de destino guardada correctamente')
+            return redirect('carrito')
+            
+        except Exception as e:
+            messages.error(request, f'Error al guardar la ubicación: {str(e)}')
+    
+    return render(request, 'pedidos/seleccionar_destino.html', {
+        'compra': compra,
+        'latitud_existente': latitud_existente,
+        'longitud_existente': longitud_existente,
+        'direccion_existente': direccion_existente,
     })

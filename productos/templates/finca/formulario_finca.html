@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">{% if finca %}Editar{% else %}Registrar{% endif %} Finca</h3>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Formulario -->
+                <div class="col-md-6">
+                    <form method="POST" id="fincaForm">
+                        {% csrf_token %}
+                        
+                        <!-- Campos del formulario (sin {{ form.as_p }}) -->
+                        <div class="mb-3">
+                            <label for="nombre_finca" class="form-label">Nombre de la finca *</label>
+                            <input type="text" class="form-control" id="nombre_finca" name="nombre_finca" 
+                                   value="{{ finca.nombre_finca|default:'' }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="direccion_finca" class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="direccion_finca" name="direccion_finca" 
+                                   value="{{ finca.direccion_finca|default:'' }}">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="ciudad" class="form-label">Ciudad</label>
+                                <input type="text" class="form-control" id="ciudad" name="ciudad" 
+                                       value="{{ finca.ciudad|default:'' }}">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="departamento" class="form-label">Departamento</label>
+                                <input type="text" class="form-control" id="departamento" name="departamento" 
+                                       value="{{ finca.departamento|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <!-- Campos ocultos para coordenadas -->
+                        <input type="hidden" name="latitud" id="latitud" value="{{ finca.latitud|default:'' }}">
+                        <input type="hidden" name="longitud" id="longitud" value="{{ finca.longitud|default:'' }}">
+                        
+                        {% if finca.latitud %}
+                        <div class="alert alert-info mt-3" id="coordenadas_info" style="display: block;">
+                        {% else %}
+                        <div class="alert alert-info mt-3" id="coordenadas_info" style="display: none;">
+                        {% endif %}
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span id="coordenadas_texto">
+                                {% if finca.latitud and finca.longitud %}
+                                Coordenadas: {{ finca.latitud|floatformat:6 }}, {{ finca.longitud|floatformat:6 }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'lista_fincas' %}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-success" id="btnGuardar">
+                                {% if finca %}Actualizar{% else %}Guardar Finca{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Mapa -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <strong>📍 Selecciona la ubicación en el mapa</strong>
+                            <small class="text-muted d-block">Haz clic en el mapa para marcar la finca</small>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="map" style="height: 400px; width: 100%; border-radius: 0 0 8px 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS y JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Coordenadas iniciales
+    var latInput = document.getElementById('latitud');
+    var lngInput = document.getElementById('longitud');
+    
+    var latInicial = parseFloat(latInput.value);
+    var lngInicial = parseFloat(lngInput.value);
+    
+    if (isNaN(latInicial)) latInicial = 4.7110;
+    if (isNaN(lngInicial)) lngInicial = -74.0721;
+    
+    // Crear mapa
+    var map = L.map('map').setView([latInicial, lngInicial], 13);
+    
+    // Cargar capa de mapa
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Variable para el marcador
+    var marker = null;
+    
+    // Si ya hay coordenadas guardadas, mostrar marcador
+    if (!isNaN(parseFloat(latInput.value)) && !isNaN(parseFloat(lngInput.value))) {
+        marker = L.marker([latInicial, lngInicial]).addTo(map);
+        marker.bindPopup('📍 {{ finca.nombre_finca|default:"Finca" }}').openPopup();
+    }
+    
+    // Evento clic en el mapa
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+        
+        console.log('Coordenadas seleccionadas:', lat, lng); // Para depurar
+        
+        // Actualizar campos ocultos
+        document.getElementById('latitud').value = lat;
+        document.getElementById('longitud').value = lng;
+        
+        // Mostrar info de coordenadas
+        document.getElementById('coordenadas_info').style.display = 'block';
+        document.getElementById('coordenadas_texto').innerHTML = 
+            '📍 Coordenadas seleccionadas: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+        
+        // Mover o crear marcador
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng]).addTo(map);
+        }
+        
+        marker.bindPopup('📍 Ubicación de la finca').openPopup();
+        
+        // Cambiar color del botón para indicar que hay coordenadas
+        document.getElementById('btnGuardar').classList.add('btn-warning');
+        document.getElementById('btnGuardar').classList.remove('btn-success');
+    });
+    
+    // Debug: Mostrar qué datos se envían al submit
+    document.getElementById('fincaForm').addEventListener('submit', function(e) {
+        console.log('Enviando formulario...');
+        console.log('latitud:', document.getElementById('latitud').value);
+        console.log('longitud:', document.getElementById('longitud').value);
+        console.log('nombre_finca:', document.getElementById('nombre_finca').value);
+        
+        if (!document.getElementById('latitud').value || !document.getElementById('longitud').value) {
+            e.preventDefault();
+            alert('❌ Por favor, haz clic en el mapa para seleccionar la ubicación de la finca');
+            return false;
+        }
+        
+        if (!document.getElementById('nombre_finca').value) {
+            e.preventDefault();
+            alert('❌ Por favor, ingresa el nombre de la finca');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Producto, ProductoFinca,CategoriaProducto
+from django.contrib.auth.decorators import login_required
+from .models import Producto, ProductoFinca, CategoriaProducto, Finca
 from pedidos.models import DetallesCompra, Compra
 from usuarios.models import Usuario
 from django.db.models import Sum
@@ -169,3 +170,93 @@ def agregar_al_carrito(request, producto_id):
 
 
 
+#@login_required
+def crear_finca(request):
+    """Vista para crear una nueva finca con selección de ubicación en mapa"""
+    
+    # Verificar que el usuario sea productor
+    if request.user.usuario.rol.upper() != "PRODUCTOR":
+        messages.error(request, "Solo los productores pueden registrar fincas")
+        return redirect('inicio')
+    
+    if request.method == 'POST':
+        # Obtener datos del formulario
+        nombre_finca = request.POST.get('nombre_finca')
+        direccion_finca = request.POST.get('direccion_finca')
+        ciudad = request.POST.get('ciudad')
+        departamento = request.POST.get('departamento')
+        latitud = request.POST.get('latitud')
+        longitud = request.POST.get('longitud')
+        
+        # Validaciones
+        if not nombre_finca:
+            messages.error(request, 'El nombre de la finca es obligatorio')
+            return render(request, 'finca/formulario_finca.html')
+        
+        if not latitud or not longitud:
+            messages.error(request, 'Debes seleccionar la ubicación de la finca en el mapa')
+            return render(request, 'finca/formulario_finca.html')
+        
+        try:
+            # Crear finca
+            finca = Finca.objects.create(
+                id_usuario=request.user.usuario.productor,
+                nombre_finca=nombre_finca,
+                direccion_finca=direccion_finca,
+                ciudad=ciudad,
+                departamento=departamento,
+                latitud=float(latitud),
+                longitud=float(longitud)
+            )
+            
+            messages.success(request, f'¡Finca "{nombre_finca}" registrada exitosamente!')
+            return redirect('lista_fincas')  # Redirige a la lista de fincas
+            
+        except Exception as e:
+            messages.error(request, f'Error al guardar la finca: {str(e)}')
+            return render(request, 'finca/formulario_finca.html')
+    
+    # GET: mostrar formulario vacío
+    return render(request, 'finca/formulario_finca.html')
+
+
+#@login_required
+def editar_finca(request, finca_id):
+    """Vista para editar una finca existente"""
+    
+    finca = get_object_or_404(Finca, id_finca=finca_id)
+    
+    # Verificar que el usuario sea el dueño de la finca
+    if finca.id_usuario.id_usuario.id != request.user.usuario.id:
+        messages.error(request, 'No tienes permiso para editar esta finca')
+        return redirect('lista_fincas')
+    
+    if request.method == 'POST':
+        # Actualizar datos
+        finca.nombre_finca = request.POST.get('nombre_finca')
+        finca.direccion_finca = request.POST.get('direccion_finca')
+        finca.ciudad = request.POST.get('ciudad')
+        finca.departamento = request.POST.get('departamento')
+        
+        latitud = request.POST.get('latitud')
+        longitud = request.POST.get('longitud')
+        
+        if latitud and longitud:
+            finca.latitud = float(latitud)
+            finca.longitud = float(longitud)
+        
+        finca.save()
+        
+        messages.success(request, 'Finca actualizada exitosamente')
+        return redirect('lista_fincas')
+    
+    return render(request, 'finca/formulario_finca.html', {'finca': finca})
+
+
+#@login_required
+def lista_fincas(request):
+    """Lista de fincas del productor"""
+    
+    fincas = Finca.objects.filter(id_usuario=request.user.usuario.productor)
+    
+    return render(request, 'finca/lista_fincas.html', {'fincas': fincas})

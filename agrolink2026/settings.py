@@ -38,12 +38,18 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'uncaricatured-pronunciatory-waldo.ngrok-free.dev'
+    'tova-soullike-gita.ngrok-free.dev'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://uncaricatured-pronunciatory-waldo.ngrok-free.dev'
+    'https://tova-soullike-gita.ngrok-free.dev',
+    'https://*.epayco.co',
+    'https://*.epayco.com',
 ]
+
+# configuracion proxy (necesaria para ngrok)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 
 
@@ -103,9 +109,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_agrolink',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }
@@ -164,10 +170,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 #Ngrok expone tu servidor local de forma rapida y segura
-NGROK_URL = "https://uncaricatured-pronunciatory-waldo.ngrok-free.dev"
+NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
+
 
 # ePayco - MODO PRUEBA
-EPAYCO_P_CUST_ID_CLIENT = "1578302"
-EPAYCO_PUBLIC_KEY       = "4a8276127cf46bf07c05c5125fd9237f"           # ← esta va en el botón
-EPAYCO_PRIVATE_KEY      = "d7a699bae786d86c29a1a388072a1582"
+
+EPAYCO_P_CUST_ID_CLIENT = "1578391"
+EPAYCO_PUBLIC_KEY       = "85dea90f2f9698288308dbf8becc999f"
+EPAYCO_PRIVATE_KEY      = "491b7dc662d7f46758985453db0a6d50"
 EPAYCO_TEST             = True

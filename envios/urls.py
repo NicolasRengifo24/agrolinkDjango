@@ -13,5 +13,6 @@ urlpatterns = [
     path('mis-envios/', views.mis_envios, name='mis_envios'),
     path('aceptar-viaje/<int:envio_id>/', views.aceptar_viaje, name='aceptar_viaje'),
     
+    
 ] 
 
