@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 class Calificacion(models.Model):
 <<<<<<< HEAD
+<<<<<<< HEAD
     producto = models.ForeignKey('productos.Producto', on_delete=models.CASCADE, related_name='calificaciones')
     usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     puntaje = models.IntegerField()
@@ -18,3 +19,13 @@ class Calificacion(models.Model):
         managed = True
         db_table = 'tb_calificacion'
 >>>>>>> upstream/main
+=======
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='calificaciones')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    puntaje = models.IntegerField()  # 1 a 5
+    comentario = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.producto} - {self.puntaje}"
+>>>>>>> parent of c4eafec (Calificaciones)

@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'calificaciones.apps.CalificacionesConfig',
+    'calificaciones',
     'envios',
     'productos',
     'servicios',
@@ -176,6 +176,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -191,3 +192,5 @@ EPAYCO_PUBLIC_KEY       = "85dea90f2f9698288308dbf8becc999f"
 EPAYCO_PRIVATE_KEY      = "491b7dc662d7f46758985453db0a6d50"
 EPAYCO_TEST             = True
 >>>>>>> upstream/main
+=======
+>>>>>>> parent of c4eafec (Calificaciones)
