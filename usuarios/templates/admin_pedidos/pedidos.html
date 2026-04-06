@@ -1,0 +1,18 @@
+    {% extends "base/base_admin.html" %}
+    {% load static %}
+
+    {% block extra_css %}
+        <link rel="stylesheet" href="{% static 'css/pedidos.css' %}">
+    {% endblock %}
+
+    {% block title %}Pedidos{% endblock %}
+
+    {% block content %}
+
+    {% include "admin_pedidos/kpis.html" %}
+    {% include "admin_pedidos/tabla_pedidos.html" %}
+    {% include "admin_pedidos/modal_pedidos.html" %}
+
+<script src="{% static 'js/pedidos.js' %}"></script>
+
+    {% endblock %}

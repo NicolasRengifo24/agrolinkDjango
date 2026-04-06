@@ -1,4 +1,13 @@
+<<<<<<< HEAD
 
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+=======
+# created by virtualenv automatically
+.env 
+venv/
+__pycache__/
+*.pyc
+
+>>>>>>> upstream/main

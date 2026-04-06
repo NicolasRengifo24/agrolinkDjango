@@ -1,0 +1,79 @@
+<div class="card-glass p-4">
+
+    <h5 class="mb-4">Listado de Compras</h5>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Subtotal</th>
+                    <th>Impuestos</th>
+                    <th>Envío</th>
+                    <th>Total</th>
+                    <th>Dirección</th>
+                    <th>Método de Pago</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for c in compras %}
+                <tr>
+
+                    <td>{{ c.id_compra }}</td>
+
+                    <td>
+                        {{ c.id_cliente.nombre }} 
+                        {{ c.id_cliente.apellido }}
+                    </td>
+
+                    <td>
+                        {{ c.fecha_hora_compra|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td class="text-success">
+                        ${{ c.subtotal }}
+                    </td>
+
+
+                    <td>
+                        ${{ c.impuestos }}
+                    </td>
+
+                    <td>
+                        ${{ c.valor_envio|default:"0" }}
+                    </td>
+
+                    <td class="fw-bold text-primary">
+                        ${{ c.total }}
+                    </td>
+
+                    <td>
+                        {{ c.direccion_entrega|default:"No registrada" }}
+                    </td>
+
+                    <td>
+                        {{ c.metodo_pago|default:"No definido" }}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'ver_detalle_compra' c.id_compra %}" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i>
+                            Ver Detalle
+                        </a>
+                    </td>
+
+
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>

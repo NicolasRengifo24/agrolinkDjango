@@ -1,0 +1,47 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/mis_pedidos.css' %}">
+
+<div class="container">
+
+    <h1>📦 Mis Pedidos</h1>
+
+    {% if not pedidos %}
+        <p>No tienes pedidos aún</p>
+    {% endif %}
+
+    {% for pedido in pedidos %}
+
+    <div class="pedido-card">
+
+        <div class="pedido-header">
+            <span>Pedido #{{ pedido.compra.id_compra }}</span>
+            <span class="estado {{ pedido.compra.estado }}">
+                {{ pedido.compra.estado }}
+            </span>
+        </div>
+
+        <div class="pedido-body">
+
+            {% for item in pedido.detalles %}
+            <div class="producto">
+                <img src="{{ item.id_producto.imagen.url }}">
+                <div>
+                    <h4>{{ item.id_producto.nombre }}</h4>
+                    <p>Cantidad: {{ item.cantidad }}</p>
+                </div>
+                <span>$ {{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="pedido-footer">
+            <span>Total:</span>
+            <strong>$ {{ pedido.compra.total }}</strong>
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>

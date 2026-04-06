@@ -1,0 +1,44 @@
+{% extends "base/base_admin.html" %}
+{% load static %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- KPIs -->
+    {% include "admin_usuarios/kpis.html" %}
+
+    <!-- Card principal -->
+    <div class="card-glass mt-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-800 mb-0"= style="color:var(--green);">👥Gestión de Usuarios</h5>
+            <a href="{% url 'crear_usuario' %}" class="btn btn-success">
+                <i class="bi bi-person-plus-fill me-1"></i>
+                Agregar Usuario
+            </a>
+        </div>
+
+        <!-- Tabs -->
+        {% include "admin_usuarios/tabs.html" %}
+
+        <!-- Tab content -->
+        <div class="tab-content">
+
+            {% include "admin_usuarios/tabla_clientes.html" %}
+            {% include "admin_usuarios/tabla_productores.html" %}
+            {% include "admin_usuarios/tabla_transportista.html" %}
+            {% include "admin_usuarios/tabla_asesores.html" %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modales -->
+{% include "admin_usuarios/modales.html" %}
+
+{% endblock %}

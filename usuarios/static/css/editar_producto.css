@@ -1,0 +1,141 @@
+/* ============================================================
+   editar_producto.css
+   Estilos exclusivos del formulario de edición de producto.
+   Ubicación: static/css/editar_producto.css
+
+   Nota: este archivo complementa crear_producto.css
+   que ya contiene las variables, grids, inputs, botones, etc.
+   ============================================================ */
+
+/* ── Badge de estado / ID ─────────────────────────────────── */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  margin-left: 8px;
+}
+
+.badge-estado::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ── Contenedor imagen actual ─────────────────────────────── */
+.imagen-actual {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.imagen-actual img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Placeholder cuando no hay imagen */
+.imagen-sin-foto {
+  width: 100px;
+  height: 100px;
+  background: var(--accent-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px dashed var(--border);
+}
+
+.imagen-sin-foto svg {
+  width: 32px;
+  height: 32px;
+  stroke: var(--accent);
+  fill: none;
+}
+
+/* Info al lado de la imagen */
+.imagen-actual-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.imagen-actual-info strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.imagen-actual-info span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Botón "Cambiar imagen" */
+.toggle-imagen {
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 4px;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s;
+}
+
+.toggle-imagen:hover {
+  color: var(--accent-dark);
+}
+
+/* ── Zona de nueva imagen (oculta por defecto) ────────────── */
+.nueva-imagen-zone {
+  display: none;
+  margin-top: 12px;
+}
+
+.nueva-imagen-zone.visible {
+  display: block;
+}
+
+/* ── Badge "Actual" en tarjeta de finca ───────────────────── */
+.finca-actual-badge {
+  font-size: 11px;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ── Bloque de error global ───────────────────────────────── */
+.form-error-banner {
+  background: #fdecea;
+  border: 1px solid var(--error);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--error);
+}

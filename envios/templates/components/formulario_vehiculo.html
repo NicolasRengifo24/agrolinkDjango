@@ -1,0 +1,97 @@
+{% load static %}
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <h4 class="fw-bold mb-4">
+            <i class="bi bi-plus-circle me-2 text-success"></i>Agregar un vehículo
+        </h4>
+        
+        <form id="formAgregarVehiculo" method="post" enctype="multipart/form-data" action="{% url 'agregar_vehiculo' %}">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+                <!-- Tipo de vehículo -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Tipo de vehículo *</label>
+                    <select class="form-select" id="tipoVehiculo" name="tipo_vehiculo" required>
+                        <option value="" selected disabled>Selecciona un tipo</option>
+                        <option value="Camión">🚛 Camión</option>
+                        <option value="Camioneta">🚙 Camioneta</option>
+                        <option value="Van">🚐 Van</option>
+                        <option value="Furgón">📦 Furgón</option>
+                        <option value="Volqueta">⛟ Volqueta</option>
+                    </select>
+                </div>
+                
+                <!-- Placa -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Placa *</label>
+                    <input type="text" class="form-control" id="placa" name="placa_vehiculo"
+                           placeholder="Ej: ABC-123" required>
+                    <div class="form-text">Ingresa la placa sin espacios</div>
+                </div>
+                
+                <!-- Capacidad -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Capacidad máxima (kg) *</label>
+                    <input type="range" class="form-range peso-slider" 
+                           min="0" max="15000" step="100" value="0"
+                           oninput="actualizarValorSlider(this.value)">
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="text-muted">0 kg</small>
+                        <span class="badge bg-success valor-peso">0 kg</span>
+                        <small class="text-muted">15000 kg</small>
+                    </div>
+                    <!-- Campo oculto que guardará el valor para enviar al servidor -->
+                    <input type="hidden" name="capacidad_carga" id="capacidad_carga" value="0">
+                </div>
+                
+                <!-- Documentos -->
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Documentos del vehículo</label>
+                    <input class="form-control" type="file" id="documentos" name="documento_propiedad" multiple accept=".pdf,.jpg,.png,.webp">
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i> Sube SOAT, tarjeta de propiedad (PDF o imagen)
+                    </div>
+                </div>
+                
+                <!-- Botón submit -->
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                        <i class="bi bi-save me-2"></i>Registrar vehículo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Función para actualizar el valor del slider y el campo oculto
+    function actualizarValorSlider(valor) {
+        // Actualizar el span que muestra el valor
+        const valorSpan = document.querySelector('.valor-peso');
+        if (valorSpan) {
+            valorSpan.textContent = `${valor} kg`;
+        }
+        
+        // Actualizar el campo oculto que se enviará al servidor
+        const capacidadInput = document.getElementById('capacidad_carga');
+        if (capacidadInput) {
+            capacidadInput.value = valor;
+        }
+    }
+    
+    // Inicializar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar con valor 0
+        actualizarValorSlider(0);
+        
+        // También puedes agregar evento al slider por si acaso
+        const slider = document.querySelector('.peso-slider');
+        if (slider) {
+            slider.addEventListener('input', function(e) {
+                actualizarValorSlider(e.target.value);
+            });
+        }
+    });
+</script>

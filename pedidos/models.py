@@ -1,21 +1,23 @@
 from django.db import models
 from usuarios.models import Cliente
-
 # Create your models here.
 
 class Compra(models.Model):
     id_compra = models.AutoField(primary_key=True)
     id_cliente = models.ForeignKey('usuarios.Cliente', models.DO_NOTHING, db_column='id_cliente')
-    fecha_hora_compra = models.DateTimeField()
+    fecha_hora_compra = models.DateTimeField(auto_now_add=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     impuestos = models.DecimalField(max_digits=10, decimal_places=2)
     valor_envio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    estado = models.CharField(max_length=20, default='')
     total = models.DecimalField(max_digits=10, decimal_places=2)
     direccion_entrega = models.CharField(max_length=200, blank=True, null=True)
     metodo_pago = models.CharField(max_length=50, blank=True, null=True)
+    latitud_destino = models.FloatField(blank=True, null=True)
+    longitud_destino = models.FloatField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_compras'
 
 
@@ -26,7 +28,11 @@ class DetallesCompra(models.Model):
     cantidad = models.IntegerField()
     precio_unitario = models.DecimalField(max_digits=12, decimal_places=2)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    distancia_km = models.FloatField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tb_detalles_compra'
+        
+        
+

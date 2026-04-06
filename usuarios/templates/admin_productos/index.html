@@ -1,0 +1,20 @@
+{% extends "base/base_admin.html" %}
+{% load static %}
+
+{% block title %}Productos{% endblock %}
+
+{% block content %}
+
+<!-- KPIs -->
+{% include "admin_productos/kpis.html" %}
+
+<!-- Filtros -->
+{% include "admin_productos/filtros.html" %}
+
+<!-- Tabla -->
+{% include "admin_productos/tabla_productos.html" %}
+
+<!-- Scripts -->
+{% include "admin_productos/scripts.html" %}
+
+{% endblock %}

@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transportista - Viajes disponibles</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/envios.css'%}">
+    <link rel="stylesheet" href="{% static 'css/estilos.css'%}">
+    <!--  mapa interactivo -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        /* Eliminar espacios en blanco */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f8faf7;
+            font-family: "Inter", sans-serif;
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Asegurar que el navbar esté pegado arriba */
+        .navbar-custom {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin: 0;
+            padding: 0.1rem 0;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!-- Barra de navegación -->
+    {% include 'components/navbar_transportista.html' %}
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="container mt-4">
+            <div class="row">
+                <!-- Filtros -->
+                <div class="col-lg-3">
+                    {% include 'components/filtros_transportista.html' %}
+                </div>
+
+                <!-- Lista de viajes -->
+                <div class="col">
+                    {% include 'components/lista_viajes.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para aceptar viaje -->
+    <div class="modal fade" id="aceptarViajeModal" tabindex="-1" aria-labelledby="aceptarViajeModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #2f6b31 0%, #0e2a1c 100%);">
+                    <h5 class="modal-title text-white" id="aceptarViajeModalLabel">
+                        <i class="bi bi-check-circle-fill me-2"></i>Aceptar Viaje
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form id="formAceptarViaje">
+                    {% csrf_token %}
+                    <input type="hidden" id="envio_id" name="envio_id">
+                    <div class="modal-body">
+                        <!-- Información del viaje -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="mb-2"><i class="bi bi-info-circle me-2"></i>Información del Viaje</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Origen:</small>
+                                    <p id="modal-origen" class="mb-1 fw-bold"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Destino:</small>
+                                    <p id="modal-destino" class="mb-1 fw-bold"></p>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Distancia:</small>
+                                    <p id="modal-distancia" class="mb-1 fw-bold"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Peso:</small>
+                                    <p id="modal-peso" class="mb-1 fw-bold"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selección de vehículo -->
+                        <div class="mb-3">
+                            <label for="vehiculo_id" class="form-label fw-bold">
+                                <i class="bi bi-truck me-2"></i>Seleccionar Vehículo *
+                            </label>
+                            <select class="form-select" id="vehiculo_id" name="vehiculo_id" required>
+                                <option value="">Selecciona un vehículo...</option>
+                                {% for vehiculo in vehiculos_activos %}
+                                <option value="{{ vehiculo.id_vehiculo }}"
+                                    data-capacidad="{{ vehiculo.capacidad_carga }}">
+                                    {{ vehiculo.tipo_vehiculo }} - {{ vehiculo.placa_vehiculo }}
+                                    (Cap: {{ vehiculo.capacidad_carga|floatformat:0 }} kg)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Solo se muestran vehículos activos
+                            </div>
+                        </div>
+
+                        <!-- Fechas -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_recoleccion" class="form-label fw-bold">
+                                    <i class="bi bi-calendar-check me-2"></i>Fecha de Recolección *
+                                </label>
+                                <input type="date" class="form-control" id="fecha_recoleccion" name="fecha_recoleccion"
+                                    required min="{% now 'Y-m-d' %}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_entrega_estimada" class="form-label fw-bold">
+                                    <i class="bi bi-calendar-event me-2"></i>Fecha Estimada de Entrega *
+                                </label>
+                                <input type="date" class="form-control" id="fecha_entrega_estimada"
+                                    name="fecha_entrega_estimada" required>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de costos -->
+                        <div class="alert alert-success mt-2">
+                            <h6 class="mb-2"><i class="bi bi-calculator me-2"></i>Resumen de Costos</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <small class="text-muted">Tarifa por km:</small>
+                                    <p class="mb-0 fw-bold">$3,000/km</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">Tarifa por kg:</small>
+                                    <p class="mb-0 fw-bold">$200/kg</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <small class="text-muted">Costo Total Estimado:</small>
+                                    <p class="mb-0 fw-bold text-success" id="costo_total_estimado">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Aceptar Viaje
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% include 'components/footer.html' %}
+
+    <!--Script del mapa -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script id="envios-data" type="application/json">
+    {{ envios_json|safe }}
+    </script>
+    <script src="{% static 'script/mapa_script.js' %}"></script>
+    <!--Bootstrap-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'script/envios_script.js' %}"></script>
+    <script>
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Función global para abrir el modal
+    function abrirModalAceptarViaje(envioId, origen, destino, distancia, peso) {
+        console.log('Función llamada correctamente', envioId);
+        
+        // Guardar el ID del envío
+        document.getElementById('envio_id').value = envioId;
+        
+        // Mostrar información en el modal
+        document.getElementById('modal-origen').textContent = origen || 'No especificado';
+        document.getElementById('modal-destino').textContent = destino || 'No especificado';
+        document.getElementById('modal-distancia').textContent = distancia ? distancia + ' km' : 'No calculada';
+        document.getElementById('modal-peso').textContent = peso ? peso + ' kg' : 'No especificado';
+        
+        // Calcular costo estimado
+        if (distancia && peso) {
+            var costoKm = parseFloat(distancia) * 3000;
+            var costoPeso = parseFloat(peso) * 200;
+            var costoTotal = costoKm + costoPeso;
+            document.getElementById('costo_total_estimado').textContent = '$' + costoTotal.toLocaleString('es-CO');
+        }
+        
+        // Limpiar fechas
+        document.getElementById('fecha_recoleccion').value = '';
+        document.getElementById('fecha_entrega_estimada').value = '';
+        
+        // Configurar fecha mínima
+        var fechaRecoleccion = document.getElementById('fecha_recoleccion');
+        var fechaEntrega = document.getElementById('fecha_entrega_estimada');
+        
+        fechaRecoleccion.onchange = function() {
+            if (this.value) {
+                var fechaRec = new Date(this.value);
+                var fechaMinEntrega = new Date(fechaRec);
+                fechaMinEntrega.setDate(fechaRec.getDate() + 1);
+                var fechaMinStr = fechaMinEntrega.toISOString().split('T')[0];
+                fechaEntrega.min = fechaMinStr;
+                if (fechaEntrega.value && fechaEntrega.value < fechaMinStr) {
+                    fechaEntrega.value = fechaMinStr;
+                }
+            }
+        };
+        
+        // Abrir el modal
+        var modalElement = document.getElementById('aceptarViajeModal');
+        var modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+
+    // Manejar el envío del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('formAceptarViaje');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                var envioId = document.getElementById('envio_id').value;
+                var vehiculoId = document.getElementById('vehiculo_id').value;
+                var fechaRecoleccion = document.getElementById('fecha_recoleccion').value;
+                var fechaEntrega = document.getElementById('fecha_entrega_estimada').value;
+                
+                if (!vehiculoId) {
+                    alert('Por favor selecciona un vehículo');
+                    return;
+                }
+                
+                if (!fechaRecoleccion || !fechaEntrega) {
+                    alert('Por favor selecciona ambas fechas');
+                    return;
+                }
+                
+                if (new Date(fechaEntrega) <= new Date(fechaRecoleccion)) {
+                    alert('La fecha de entrega debe ser posterior a la fecha de recolección');
+                    return;
+                }
+                
+                // Mostrar loading
+                var submitBtn = form.querySelector('button[type="submit"]');
+                var originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Procesando...';
+                
+                fetch('/aceptar-viaje/' + envioId + '/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'vehiculo_id=' + encodeURIComponent(vehiculoId) + 
+                          '&fecha_recoleccion=' + encodeURIComponent(fechaRecoleccion) + 
+                          '&fecha_entrega_estimada=' + encodeURIComponent(fechaEntrega)
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + data.message);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    alert('❌ Error al aceptar el viaje');
+                })
+                .finally(function() {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+            });
+        }
+    });
+
+    // Agregar esto dentro del DOMContentLoaded
+document.querySelectorAll('.btn-aceptar-viaje').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        var origen = this.getAttribute('data-origen');
+        var destino = this.getAttribute('data-destino');
+        var distancia = this.getAttribute('data-distancia');
+        var peso = this.getAttribute('data-peso');
+        abrirModalAceptarViaje(id, origen, destino, distancia, peso);
+    });
+});
+</script>
+</body>
+
+</html>
+
+<style>
+    /* Eliminar espacios sobrantes */
+    .container {
+        max-width: 100% !important;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Asegurar que las columnas no tengan padding extra */
+    .col-lg-3,
+    .col-lg-9 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Agregar espacio solo donde queremos */
+    .col-lg-3 {
+        padding-right: 1.5rem !important;
+    }
+
+    @media (min-width: 992px) {
+        .col-lg-3 {
+            flex: 0 0 auto;
+            width: 280px;
+            /* Ancho fijo para el filtro */
+        }
+
+        .col-lg-9 {
+            flex: 1;
+            /* Ocupa el resto */
+            width: auto;
+        }
+    }
+</style>

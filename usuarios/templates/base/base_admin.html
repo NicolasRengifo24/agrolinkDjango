@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Admin{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<div class="app">
+    {% include "fragments/admin_sidebar.html" %}
+    <div class="main-content">
+        {% include "fragments/admin_topbar.html" %}
+        {% include "fragments/alerts.html" %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Toastify JS -->
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<!-- Mensajes Django → Toastify -->
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    {% for message in messages %}
+        Toastify({
+        text: '{{ message|escapejs }}',
+        duration: 3500,
+        gravity: 'top',
+        position: 'right',
+        stopOnFocus: true,
+        style: {
+        
+            background: '{% if message.tags == "error" %}#c0392b{% elif message.tags == "warning" %}#e67e22{% else %}#2a4f26{% endif %}',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontFamily: 'DM Sans, sans-serif',
+            padding: '12px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        }
+        }).showToast();
+    {% endfor %}
+    });
+</script>
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

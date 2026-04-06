@@ -1,0 +1,332 @@
+/* =========================
+   VARIABLES GLOBALES
+========================= */
+:root {
+    --green: #2f6b31;
+    --green-light: #3f8a41;
+    --green-dark: #1d4820;
+    --muted: #7e8b7e;
+    --glass: rgba(255,255,255,0.85);
+}
+
+/* =========================
+   BODY
+========================= */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    background: linear-gradient(180deg,#f8faf7,#f1f4ef);
+}
+
+/* =========================
+   LAYOUT
+========================= */
+.app {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.main-content {
+    padding: 10px;
+}
+
+/* =========================
+   SIDEBAR (MEJORADO)
+========================= */
+.brand-title-admin{
+    font-weight:800;
+    background:linear-gradient(135deg,var(--green),var(--green-light));
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+    font-size:1.4rem;
+    }
+
+    .role-badge{
+    background:var(--green);
+    color:white;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:0.75rem;
+    font-weight:600;
+    }
+
+#sidebar {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.05);
+    height: calc(100vh - 80px);
+    padding: 20px;
+    position: sticky;
+    top: 40px;
+    transition: 3s;
+    box-shadow: 0 20px 40px rgba(47,107,49,0.8);
+}
+
+#sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: 25s;
+}
+
+#sidebar .nav-item:hover {
+    background: rgba(47,107,49,0.1);
+    color: var(--green);
+    transform: translateX(4px);
+}
+
+#sidebar .active {
+    background: linear-gradient(135deg,var(--green),var(--green-light));
+    color: white;
+    box-shadow: 0 12px 24px rgba(47,107,49,0.3);
+}
+
+.nav-item .bi{
+    font-size: 1.2rem;
+    width: 24px;
+    opacity: 0.8;
+}
+
+.nav-item.active .bi {
+    opacity: 1;
+}
+
+
+
+/* =========================
+   BRAND
+========================= */
+.brand-admin {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.brand-title-admin {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--green);
+}
+
+.role-badge {
+    background: var(--green);
+    color: white;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+.topbar-admin {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   KPI CARDS (PRO)
+========================= */
+.card-glass {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    transition: 0.3s;
+}
+
+.card-glass:hover {
+    transform: translateY(-5px);
+}
+
+/* =========================
+   TABLAS
+========================= */
+.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-hover tbody tr:hover {
+    background: rgba(47,107,49,0.04);
+    transform: scale(1.01);
+    transition: all 0.2s; 
+}
+
+/* =========================
+   BOTONES
+========================= */
+.btn {
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+
+/* KPI PRO */
+.kpi-admin {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-admin:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.kpi-number {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.kpi-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.kpi-trend {
+    font-size: 13px;
+    color: #777;
+}
+
+/* ICONOS */
+.kpi-icon-admin {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+}
+
+/* COLORES PERSONALIZADOS */
+.bg-primary { background: linear-gradient(135deg,#3498db,#2980b9); }
+.bg-success { background: linear-gradient(135deg,#2ecc71,#27ae60); }
+.bg-warning { background: linear-gradient(135deg,#f39c12,#e67e22); }
+.bg-purple { background: linear-gradient(135deg,#9b59b6,#8e44ad); }
+
+.text-purple { color: #9b59b6; }
+
+/* ANIMACIÓN */
+.fade-admin {
+    animation: fadeUp 0.2s ease;
+}
+
+@keyframes fadeUp {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+
+
+/* =========================
+   MODALES
+========================= */
+.modal-content {
+    border-radius: 15px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px) {
+    .app {
+        grid-template-columns: 1fr;
+    }
+
+    #sidebar {
+        display: none;
+    }
+}
+
+
+/* =========================
+USUARIOS - TABS PERSONALIZADOS*/
+
+#usuariosTabs .nav-link {
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.3s;
+    margin-right: 8px;
+    border: 2px solid transparent;
+    }
+
+    #usuariosTabs .nav-link:hover {
+    background: rgba(47,107,49,0.08);
+    color: var(--green);
+    }
+
+    #usuariosTabs .nav-link.active {
+    background: linear-gradient(135deg, var(--green), var(--green-light));
+    color: white;
+    box-shadow: 0 8px 20px rgba(47,107,49,0.3);
+    border-color: transparent;
+    }
+
+    #usuariosTabs .nav-link .badge {
+    background: rgba(255,255,255,0.3) !important;
+    }
+
+    #usuariosTabs .nav-link.active .badge {
+    background: rgba(255,255,255,0.25) !important;
+    }
+
+
+    /* ==========diseño vistas envios===============
+/* =========================
+   ENVIOS
+========================= */
+
+.badge-envio {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* estados */
+.estado-entregado {
+    background: linear-gradient(135deg,#2ecc71,#27ae60);
+    color: white;
+}
+
+.estado-camino {
+    background: linear-gradient(135deg,#f39c12,#e67e22);
+    color: white;
+}
+
+.estado-pendiente {
+    background: linear-gradient(135deg,#e74c3c,#c0392b);
+    color: white;
+}
+
+#mapaEnvio{
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}

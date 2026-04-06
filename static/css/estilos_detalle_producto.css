@@ -1,0 +1,219 @@
+body {
+    background: #f6f8f4;
+    font-family: "Inter", sans-serif;
+}
+
+a {
+    text-decoration: none !important;
+}
+
+/* -------- NAVBAR PREMIUM -------- */
+.navbar-custom {
+    background: white;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 10px 0;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Nunito", sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #2f6b31;
+    transition: all 0.3s ease;
+    margin-left: -10px;
+}
+
+.brand-logo img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    background: white;
+    padding: 2px;
+    position: relative;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.brand-logo:hover img {
+    transform: scale(1.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.brand-logo:hover {
+    transform: translateY(-3px);
+}
+
+/* Search Box */
+.search-box {
+    width: 320px;
+    border-radius: 10px;
+    border: 1px solid #d1dfcc;
+    overflow: hidden;
+}
+
+.search-box input {
+    border: none;
+    padding: 10px;
+    width: 100%;
+    outline: none;
+}
+
+.search-box button {
+    border: none;
+    background: #2f6b31;
+    color: white;
+    padding: 10px 12px;
+}
+
+/* Mega Menu */
+.mega-menu-dropdown {
+    width: 100vw;
+    left: 0 !important;
+    transform: none !important;
+    margin-top: 0;
+    border: none;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.mega-title {
+    color: #2f6b31;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.mega-list a {
+    color: #666;
+    font-size: 0.9rem;
+    padding: 4px 0;
+    display: block;
+    transition: color 0.2s;
+}
+
+.mega-list a:hover {
+    color: #2f6b31;
+}
+
+/* Profile */
+.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Cart Badge */
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Breadcrumb */
+.breadcrumb-custom {
+    margin: 20px 0;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-custom a {
+    color: #2f6b31;
+    text-decoration: none;
+}
+
+.breadcrumb-custom a:hover {
+    text-decoration: underline;
+}
+
+/* Product Styles */
+.product-gallery {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+    height: 100%;
+}
+
+.product-gallery img {
+    border-radius: 12px;
+    width: 100%;
+    object-fit: cover;
+    height: 100%;
+}
+
+.thumbs img {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: .2s;
+}
+
+.thumbs img:hover {
+    opacity: 1;
+}
+
+.product-info {
+    background: #fff;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+}
+
+.product-title {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.product-price {
+    font-size: 2rem;
+    color: #2f6b31;
+    font-weight: 700;
+}
+
+.btn-buy {
+    background: #2f6b31;
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    width: 100%;
+    border: none;
+}
+
+.btn-buy:hover {
+    background: #1d4820;
+    color: #fff;
+}
+
+.details-box {
+    background: #fff;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+}
+
+.product-card {
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+    transition: .2s;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+.product-img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}

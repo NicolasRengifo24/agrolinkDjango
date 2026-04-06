@@ -1,0 +1,117 @@
+<div class="envios-page">
+
+  <!-- FILA 1 -->
+  <div class="row g-4 mb-4 fade-admin">
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-blue-total">
+        <div class="kpi-content">
+          <div>
+            <h3>{{ total_envios }}</h3>
+            <p>Total Envíos</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-content">
+          <div>
+            <h3>{{ envios_activos }}</h3>
+            <p>Envíos Activos</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-truck"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-green">
+        <div class="kpi-content">
+          <div>
+            <h3>{{ envios_entregados }}</h3>
+            <p>Entregados</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FILA 2 -->
+  <div class="row g-4 mb-4">
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-content">
+          <div>
+            <h3>{{ envios_pendientes }}</h3>
+            <p>Pendientes</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-clock-history"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-cyan">
+        <div class="kpi-content">
+          <div>
+            <h3>{{ envios_mes }}</h3>
+            <p>Envíos del Mes</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-red">
+        <div class="kpi-content">
+          <div>
+            <h3>${{ costo_envios_mes|default:"0" }}</h3>
+            <p>Costo Envíos Mes</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FILA 3 -->
+  <div class="row g-4">
+
+    <div class="col-md-4">
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-content">
+          <div>
+            <h3>${{ costo_envios|default:"0" }}</h3>
+            <p>Costos Envío</p>
+          </div>
+          <div class="kpi-icon">
+            <i class="bi bi-cash"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+

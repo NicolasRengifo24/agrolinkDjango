@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mis Fincas</h2>
+        <a href="{% url 'crear_finca' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nueva Finca
+        </a>
+    </div>
+    
+    {% if fincas %}
+    <div class="row">
+        {% for finca in fincas %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-success">{{ finca.nombre_finca }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="bi bi-geo-alt"></i> {{ finca.direccion_finca|default:"Dirección no registrada" }}
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            📍 {{ finca.ciudad|default:"Ciudad no registrada" }}, 
+                            {{ finca.departamento|default:"Departamento no registrado" }}
+                        </small>
+                    </p>
+                    {% if finca.latitud and finca.longitud %}
+                    <p class="card-text">
+                        <small class="text-success">
+                            <i class="bi bi-map"></i> Ubicación marcada en mapa
+                        </small>
+                    </p>
+                    {% else %}
+                    <p class="card-text">
+                        <small class="text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Sin ubicación en mapa
+                        </small>
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'editar_finca' finca.id_finca %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle fs-1"></i>
+        <p class="mt-2">No tienes fincas registradas aún.</p>
+        <a href="{% url 'crear_finca' %}" class="btn btn-success">Registrar mi primera finca</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

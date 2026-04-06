@@ -1,0 +1,84 @@
+
+
+/* KPI CARD */
+.servicios-page .servicios-kpi-card{
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  transition: 0.3s;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.servicios-page .servicios-kpi-card:hover{
+  transform: translateY(-6px);
+}
+
+/* EFECTO LINEA SUPERIOR */
+.servicios-page .servicios-kpi-card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:5px;
+  border-radius: 18px 18px 0 0;
+}
+
+/* CONTENIDO */
+.servicios-page .servicios-kpi-content{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.servicios-page .servicios-kpi-card h3{
+  margin:0;
+  font-weight:800;
+  font-size:26px;
+}
+
+.servicios-page .servicios-kpi-card p{
+  margin:0;
+  color:#777;
+  font-weight:500;
+}
+
+/* ICONO */
+.servicios-page .servicios-kpi-icon{
+  width:60px;
+  height:60px;
+  border-radius:15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  color:white;
+}
+
+/* COLORES */
+
+/* VERDE PRINCIPAL */
+.servicios-page .servicios-kpi-green::before{
+  background: linear-gradient(135deg,#2f6b31,#3f8a41);
+}
+.servicios-page .servicios-kpi-green .servicios-kpi-icon{
+  background: linear-gradient(135deg,#2f6b31,#3f8a41);
+}
+
+/* SUCCESS */
+.servicios-page .servicios-kpi-success::before{
+  background: linear-gradient(135deg,#2ecc71,#27ae60);
+}
+.servicios-page .servicios-kpi-success .servicios-kpi-icon{
+  background: linear-gradient(135deg,#2ecc71,#27ae60);
+}
+
+/* GRAY */
+.servicios-page .servicios-kpi-gray::before{
+  background: linear-gradient(135deg,#95a5a6,#7f8c8d);
+}
+.servicios-page .servicios-kpi-gray .servicios-kpi-icon{
+  background: linear-gradient(135deg,#95a5a6,#7f8c8d);
+}

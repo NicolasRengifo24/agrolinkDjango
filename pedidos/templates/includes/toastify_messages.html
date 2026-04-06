@@ -1,0 +1,25 @@
+<!-- Toastify CSS y JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+  {% if messages %}
+    {% for message in messages %}
+      Toastify({
+        text: "{{ message }}",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        {% if message.tags == "success" %}
+        backgroundColor: "#4fbe87",
+        {% elif message.tags == "error" %}
+        backgroundColor: "#f44336",
+        {% elif message.tags == "warning" %}
+        backgroundColor: "#ff9800",
+        {% else %}
+        backgroundColor: "#333",
+        {% endif %}
+      }).showToast();
+    {% endfor %}
+  {% endif %}
+</script>

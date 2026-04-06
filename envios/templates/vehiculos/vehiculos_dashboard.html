@@ -1,0 +1,166 @@
+{% extends 'base_vehiculos.html' %}
+{% load static %}
+
+{% block title %}AgroLink - Mis Vehículos{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos de la página de vehículos */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-title {
+        border-left: 4px solid #2f6b31;
+        padding-left: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #c6dc93;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Mis vehículos -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold section-title">
+                <i class="bi bi-truck me-2"></i>Mis vehículos registrados
+            </h2>
+            <span class="badge bg-primary rounded-pill">{{ vehiculos|length }} vehículos</span>
+        </div>
+
+        <div class="row g-4" id="contenedor-vehiculos">
+            {% if vehiculos %}
+            {% for vehiculo in vehiculos %}
+            {% include 'components/tarjeta_vehiculo.html' with vehiculo=vehiculo %}
+            {% endfor %}
+            {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="bi bi-truck"></i>
+                    <h5 class="mt-3">No tienes vehículos registrados</h5>
+                    <p class="text-muted">Agrega tu primer vehículo usando el formulario</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Formulario para agregar vehículo -->
+    <section class="mt-5">
+        {% include 'components/formulario_vehiculo.html' %}
+    </section>
+
+</div>
+{% endblock %}
+
+
+<script>
+    // Actualizar valor del slider
+    function actualizarValorSlider(valor) {
+        const valorSpan = document.querySelector('.valor-peso');
+        if (valorSpan) {
+            valorSpan.textContent = `${valor} kg`;
+        }
+    }
+
+    // Evento para el slider de capacidad
+    document.addEventListener('DOMContentLoaded', function () {
+        const slider = document.querySelector('.peso-slider');
+        if (slider) {
+            slider.addEventListener('input', function (e) {
+                actualizarValorSlider(e.target.value);
+            });
+        }
+
+        // Inicializar el valor del slider
+        actualizarValorSlider(0);
+    });
+
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Cambiar estado del vehículo
+    function cambiarEstadoVehiculo(vehiculoId) {
+        fetch(`/vehiculos/cambiar-estado/${vehiculoId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Recargar para mostrar el cambio
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar el estado');
+        });
+    }
+
+    // Asignar eventos a los botones
+    document.addEventListener('DOMContentLoaded', function() {
+        // Botones suspender
+        document.querySelectorAll('.suspender-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const vehiculoId = this.getAttribute('data-id');
+                if (confirm('¿Estás seguro de suspender este vehículo?')) {
+                    cambiarEstadoVehiculo(vehiculoId);
+                }
+            });
+        });
+        
+        // Botones activar
+        document.querySelectorAll('.activar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const vehiculoId = this.getAttribute('data-id');
+                if (confirm('¿Estás seguro de activar este vehículo?')) {
+                    cambiarEstadoVehiculo(vehiculoId);
+                }
+            });
+        });
+    });
+
+</script>
