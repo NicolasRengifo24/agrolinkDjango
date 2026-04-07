@@ -1,0 +1,11 @@
+[33me23dcdb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Resolviendo conflictos con upstream
+[33me4fadd8[m implementacion de epayco pasarela de pago
+[33md6da915[m transportista - vista de vehiculos completa
+[33mc4eafec[m Calificaciones
+[33m9efcd65[m Calificaciones
+[33mf0cebbc[m GestionAdminCompleto
+[33m7f8f999[m actualizacion: recupere lo ultimo hecho en clase , login,logout y solo redireccion a la vista de clientes
+[33m4ec8ff1[m carga con la funcionalidad de login redirigiendo al rol de cliente , vista detalle de producto lista , falta cofigurar imagen
+[33m070306d[m modulo_admin_y_cambios_modeloUsuarios
+[33mbab0d02[m Calificaciones
+[33mdd34af7[m primera carga con  vista de cliente mostrando productos e imagenes

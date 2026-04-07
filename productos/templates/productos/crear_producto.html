@@ -1,0 +1,658 @@
+{% extends 'base_productor.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-main">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>
+                <i class="bi bi-box-seam"></i>
+                Crear Nuevo Producto
+            </h1>
+            <small class="text-muted">Complete el formulario para agregar un producto al catálogo</small>
+        </div>
+        <a href="{% url 'lista_productos' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Error:</strong> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% elif message.tags == 'warning' %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <strong>Advertencia:</strong> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% elif message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>Éxito:</strong> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <div class="form-card">
+        <form id="productoForm" action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- SECCIÓN 1: Información Básica -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Información Básica
+                </div>
+
+                <div class="row g-3">
+                    <!-- Nombre del Producto -->
+                    <div class="col-md-6">
+                        <label for="nombre_producto" class="form-label">
+                            Nombre del Producto<span class="required">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="nombre_producto"
+                               name="nombre_producto"
+                               placeholder="Ej: Tomate Cherry Orgánico"
+                               required
+                               maxlength="100">
+                        <small class="text-muted">Máximo 100 caracteres</small>
+                    </div>
+
+                    <!-- Categoría -->
+                    <div class="col-md-6">
+                        <label for="categoria" class="form-label">
+                            Categoría<span class="required">*</span>
+                        </label>
+                        <select class="form-select" id="categoria" name="categoria" required>
+                            <option value="">Seleccione una categoría</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id_categoria }}">
+                                    {{ categoria.nombre_categoria }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="col-12">
+                        <label for="descripcion_producto" class="form-label">
+                            Descripción del Producto
+                            <i class="bi bi-question-circle help-tooltip"
+                               title="Describa las características principales del producto"></i>
+                        </label>
+                        <textarea class="form-control"
+                                  id="descripcion_producto"
+                                  name="descripcion_producto"
+                                  rows="4"
+                                  maxlength="255"
+                                  placeholder="Describa las características, calidad, propiedades, etc."></textarea>
+                        <small class="text-muted">Máximo 255 caracteres</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: Productor y Finca -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-person-badge-fill"></i>
+                    Productor y Ubicación
+                </div>
+
+                <div class="row g-3">
+                    <!-- Productor (solo lectura) -->
+                    <div class="col-md-6">
+                        <label class="form-label">Productor</label>
+                        <input type="text" class="form-control" value="{{ productor_nombre }}" readonly disabled />
+                    </div>
+
+                    <!-- Fincas -->
+                    <div class="col-md-6">
+                        <label for="fincaIds" class="form-label">
+                            Finca(s) de Producción
+                            <span class="badge bg-secondary">Opcional</span>
+                        </label>
+                        <select class="form-select" id="fincaIds" name="fincaIds" multiple size="4">
+                            {% for finca in fincas_productor %}
+                                <option value="{{ finca.id_finca }}">{{ finca.nombre_finca }}</option>
+                            {% empty %}
+                                <option value="" disabled>No hay fincas registradas</option>
+                            {% endfor %}
+                        </select>
+                        <div class="info-badge mt-2">
+                            <i class="bi bi-lightbulb-fill"></i>
+                            Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples fincas
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: Inventario y Precios -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-cash-stack"></i>
+                    Inventario y Precios
+                </div>
+
+                <div class="row g-3">
+                    <!-- Stock -->
+                    <div class="col-md-4">
+                        <label for="stock" class="form-label">
+                            Stock Disponible<span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-box"></i></span>
+                            <input type="number"
+                                   class="form-control"
+                                   id="stock"
+                                   name="stock"
+                                   min="0"
+                                   value="1"
+                                   required>
+                            <span class="input-group-text">unidades</span>
+                        </div>
+                    </div>
+
+                    <!-- Precio -->
+                    <div class="col-md-4">
+                        <label for="precio" class="form-label">
+                            Precio<span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number"
+                                   class="form-control"
+                                   id="precio"
+                                   name="precio"
+                                   min="0"
+                                   step="0.01"
+                                   value="1000"
+                                   required>
+                            <span class="input-group-text">COP</span>
+                        </div>
+                    </div>
+
+                    <!-- Peso -->
+                    <div class="col-md-4">
+                        <label for="peso_kg" class="form-label">
+                            Peso por Unidad
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-speedometer"></i></span>
+                            <input type="number"
+                                   class="form-control"
+                                   id="peso_kg"
+                                   name="peso_kg"
+                                   min="0"
+                                   step="0.01"
+                                   value="1.0">
+                            <span class="input-group-text">Kg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 4: Imagen del Producto -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-image-fill"></i>
+                    Imagen del Producto
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <label class="form-label">
+                            Subir Imagen
+                            <span class="badge bg-secondary">Opcional</span>
+                        </label>
+
+                        <div class="image-upload-area" id="uploadArea">
+                            <input type="file"
+                                   class="d-none"
+                                   id="imagenes"
+                                   name="imagenes"
+                                   accept="image/*">
+
+                            <div id="uploadPrompt">
+                                <div class="upload-icon">
+                                    <i class="bi bi-cloud-upload"></i>
+                                </div>
+                                <p class="mb-2 fw-bold">Click para seleccionar o arrastra una imagen aquí</p>
+                                <small class="text-muted">Formatos: JPG, PNG, GIF • Tamaño máximo: 5MB • Solo 1 imagen</small>
+                            </div>
+
+                            <img id="imagePreview" alt="Vista previa">
+
+                            <div id="imageInfo" class="mt-3" style="display: none;">
+                                <span class="badge bg-success" id="fileName"></span>
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeImage()">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="es_principal"
+                                   name="es_principal"
+                                   value="true"
+                                   checked>
+                            <label class="form-check-label" for="es_principal">
+                                <i class="bi bi-star-fill text-warning"></i>
+                                Marcar como imagen principal
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <hr class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            Los campos marcados con <span class="text-danger">*</span> son obligatorios
+                        </small>
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'lista_productos' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success" id="submitBtn">
+                                <i class="bi bi-check-circle"></i> Guardar Producto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center">
+        <div class="spinner"></div>
+        <p class="text-white mt-3 fw-bold">Guardando producto...</p>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-green: #2f6b31;
+        --secondary-gold: #c9a248;
+        --light-bg: #f8faf7;
+        --success: #28a745;
+        --danger: #dc3545;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f8faf7 0%, #e8f5e9 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    .container-main {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--primary-green);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 35px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .form-section {
+        border-left: 4px solid var(--primary-green);
+        padding-left: 20px;
+        margin-bottom: 30px;
+    }
+
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--primary-green);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-label .required {
+        color: var(--danger);
+        margin-left: 3px;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.25rem rgba(47, 107, 49, 0.15);
+    }
+
+    .image-upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        background: #fafafa;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .image-upload-area:hover {
+        border-color: var(--primary-green);
+        background: #f0f8f0;
+    }
+
+    .image-upload-area.dragover {
+        border-color: var(--success);
+        background: #e8f5e9;
+    }
+
+    #imagePreview {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        margin-top: 15px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        color: var(--primary-green);
+        margin-bottom: 10px;
+    }
+
+    .info-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn {
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-success {
+        background: var(--primary-green);
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: #245024;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(47, 107, 49, 0.3);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        transform: translateY(-2px);
+    }
+
+    .help-tooltip {
+        cursor: help;
+        color: var(--primary-green);
+        font-size: 16px;
+        margin-left: 5px;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid var(--primary-green);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .form-card {
+            padding: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    // ====================================
+    // MANEJO DE IMAGEN
+    // ====================================
+    const uploadArea = document.getElementById('uploadArea');
+    const imagenFile = document.getElementById('imagenes');
+    const imagePreview = document.getElementById('imagePreview');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const imageInfo = document.getElementById('imageInfo');
+    const fileName = document.getElementById('fileName');
+
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
+            imagenFile.click();
+        }
+    });
+
+    imagenFile.addEventListener('change', function(e) {
+        handleImageFile(e.target.files);
+    });
+
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type.startsWith('image/')) {
+            imagenFile.files = files;
+            handleImageFile(files);
+        }
+    });
+
+    function handleImageFile(files) {
+        if (!files || files.length === 0) return;
+        const file = files[0];
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('❌ El archivo es muy grande. El tamaño máximo es 5MB.');
+            removeImage();
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            alert('❌ Por favor seleccione un archivo de imagen válido.');
+            removeImage();
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+            uploadPrompt.style.display = 'none';
+            imageInfo.style.display = 'block';
+            fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        imagenFile.value = '';
+        imagePreview.style.display = 'none';
+        imagePreview.src = '';
+        uploadPrompt.style.display = 'block';
+        imageInfo.style.display = 'none';
+    }
+
+    // ====================================
+    // VALIDACIÓN Y ENVÍO DEL FORMULARIO
+    // ====================================
+    document.getElementById('productoForm').addEventListener('submit', function(e) {
+        const imageInput = document.getElementById('imagenes');
+
+        if (!imageInput.files || imageInput.files.length === 0) {
+            imageInput.removeAttribute('name');
+        } else {
+            const file = imageInput.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Error: La imagen excede el tamaño máximo de 5MB.');
+                e.preventDefault();
+                return false;
+            }
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Error: El archivo seleccionado no es una imagen válida.');
+                e.preventDefault();
+                return false;
+            }
+        }
+
+        document.getElementById('loadingOverlay').classList.add('active');
+        document.getElementById('submitBtn').disabled = true;
+    });
+
+    // ====================================
+    // CONTADOR DE CARACTERES
+    // ====================================
+    const nombreProducto = document.getElementById('nombre_producto');
+    const descripcionProducto = document.getElementById('descripcion_producto');
+
+    function addCharCounter(element, maxLength) {
+        if (!element) return;
+        const parent = element.parentElement;
+        const counter = document.createElement('small');
+        counter.className = 'text-muted float-end';
+        counter.textContent = '0/' + maxLength;
+        parent.appendChild(counter);
+
+        element.addEventListener('input', function() {
+            const length = this.value.length;
+            counter.textContent = length + '/' + maxLength;
+            counter.className = length >= maxLength ? 'text-danger float-end' : 'text-muted float-end';
+        });
+    }
+
+    if (nombreProducto) addCharCounter(nombreProducto, 100);
+    if (descripcionProducto) addCharCounter(descripcionProducto, 255);
+</script>
+{% endblock %}

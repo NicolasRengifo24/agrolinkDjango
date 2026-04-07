@@ -107,22 +107,14 @@ WSGI_APPLICATION = 'agrolink2026.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-<<<<<<< HEAD
-        'NAME': 'agro',
-=======
         'NAME': 'db_agrolink',
->>>>>>> upstream/main
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-<<<<<<< HEAD
-        'PORT': '3306',
-=======
         'PORT': '3307',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }
->>>>>>> upstream/main
     }
 }
 
@@ -177,9 +169,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-<<<<<<< HEAD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-=======
 #Ngrok expone tu servidor local de forma rapida y segura
 NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
 
@@ -190,4 +180,3 @@ EPAYCO_P_CUST_ID_CLIENT = "1578391"
 EPAYCO_PUBLIC_KEY       = "85dea90f2f9698288308dbf8becc999f"
 EPAYCO_PRIVATE_KEY      = "491b7dc662d7f46758985453db0a6d50"
 EPAYCO_TEST             = True
->>>>>>> upstream/main

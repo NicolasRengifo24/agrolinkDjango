@@ -744,14 +744,16 @@ def login_view(request):
                 print(f"ROL DETECTADO: '{usuario.rol}'")
 
                 if rol == 'CLIENTE':
-                    return redirect('inicio') 
+                    return redirect('mostrar_productos') 
                 # productos/inicio
                 elif rol == 'ADMINISTRADOR':
                     return redirect('usuarios')
 
-                    return redirect('usuarios')
                 elif rol == 'TRANSPORTISTA' :
                     return redirect('inicio_transportista')
+                
+                elif rol == 'PRODUCTOR':
+                    return redirect('lista_productos')
 
                 else:
                     messages.error(request, f"Rol desconocido: {rol}")

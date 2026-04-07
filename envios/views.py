@@ -12,6 +12,8 @@ import random
 import string
 
 # Create your views here.
+
+@login_required
 def inicio_transportista(request):
     
     envios = Envio.objects.select_related(
@@ -33,25 +35,60 @@ def inicio_transportista(request):
         except (Usuario.DoesNotExist, Transportista.DoesNotExist):
             pass
     
-    data_envios = []
+    # Construir lista de envíos con coordenadas
+    envios_con_coordenadas = []
     for envio in envios:
-        if envio.latitud_origen and envio.longitud_origen:
-            data_envios.append({
-                "id": envio.id_envio,
-                "origen": [envio.latitud_origen, envio.longitud_origen],
-                "destino": [envio.latitud_destino, envio.longitud_destino],
-                "numero": envio.numero_seguimiento
-            })
-
-
-
-    return render(request, 'envios/envios_dashboard.html',{
-    'envios' : envios,
-    'envios_json' : json.dumps(data_envios),
-    'vehiculos_activos': vehiculos_activos,
-
-    })
+        # Inicializar variables
+        lat_origen = None
+        lng_origen = None
+        direccion_origen = ""
+        lat_destino = None
+        lng_destino = None
+        direccion_destino = envio.id_compra.direccion_entrega or ""
+        
+        # Obtener coordenadas de destino de la compra
+        if envio.id_compra.latitud_destino and envio.id_compra.longitud_destino:
+            lat_destino = float(envio.id_compra.latitud_destino)
+            lng_destino = float(envio.id_compra.longitud_destino)
+        
+        # Obtener coordenadas de origen (finca del productor)
+        detalles = envio.id_compra.detallescompra_set.all()
+        if detalles.exists():
+            primer_detalle = detalles.first()
+            producto = primer_detalle.id_producto
+            producto_finca = producto.fincas.first()
+            if producto_finca and producto_finca.id_finca:
+                finca = producto_finca.id_finca
+                if finca.latitud and finca.longitud:
+                    lat_origen = float(finca.latitud)
+                    lng_origen = float(finca.longitud)
+                    direccion_origen = finca.direccion_finca or finca.nombre_finca or ""
+        
+        envios_con_coordenadas.append({
+            'id': envio.id_envio,
+            'numero_seguimiento': envio.numero_seguimiento or f"ENV-{envio.id_envio}",
+            'lat_origen': lat_origen,
+            'lng_origen': lng_origen,
+            'lat_destino': lat_destino,
+            'lng_destino': lng_destino,
+            'direccion_origen': direccion_origen,
+            'direccion_destino': direccion_destino,
+            'peso': float(envio.peso_total_kg or 0),
+            'distancia': float(envio.distancia_km or 0),
+            'estado': envio.estado_envio,
+            'fecha_salida': envio.fecha_salida.strftime('%d/%m/%Y') if envio.fecha_salida else None,
+            'fecha_entrega': envio.fecha_entrega.strftime('%d/%m/%Y') if envio.fecha_entrega else None,
+        })
     
+    # Pasar los datos como JSON
+    import json
+    envios_json = json.dumps(envios_con_coordenadas)
+    
+    return render(request, 'envios/envios_dashboard.html', {
+        'envios': envios,
+        'envios_json': envios_json,
+        'vehiculos_activos': vehiculos_activos,
+    })    
 
 @login_required
 def mostrar_vehiculos(request):

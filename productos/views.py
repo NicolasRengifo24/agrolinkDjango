@@ -1,21 +1,22 @@
-<<<<<<< HEAD
-from django.shortcuts import render
 from .models import Producto, ProductoFinca, CategoriaProducto
 from pedidos.models import DetallesCompra
-=======
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404 
 from django.contrib.auth.decorators import login_required
-from .models import Producto, ProductoFinca, CategoriaProducto, Finca
+from .models import Producto, ProductoFinca, CategoriaProducto, Finca ,ImagenesProducto
 from pedidos.models import DetallesCompra, Compra
->>>>>>> upstream/main
 from usuarios.models import Usuario
 from django.db.models import Sum, Avg, Count
 from calificaciones.models import Calificacion
+from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
+from decimal import Decimal
+from django.db.models import Q
+from usuarios.models import Productor
+from django.urls import reverse
 
 
 
 def inicio(request):
-<<<<<<< HEAD
 
     # 👥 usuarios
     total_usuarios = Usuario.objects.count()
@@ -34,13 +35,11 @@ def inicio(request):
     )
 
     # 🔎 filtro por categoría (AHORA SÍ FUNCIONA)
-=======
     total_usuarios = Usuario.objects.count()
     categorias = CategoriaProducto.objects.all()
 
     productos = Producto.objects.prefetch_related('imagenProducto')
     categoria = request.GET.get('categoria')
->>>>>>> upstream/main
     if categoria:
         productos = productos.filter(id_categoria=categoria)
 
@@ -49,10 +48,7 @@ def inicio(request):
         'id_finca', 'id_producto', 'id_finca__id_usuario'
     )
 
-<<<<<<< HEAD
     # ⭐ destacado
-=======
->>>>>>> upstream/main
     producto_destacado = None
     finca_destacado = None
 
@@ -89,11 +85,8 @@ def inicio(request):
         'total_productos': total_productos,
     })
 
-<<<<<<< HEAD
 
 # 🔁 tu función original (la dejamos por si la usas en rutas)
-=======
->>>>>>> upstream/main
 def mostrar_productos(request):
     productos = Producto.objects.prefetch_related('imagenProducto').annotate(
         promedio_estrellas=Avg('calificaciones__puntaje'),
@@ -102,7 +95,6 @@ def mostrar_productos(request):
     return render(request, "productos/inicio.html", {"productos": productos})
 
 
-# 📄 DETALLE DE PRODUCTO (CON COMENTARIOS)
 def detalle_producto(request, id):
     producto = Producto.objects.prefetch_related('imagenProducto').filter(
         id_producto=id
@@ -115,12 +107,11 @@ def detalle_producto(request, id):
     if producto and producto.id_categoria:
         relacionados = Producto.objects.prefetch_related('imagenProducto').filter(
             id_categoria=producto.id_categoria
-        ).exclude(id_producto=producto.id_producto)[:4]  # limitar a 4 productos
+        ).exclude(id_producto=producto.id_producto)[:4]
 
-<<<<<<< HEAD
-    # 💬 últimos 3 comentarios
+    # CORREGIDO: usar id_producto en lugar de producto
     comentarios = Calificacion.objects.filter(
-        producto=producto
+        id_producto=producto
     ).order_by('-fecha')[:3]
 
     return render(request, 'productos/detalle_producto.html', {
@@ -136,7 +127,6 @@ def lista_productos(request):
         total_calificaciones=Count('calificaciones')
     )
     return render(request, "productos/lista.html", {"productos": productos})
-=======
     categorias = CategoriaProducto.objects.all()
     
     return render(request, 'productos/detalle_producto.html', {
@@ -148,50 +138,42 @@ def lista_productos(request):
 
 
 
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib import messages
-from pedidos.models import Compra, DetallesCompra
-from productos.models import Producto
-from decimal import Decimal
 
 def agregar_al_carrito(request, producto_id):
-    #  DEBUG (temporal)
-    print("AUTH:", request.user.is_authenticated)
-    print("USER:", request.user)
-
-    try:
-        usuario = request.user.usuario
-        print("USUARIO OK:", usuario)
-    except Exception as e:
-        print("ERROR USUARIO:", e)
-
-    try:
-        cliente = request.user.usuario.cliente
-        print("CLIENTE OK:", cliente)
-    except Exception as e:
-        print("ERROR CLIENTE:", e)
-
-    #  VALIDAR LOGIN
+    # VALIDAR LOGIN
     if not request.user.is_authenticated:
         messages.warning(request, "Debe iniciar sesión como cliente")
         return redirect('login_view')
 
-    #  VALIDAR QUE SEA CLIENTE
+    # VALIDAR QUE SEA CLIENTE (CORREGIDO)
     try:
         usuario = request.user.usuario
+        rol = usuario.rol.upper()
+        
+        # Aceptar tanto 'CLIENTE' como 'ROLE_CLIENTE'
+        if rol not in ['CLIENTE', 'ROLE_CLIENTE']:
+            messages.error(request, "Debe iniciar sesión como cliente")
+            return redirect('login_view')
+        
+        # Verificar que tenga perfil de cliente
+        if not hasattr(usuario, 'cliente'):
+            messages.error(request, "Su usuario no tiene perfil de cliente")
+            return redirect('login_view')
+            
         cliente = usuario.cliente
-    except:
-        messages.error(request, "Debe iniciar sesión como cliente")
+        
+    except Exception as e:
+        print(f"Error al obtener cliente: {e}")
+        messages.error(request, "Error con su perfil de cliente")
         return redirect('login_view')
-    
 
-    #  PRODUCTO
+    # PRODUCTO
     producto = get_object_or_404(Producto, id_producto=producto_id)
 
-    #  CANTIDAD
+    # CANTIDAD
     cantidad = int(request.POST.get('cantidad', 1))
 
-    #  CARRITO (Compra en estado carrito)
+    # CARRITO (Compra en estado carrito)
     compra, created = Compra.objects.get_or_create(
         id_cliente=cliente,
         estado="carrito",
@@ -202,7 +184,7 @@ def agregar_al_carrito(request, producto_id):
         }
     )
 
-    #  DETALLE
+    # DETALLE
     detalle, created = DetallesCompra.objects.get_or_create(
         id_compra=compra,
         id_producto=producto,
@@ -213,14 +195,14 @@ def agregar_al_carrito(request, producto_id):
         }
     )
 
-    #  SI YA EXISTE → SUMA
+    # SI YA EXISTE → SUMA
     if not created:
         detalle.cantidad += cantidad
         detalle.precio_unitario = producto.precio
         detalle.subtotal = detalle.cantidad * detalle.precio_unitario
         detalle.save()
 
-    #  ACTUALIZAR TOTALES
+    # ACTUALIZAR TOTALES
     detalles = DetallesCompra.objects.filter(id_compra=compra)
     subtotal = sum(d.subtotal for d in detalles)
     impuestos = subtotal * Decimal('0.19')
@@ -231,11 +213,8 @@ def agregar_al_carrito(request, producto_id):
     compra.total = total
     compra.save()
 
-    #  MENSAJE
-    messages.success(request, "Producto agregado al carrito")
-
+    messages.success(request, f"{producto.nombre_producto} agregado al carrito")
     return redirect('carrito')
-
 
 
 #@login_required
@@ -288,14 +267,27 @@ def crear_finca(request):
     return render(request, 'finca/formulario_finca.html')
 
 
-#@login_required
+
+
+
+
+@login_required
 def editar_finca(request, finca_id):
-    """Vista para editar una finca existente"""
-    
     finca = get_object_or_404(Finca, id_finca=finca_id)
     
-    # Verificar que el usuario sea el dueño de la finca
-    if finca.id_usuario.id_usuario.id != request.user.usuario.id:
+    # Verificar que el usuario tenga perfil de productor
+    if not hasattr(request.user, 'usuario'):
+        messages.error(request, 'Tu cuenta no tiene un perfil de usuario asociado')
+        return redirect('lista_fincas')
+    
+    try:
+        productor_actual = request.user.usuario.productor
+    except ObjectDoesNotExist:
+        messages.error(request, 'Tu perfil de usuario no tiene rol de productor')
+        return redirect('lista_fincas')
+    
+    # Comparar productores
+    if finca.id_usuario != productor_actual:
         messages.error(request, 'No tienes permiso para editar esta finca')
         return redirect('lista_fincas')
     
@@ -306,20 +298,22 @@ def editar_finca(request, finca_id):
         finca.ciudad = request.POST.get('ciudad')
         finca.departamento = request.POST.get('departamento')
         
-        latitud = request.POST.get('latitud')
-        longitud = request.POST.get('longitud')
+        # Procesar coordenadas
+        latitud = request.POST.get('latitud', '').strip()
+        longitud = request.POST.get('longitud', '').strip()
         
         if latitud and longitud:
-            finca.latitud = float(latitud)
-            finca.longitud = float(longitud)
+            try:
+                finca.latitud = float(latitud.replace(',', '.'))
+                finca.longitud = float(longitud.replace(',', '.'))
+            except ValueError:
+                pass
         
         finca.save()
-        
         messages.success(request, 'Finca actualizada exitosamente')
         return redirect('lista_fincas')
     
     return render(request, 'finca/formulario_finca.html', {'finca': finca})
-
 
 #@login_required
 def lista_fincas(request):
@@ -328,4 +322,219 @@ def lista_fincas(request):
     fincas = Finca.objects.filter(id_usuario=request.user.usuario.productor)
     
     return render(request, 'finca/lista_fincas.html', {'fincas': fincas})
->>>>>>> upstream/main
+
+
+@login_required
+def lista_productos(request):
+    """Vista para listar los productos del productor actual"""
+    try:
+        productor = request.user.usuario.productor
+        productos = Producto.objects.filter(id_usuario=productor)
+    except (AttributeError, Productor.DoesNotExist):
+        productos = []
+        messages.warning(request, 'No tienes un perfil de productor asociado')
+    
+    categorias = CategoriaProducto.objects.all()
+    
+    # Aplicar filtros si existen
+    ubicacion = request.GET.get('ubicacion', '')
+    categoria_id = request.GET.get('categoriaId', 0)
+    
+    if ubicacion:
+        productos = productos.filter(
+            Q(id_usuario__id_usuario__ciudad__icontains=ubicacion) |
+            Q(id_usuario__id_usuario__departamento__icontains=ubicacion)
+        )
+    
+    if categoria_id and categoria_id != '0':
+        productos = productos.filter(id_categoria_id=categoria_id)
+    
+    context = {
+        'productos': productos,
+        'categorias': categorias,
+        'ubicacion': ubicacion,
+        'categoria_id': int(categoria_id) if categoria_id else 0,
+    }
+    return render(request, 'productos/lista_productos.html', context)
+
+
+
+
+
+@login_required
+def crear_producto(request):
+    try:
+        productor = request.user.usuario.productor
+    except (AttributeError, Productor.DoesNotExist):
+        messages.error(request, 'No tienes permiso para crear productos')
+        return redirect('inicio')
+    
+    if request.method == 'POST':
+        print("=== POST RECIBIDO ===")
+        
+        # Crear producto
+        producto = Producto(
+            id_usuario=productor,
+            id_categoria_id=request.POST.get('categoria'),
+            nombre_producto=request.POST.get('nombre_producto'),
+            descripcion_producto=request.POST.get('descripcion_producto') or '',
+            precio=request.POST.get('precio') or 0,
+            stock=request.POST.get('stock') or 0,
+            peso_kg=request.POST.get('peso_kg') or None,
+        )
+        producto.save()
+        
+        # Guardar imagen - Versión simplificada
+        if 'imagenes' in request.FILES:
+            imagen_file = request.FILES['imagenes']
+            print(f"Guardando imagen: {imagen_file.name}, tamaño: {imagen_file.size}")
+            
+            # Siempre guardar como principal si es la primera/única
+            ImagenesProducto.objects.create(
+                id_producto=producto,
+                url_imagen=imagen_file,
+                es_principal=1
+            )
+            print("Imagen guardada exitosamente")
+        else:
+            print("No hay archivo de imagen en request.FILES")
+        
+        messages.success(request, 'Producto creado exitosamente')
+        return redirect('lista_productos')
+    
+    context = {
+        'categorias': CategoriaProducto.objects.all(),
+        'fincas_productor': Finca.objects.filter(id_usuario=productor),
+        'productor_nombre': f"{productor.id_usuario.nombre} {productor.id_usuario.apellido}",
+    }
+    return render(request, 'productos/crear_producto.html', context)
+
+
+@login_required
+def buscar_productos(request):
+    """Vista para buscar productos del productor"""
+    ubicacion = request.GET.get('ubicacion', '')
+    categoria_id = request.GET.get('categoriaId', 0)
+    return redirect(f"{reverse('lista_productos')}?ubicacion={ubicacion}&categoriaId={categoria_id}")
+
+
+@login_required
+def ver_producto(request, producto_id):
+    """Vista para ver detalle de un producto (productor)"""
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    
+    # Verificar permiso
+    try:
+        productor = request.user.usuario.productor
+        es_propietario = (producto.id_usuario == productor)
+    except (AttributeError, Productor.DoesNotExist):
+        es_propietario = False
+    
+    if not es_propietario:
+        messages.error(request, 'No tienes permiso para ver este producto')
+        return redirect('lista_productos')
+    
+    imagenes = producto.imagenProducto.all()
+    
+    context = {
+        'producto': producto,
+        'imagenes': imagenes,
+        'imagen_principal': imagenes.filter(es_principal=1).first(),
+    }
+    return render(request, 'ver_producto.html', context)
+
+
+@login_required
+def editar_producto(request, producto_id):
+    """Vista para editar un producto existente"""
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    categorias = CategoriaProducto.objects.all()
+    
+    # Verificar permiso
+    try:
+        productor = request.user.usuario.productor
+        if producto.id_usuario != productor:
+            messages.error(request, 'No tienes permiso para editar este producto')
+            return redirect('lista_productos')
+    except (AttributeError, Productor.DoesNotExist):
+        messages.error(request, 'No tienes permiso para editar productos')
+        return redirect('lista_productos')
+    
+    if request.method == 'POST':
+        try:
+            # Actualizar SOLO los campos que existen
+            producto.id_categoria_id = request.POST.get('categoria')
+            producto.nombre_producto = request.POST.get('nombre_producto')
+            producto.descripcion_producto = request.POST.get('descripcion_producto')
+            producto.precio = request.POST.get('precio')
+            producto.stock = request.POST.get('stock')
+            producto.peso_kg = request.POST.get('peso_kg') or None
+            producto.save()
+            
+            # Manejar nuevas imágenes
+            nuevas_imagenes = request.FILES.getlist('nuevas_imagenes')
+            for img in nuevas_imagenes:
+                ImagenesProducto.objects.create(
+                    id_producto=producto,
+                    url_imagen=img,
+                    es_principal=0
+                )
+            
+            # Eliminar imágenes seleccionadas
+            imagenes_eliminar = request.POST.getlist('eliminar_imagenes')
+            for img_id in imagenes_eliminar:
+                try:
+                    imagen = ImagenesProducto.objects.get(id_imagen=img_id, id_producto=producto)
+                    imagen.delete()
+                except ImagenesProducto.DoesNotExist:
+                    pass
+            
+            # Actualizar imagen principal
+            imagen_principal_id = request.POST.get('imagen_principal')
+            if imagen_principal_id:
+                producto.imagenProducto.update(es_principal=0)
+                ImagenesProducto.objects.filter(id_imagen=imagen_principal_id, id_producto=producto).update(es_principal=1)
+            
+            messages.success(request, 'Producto actualizado exitosamente')
+            return redirect('lista_productos')
+            
+        except Exception as e:
+            messages.error(request, f'Error al actualizar el producto: {str(e)}')
+    
+    # Obtener imágenes para el formulario
+    imagenes = producto.imagenProducto.all()
+    imagen_principal = imagenes.filter(es_principal=1).first()
+    
+    context = {
+        'producto': producto,
+        'categorias': categorias,
+        'imagenes': imagenes,
+        'imagen_principal': imagen_principal,
+    }
+    return render(request, 'editar_producto.html', context)
+
+
+@login_required
+def eliminar_producto(request, producto_id):
+    """Vista para eliminar un producto"""
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    
+    # Verificar permiso
+    try:
+        productor = request.user.usuario.productor
+        if producto.id_usuario != productor:
+            messages.error(request, 'No tienes permiso para eliminar este producto')
+            return redirect('lista_productos')
+    except (AttributeError, Productor.DoesNotExist):
+        messages.error(request, 'No tienes permiso para eliminar productos')
+        return redirect('lista_productos')
+    
+    if request.method == 'POST':
+        try:
+            nombre_producto = producto.nombre_producto
+            producto.delete()
+            messages.success(request, f'Producto "{nombre_producto}" eliminado exitosamente')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar el producto: {str(e)}')
+    
+    return redirect('lista_productos')
