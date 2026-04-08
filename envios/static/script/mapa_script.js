@@ -49,51 +49,50 @@ function abrirMapa(idEnvio) {
     var origen = envio.origen;
     var destino = envio.destino;
 
-    // Mostrar modal
-    var modal = new bootstrap.Modal(document.getElementById('mapModal'));
-    modal.show();
+    var modalElement = document.getElementById('mapModal');
+    var modal = new bootstrap.Modal(modalElement);
 
+    modalElement.addEventListener('shown.bs.modal', function () {
+
+    if (mapModal) {
+        mapModal.remove();
+    }
+
+    // 🔥 1. CREAS EL MAPA
+    mapModal = L.map('mapModalContainer').setView([4.7, -74], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(mapModal);
+
+    markerGroup = L.layerGroup().addTo(mapModal);
+
+    if (origen) {
+        L.marker(origen).addTo(markerGroup).bindPopup("Origen");
+    }
+
+    if (destino) {
+        L.marker(destino).addTo(markerGroup).bindPopup("Destino");
+    }
+
+    if (origen && destino) {
+        var ruta = [origen, destino];
+        L.polyline(ruta).addTo(mapModal);
+        mapModal.fitBounds(ruta, {
+            padding: [50, 50],   // margen bonito
+            maxZoom: 12          // 🔥 límite de zoom (clave)
+        });
+    }
+
+    
     setTimeout(() => {
+        mapModal.invalidateSize();
+    }, 200);
 
-        // Crear mapa
-        mapModal = L.map('mapModalContainer').setView([4.7, -74], 6);
+}, { once: true });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(mapModal);
-
-        markerGroup = L.layerGroup().addTo(mapModal);
-
-        // Marcadores
-        if (origen) {
-            L.marker(origen).addTo(markerGroup).bindPopup("Origen");
-        }
-
-        if (destino) {
-            L.marker(destino).addTo(markerGroup).bindPopup("Destino");
-        }
-
-        // 🔥 RUTA
-        if (origen && destino) {
-
-            var ruta = [origen, destino];
-
-            L.polyline(ruta, { color: 'blue' }).addTo(mapModal);
-
-            mapModal.fitBounds(ruta);
-
-            // 🔥 DISTANCIA
-            var km = calcularDistancia(origen, destino);
-
-            L.popup()
-                .setLatLng(origen)
-                .setContent("Distancia: " + km + " km")
-                .openOn(mapModal);
-        }
-
-    }, 300);
+    modal.show();
 }
-
 // logica para calcular la distancia usando la formula harvesine para calcular distancia entre doas puntos en el globo terraqueo
 
 

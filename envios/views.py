@@ -12,7 +12,6 @@ import random
 import string
 
 # Create your views here.
-
 @login_required
 def inicio_transportista(request):
     
@@ -35,18 +34,19 @@ def inicio_transportista(request):
         except (Usuario.DoesNotExist, Transportista.DoesNotExist):
             pass
     
-    # Construir lista de envíos con coordenadas
-    envios_con_coordenadas = []
+    data_envios = []
     for envio in envios:
         # Inicializar variables
         lat_origen = None
         lng_origen = None
         direccion_origen = ""
+        nombre_finca = ""
+        
+        # Obtener coordenadas de destino de la compra
         lat_destino = None
         lng_destino = None
         direccion_destino = envio.id_compra.direccion_entrega or ""
         
-        # Obtener coordenadas de destino de la compra
         if envio.id_compra.latitud_destino and envio.id_compra.longitud_destino:
             lat_destino = float(envio.id_compra.latitud_destino)
             lng_destino = float(envio.id_compra.longitud_destino)
@@ -56,39 +56,54 @@ def inicio_transportista(request):
         if detalles.exists():
             primer_detalle = detalles.first()
             producto = primer_detalle.id_producto
-            producto_finca = producto.fincas.first()
-            if producto_finca and producto_finca.id_finca:
-                finca = producto_finca.id_finca
-                if finca.latitud and finca.longitud:
-                    lat_origen = float(finca.latitud)
-                    lng_origen = float(finca.longitud)
-                    direccion_origen = finca.direccion_finca or finca.nombre_finca or ""
+            
+            print(f"DEBUG - Producto: {producto.nombre_producto}")
+            
+            # CORREGIDO: Obtener la finca a través de ProductoFinca
+            # La relación es: Producto -> ProductoFinca (related_name='fincas') -> Finca (id_finca)
+            producto_finca_rel = producto.fincas.first()  # Esto es ProductoFinca
+            if producto_finca_rel:
+                finca = producto_finca_rel.id_finca  # Esto es la Finca
+                print(f"DEBUG - Finca encontrada: {finca}")
+                if finca:
+                    nombre_finca = finca.nombre_finca or ""
+                    direccion_origen = finca.direccion_finca or nombre_finca
+                    if finca.latitud and finca.longitud:
+                        lat_origen = float(finca.latitud)
+                        lng_origen = float(finca.longitud)
+                        print(f"DEBUG - Coordenadas finca: {lat_origen}, {lng_origen}")
+                    else:
+                        print(f"DEBUG - Finca sin coordenadas")
+                else:
+                    print(f"DEBUG - No hay finca en ProductoFinca")
+            else:
+                print(f"DEBUG - No hay ProductoFinca para este producto")
         
-        envios_con_coordenadas.append({
-            'id': envio.id_envio,
-            'numero_seguimiento': envio.numero_seguimiento or f"ENV-{envio.id_envio}",
-            'lat_origen': lat_origen,
-            'lng_origen': lng_origen,
-            'lat_destino': lat_destino,
-            'lng_destino': lng_destino,
-            'direccion_origen': direccion_origen,
-            'direccion_destino': direccion_destino,
-            'peso': float(envio.peso_total_kg or 0),
-            'distancia': float(envio.distancia_km or 0),
-            'estado': envio.estado_envio,
-            'fecha_salida': envio.fecha_salida.strftime('%d/%m/%Y') if envio.fecha_salida else None,
-            'fecha_entrega': envio.fecha_entrega.strftime('%d/%m/%Y') if envio.fecha_entrega else None,
-        })
-    
-    # Pasar los datos como JSON
+        # Solo agregar a data_envios si tenemos coordenadas de origen y destino
+        if lat_origen and lng_origen and lat_destino and lng_destino:
+            data_envios.append({
+                "id": envio.id_envio,
+                "origen": [lat_origen, lng_origen],
+                "destino": [lat_destino, lng_destino],
+                "numero": envio.numero_seguimiento or f"ENV-{envio.id_envio}",
+                "direccion_origen": direccion_origen,
+                "direccion_destino": direccion_destino,
+                "nombre_finca": nombre_finca,
+                "peso": float(envio.peso_total_kg or 0),
+                "distancia": float(envio.distancia_km or 0)
+            })
+        else:
+            print(f"DEBUG - Envío {envio.id_envio} sin coordenadas: origen={lat_origen}, destino={lat_destino}")
+
     import json
-    envios_json = json.dumps(envios_con_coordenadas)
+    envios_json = json.dumps(data_envios)
     
     return render(request, 'envios/envios_dashboard.html', {
         'envios': envios,
         'envios_json': envios_json,
         'vehiculos_activos': vehiculos_activos,
-    })    
+    })
+   
 
 @login_required
 def mostrar_vehiculos(request):
@@ -214,10 +229,35 @@ def eliminar_vehiculo(request, vehiculo_id):
 
 @login_required
 def mis_envios(request):
-    """Vista para mostrar los envíos del transportista"""
 
-    return render(request, 'envios/mis_envios_dashboard.html')
+    try:
+        # Obtener usuario y transportista
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
 
+    except Usuario.DoesNotExist:
+        messages.error(request, "Usuario no encontrado")
+        return redirect('inicio')
+
+    except Transportista.DoesNotExist:
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio')
+
+    # 🔥 ESTA ES LA CLAVE
+    envios = Envio.objects.select_related(
+        'id_compra__id_cliente__id_usuario',
+        'id_vehiculo'
+    ).filter(
+        id_transportista=transportista_obj
+    ).order_by('-id_envio')
+
+    print("🚚 Envios encontrados:", envios.count())  # DEBUG
+
+    return render(request, 'envios/mis_envios_dashboard.html', {
+        'envios': envios
+    })
+    
+    
 @login_required
 def aceptar_viaje(request, envio_id):
     """Acepta un viaje y asigna vehículo, fechas y número de seguimiento"""
