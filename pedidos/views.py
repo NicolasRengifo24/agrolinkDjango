@@ -40,6 +40,9 @@ def carrito(request):
 
     # 2️ Detalles
     detalles = DetallesCompra.objects.filter(id_compra=compra) if compra else []
+    
+    # contador del carrito 
+    cart_count = sum(det.cantidad for det in detalles)
 
     # 3️ Referencia única para ePayco
     referencia_unica = None
@@ -58,6 +61,7 @@ def carrito(request):
     #  NUEVO
     'url_respuesta': f"{settings.NGROK_URL}/respuesta-pago/",
     'url_confirmacion': f"{settings.NGROK_URL}/confirmacion-pago/",
+    'cart_count': cart_count,
 })
     
 

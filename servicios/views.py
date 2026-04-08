@@ -122,8 +122,8 @@ def lista_servicios(request):
     servicios = Servicio.objects.filter(estado='ACTIVO')
 
     return render(request, 'servicios/servicios_publicados/base_servicios.html', {
-        'servicios': servicios
-    })
+    'servicios': servicios
+})
     
     
 # editar asesor 
