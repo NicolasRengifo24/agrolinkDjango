@@ -5,7 +5,8 @@ urlpatterns = [
     # 🔹 ASESOR
     path('asesor/', views.asesor_servicios, name='asesor_servicios'),
     path('maquinas/', views.maquinas_asesor, name='maquinas_asesor'),
+    path('servicio/<int:id>/', views.detalle_servicio, name='detalle_servicio'),
+    
+    path('servicios/', views.lista_servicios, name='lista_servicios'),  # 🔥 ESTA ES LA CLAVE
 
-    # 🔹 CLIENTE
-    path('servicios/', views.servicios_cliente, name='servicios_cliente'),
 ]

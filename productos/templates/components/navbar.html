@@ -79,44 +79,11 @@
                     </div>
                 </li>
 
-                <!-- SERVICIOS DINÁMICOS -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle me-3" data-bs-toggle="dropdown">Servicios</a>
-                    <ul class="dropdown-menu">
-                        <!-- Verificar si hay categorías de servicios disponibles -->
-                        <th:block>
-                            <!-- Iterar sobre las categorías de servicios -->
-                            <th:block>
-                                <li>
-                                    <h6 class="dropdown-header text-success fw-bold">Categoría</h6>
-                                </li>
-                                <!-- Mostrar hasta 3 servicios por categoría -->
-                                <th:block>
-                                    <li><a class="dropdown-item small" href="#">Descripción del servicio</a></li>
-                                </th:block>
-                                <!-- Enlace para ver más servicios de esta categoría si hay más de 3 -->
-                                <li>
-                                    <a class="dropdown-item text-muted small fst-italic">Ver todos</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                            </th:block>
-                        </th:block>
-
-                        <!-- Mensaje cuando no hay servicios -->
-                        <li>
-                            <span class="dropdown-item-text text-muted small">No hay servicios disponibles</span>
-                        </li>
-
-                        <!-- Enlace para ver todos los servicios -->
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item text-center fw-bold text-success" href="/servicios">
-                                <i class="bi bi-grid me-1"></i>Ver todos los servicios
-                            </a></li>
-                    </ul>
+                <!-- SERVICIOS -->
+                <li class="nav-item">
+                    <a class="nav-link me-3" href="{% url 'lista_servicios' %}">
+                <i class="bi bi-briefcase me-1"></i>Servicios
+                    </a>
                 </li>
 
 

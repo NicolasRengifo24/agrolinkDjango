@@ -1,0 +1,53 @@
+<div class="container mt-5">
+    <div class="row">
+
+        {% for servicio in servicios %}
+        
+            {% if servicio.id_servicio %}
+
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="product-card h-100">
+
+                    <div class="p-3 d-flex flex-column h-100">
+
+                        <!-- Categoría -->
+                        <span class="badge bg-light text-dark">
+                            {{ servicio.categoria }}
+                        </span>
+
+                        <!-- Descripción -->
+                        <p class="text-muted">
+                            {{ servicio.descripcion|truncatewords:15 }}
+                        </p>
+
+                        <!-- Estado + botón -->
+                        <div class="mt-auto d-flex justify-content-between">
+
+                            {% if servicio.estado == "ACTIVO" %}
+                                <span class="badge bg-success">Disponible</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No disponible</span>
+                            {% endif %}
+
+                            <a href="{% url 'detalle_servicio' servicio.id_servicio %}"
+                                class="btn btn-outline-success btn-sm">
+                                Ver
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            {% endif %}
+
+        {% empty %}
+            <div class="col-12 text-center">
+                <p>No hay servicios disponibles</p>
+            </div>
+        {% endfor %}
+
+    </div>
+</div>

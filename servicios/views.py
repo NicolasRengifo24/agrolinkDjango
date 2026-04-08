@@ -1,7 +1,8 @@
 # 🔹 PANEL DEL ASESO
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+
 from .models import Servicio, Maquinas
 from usuarios.models import Asesor
 
@@ -105,16 +106,22 @@ def maquinas_asesor(request):
     return render(request, 'servicios/mis_maquinas.html', {
         'maquinas': maquinas
     })    
+    
+    
 
 
-# 🔹 VISTA CLIENTE
-def servicios_cliente(request):
+def detalle_servicio(request, id):
+    servicio = get_object_or_404(Servicio, id_servicio=id)
 
-    servicios = Servicio.objects.select_related(
-        'id_asesor__id_usuario'
-    ).filter(estado='activo')
+    return render(request, 'servicios/servicios_publicados/detalle_servicio.html', {
+        'servicio': servicio
+    })
 
-    return render(request, 'servicios/servicios_cliente.html', {
+    
+def lista_servicios(request):
+    servicios = Servicio.objects.filter(estado='ACTIVO')
+
+    return render(request, 'servicios/servicios_publicados/base_servicios.html', {
         'servicios': servicios
     })
     
