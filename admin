@@ -8,3 +8,9 @@ transportista: nico2026
 contraseña: Nico2026
 
 numero tarjeta para realizar compra 4575623182290326
+
+
+esto es para guardar cambios temporalmente descargar lo de git y volver aplicar tus cambios 
+git stash
+git pull origin main
+git stash pop

@@ -103,7 +103,7 @@
             <option value="CLIENTE" selected>Cliente - Comprador de productos</option>
             <option value="PRODUCTOR">Productor - Vendo productos agrícolas</option>
             <option value="TRANSPORTISTA">Transportista - Ofrezco servicio de transporte</option>
-            <option value="SERVICIO">Prestador de servicio - Ofrezco asesorías</option>
+            <option value="ASESOR">Prestador de servicio - Ofrezco asesorías</option>
           </select>
           <div class="form-text">
             <i class="bi bi-info-circle me-1"></i>
@@ -178,7 +178,7 @@
         </div>
 
         <!-- SERVICIO: Tipo de Asesoría -->
-        <div id="servicioFields" class="role-field">
+        <div id="asesorFields" class="role-field">
           <h5 class="text-purple mb-3">
             <i class="bi bi-briefcase me-2"></i>
             Información de Prestador de Servicio
@@ -242,7 +242,7 @@
       'CLIENTE': 'clienteFields',
       'PRODUCTOR': 'productorFields',
       'TRANSPORTISTA': 'transportistaFields',
-      'SERVICIO': 'servicioFields'
+      'ASESOR': 'asesorFields'
     };
 
     const fieldId = roleFieldsMap[selectedRole];
@@ -256,7 +256,7 @@
       'CLIENTE': 'Cliente',
       'PRODUCTOR': 'Productor',
       'TRANSPORTISTA': 'Transportista',
-      'SERVICIO': 'Prestador de Servicio'
+      'ASESOR': 'Prestador de Servicio'
     };
 
     badge.textContent = roleNames[selectedRole];

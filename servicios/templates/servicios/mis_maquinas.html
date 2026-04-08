@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Máquinas | AgroLink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- CSS Navbar -->
+    <link rel="stylesheet" href="{% static 'css/navbar_asesor.css' %}">
+
+    <style>
+        body {
+            background: #f4f7f6;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .main-container {
+            padding: 40px 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+        }
+
+        .btn-agro {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-agro:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 🔹 NAVBAR -->
+    {% include 'servicios/navbar_asesor.html' %}
+
+    <div class="container main-container">
+
+        <h2 class="mb-4">🚜 Gestión de Máquinas</h2>
+
+        <!-- 🔹 FORMULARIO -->
+        <div class="card shadow p-4 mb-5">
+            <h4 class="mb-3">➕ Registrar Máquina</h4>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="row g-3">
+
+                    <!-- TIPO -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Tipo de máquina</label>
+                        <input type="text" name="tipo_maquina" class="form-control"
+                               placeholder="Ej: Tractor, Podadora..." required>
+                    </div>
+
+                    <!-- MODELO -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Modelo</label>
+                        <input type="text" name="modelo" class="form-control"
+                               placeholder="Ej: John Deere 5050E">
+                    </div>
+
+                    <!-- DOCUMENTO -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Documento de propiedad</label>
+                        <input type="text" name="documento_propiedad" class="form-control" required>
+                    </div>
+
+                    <!-- RNMA -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Registro RNMA</label>
+                        <input type="text" name="registro_rnma" class="form-control">
+                    </div>
+
+                    <!-- TARJETA -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Tarjeta de registro maquinaria</label>
+                        <input type="text" name="tarjeta_registro_maquinaria" class="form-control">
+                    </div>
+
+                </div>
+
+                <button class="btn btn-agro w-100 mt-4">
+                    <i class="bi bi-check-circle me-1"></i> Registrar Máquina
+                </button>
+            </form>
+        </div>
+
+        <!-- 🔹 LISTADO -->
+        <h4 class="mb-3">📋 Mis Máquinas</h4>
+
+        <div class="row">
+            {% for maquina in maquinas %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow h-100">
+
+                    <div class="card-body">
+                        <h5 class="text-success">
+                            <i class="bi bi-tractor me-2"></i>{{ maquina.tipo_maquina }}
+                        </h5>
+
+                        <p><strong>Modelo:</strong> {{ maquina.modelo|default:"No especificado" }}</p>
+                        <p><strong>Documento:</strong> {{ maquina.documento_propiedad }}</p>
+                        <p><strong>RNMA:</strong> {{ maquina.registro_rnma|default:"N/A" }}</p>
+                    </div>
+
+                    <div class="card-footer text-center bg-white">
+                        <a href="#" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="#" class="btn btn-danger btn-sm">Eliminar</a>
+                    </div>
+
+                </div>
+            </div>
+            {% empty %}
+            <p>No has registrado máquinas aún.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</body>
+</html>
