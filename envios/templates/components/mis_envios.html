@@ -1,78 +1,122 @@
 {% load static %}
-<div class="topbar">
-        <h2>Mis Envíos</h2>
-        <p class="text-muted mb-0">Gestiona todos tus envíos asignados y completados</p>
-    </div>
 
-    <div class="container-envios">
-        {% if envios %}
-            <div class="table-responsive">
-                <table class="table-custom">
-                    <thead>
-                        <tr>
-                            <th>#ID</th>
-                            <th>Cliente</th>
-                            <th>Origen</th>
-                            <th>Destino</th>
-                            <th>Estado</th>
-                            <th>Costo</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for envio in envios %}
-                        <tr>
-                            <td><strong>#ENV-{{ envio.id_envio }}</strong></td>
-                            <td>
-                                {% if envio.id_compra and envio.id_compra.id_cliente %}
-                                    {{ envio.id_compra.id_cliente.id_usuario.nombre }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if envio.direccion_origen %}
-                                    {{ envio.direccion_origen|truncatechars:30 }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if envio.direccion_destino %}
-                                    {{ envio.direccion_destino|truncatechars:30 }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if envio.estado_envio == 'Asignado' %}
-                                    <span class="status-badge status-asignado">{{ envio.estado_envio }}</span>
-                                {% elif envio.estado_envio == 'En_Transito' %}
-                                    <span class="status-badge status-transito">{{ envio.estado_envio }}</span>
-                                {% elif envio.estado_envio == 'Finalizado' %}
-                                    <span class="status-badge status-finalizado">{{ envio.estado_envio }}</span>
-                                {% else %}
-                                    <span class="status-badge status-cancelado">{{ envio.estado_envio }}</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <strong>${{ envio.costo_total|default:"0"|floatformat:0 }}</strong>
-                            </td>
-                            <td>
-                                <button class="btn-action" title="Ver detalles" onclick="verDetalle()">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="bi bi-inbox"></i>
-                <h3>No tienes envíos asignados</h3>
-                <p>Ve a Envíos Disponibles para aceptar nuevos envíos</p>
-            </div>
-        {% endif %}
-    </div>
+<div class="topbar">
+    <h2>Mis Envíos</h2>
+    <p class="text-muted mb-0">Gestiona todos tus envíos asignados y completados</p>
+</div>
+
+<div class="container-envios">
+    {% if envios %}
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Cliente</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Estado</th>
+                        <th>Costo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for envio in envios %}
+                    <tr>
+                        <td><strong>#ENV-{{ envio.id_envio }}</strong></td>
+
+                        <!-- CLIENTE -->
+                        <td>
+                            {% if envio.id_compra and envio.id_compra.id_cliente %}
+                                {{ envio.id_compra.id_cliente.id_usuario.nombre }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+
+                        <!-- ORIGEN -->
+                        <td>
+                            {% if envio.direccion_origen %}
+                                {{ envio.direccion_origen|truncatechars:30 }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+
+                        <!-- DESTINO -->
+                        <td>
+                            {% if envio.direccion_destino %}
+                                {{ envio.direccion_destino|truncatechars:30 }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+
+                        <!-- ESTADO -->
+                        <td>
+                            {% if envio.estado_envio == 'Asignado' %}
+                                <span class="status-badge status-asignado">Asignado</span>
+
+                            {% elif envio.estado_envio == 'En_Transito' %}
+                                <span class="status-badge status-transito">En tránsito</span>
+
+                            {% elif envio.estado_envio == 'Entregado' %}
+                                <span class="status-badge status-finalizado">Entregado</span>
+
+                            {% else %}
+                                <span class="status-badge status-cancelado">
+                                    {{ envio.estado_envio }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- COSTO -->
+                        <td>
+                            <strong>${{ envio.costo_total|default:"0"|floatformat:0 }}</strong>
+                        </td>
+
+                        <!-- ACCIONES -->
+                        <td>
+
+                            {% if envio.estado_envio == "Asignado" %}
+                                <a href="{% url 'cambiar_estado_envio' envio.id_envio 'En_Transito' %}" 
+                                   class="btn btn-warning btn-sm">
+                                    🚚 Iniciar viaje
+                                </a>
+
+                            {% elif envio.estado_envio == "En_Transito" %}
+                                <a href="{% url 'cambiar_estado_envio' envio.id_envio 'Entregado' %}" 
+                                   class="btn btn-success btn-sm">
+                                    📦 Marcar entregado
+                                </a>
+
+                            {% elif envio.estado_envio == "Entregado" %}
+                                <span class="text-success fw-bold">✔ Completado</span>
+
+                            {% else %}
+                                <span class="text-muted">Sin acciones</span>
+                            {% endif %}
+
+                            <!-- BOTÓN VER DETALLE -->
+                            <button class="btn-action" 
+                                    title="Ver detalles" 
+                                    onclick="verDetalle('{{ envio.id_envio }}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>No tienes envíos asignados</h3>
+            <p>Ve a Envíos Disponibles para aceptar nuevos envíos</p>
+        </div>
+    {% endif %}
+</div>

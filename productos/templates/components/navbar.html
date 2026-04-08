@@ -25,7 +25,7 @@
             <ul class="navbar-nav ms-auto align-items-center">
 
                 <li class="nav-item">
-                    <a class="nav-link me-3" href="{% url 'inicio_cliente' %}">Inicio</a>
+                    <a class="nav-link me-3" href="{% url 'mostrar_productos' %}">Inicio</a>
                 </li>
 
                 <!-- MEGA MENU CATEGORÍAS DINÁMICO -->
@@ -43,7 +43,7 @@
 
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6">
 
-                                    <a href="{% url 'inicio_cliente' %}?categoria={{ cat.id_categoria }}"
+                                    <a href="{% url 'mostrar_productos' %}?categoria={{ cat.id_categoria }}"
                                         class="text-decoration-none">
 
                                         <div class="categoria-item p-2 text-center">

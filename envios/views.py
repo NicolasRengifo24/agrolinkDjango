@@ -19,7 +19,7 @@ def inicio_transportista(request):
         "id_compra__id_cliente",
         "id_vehiculo",
         "id_transportista"
-    ).all()
+    ).filter(id_transportista__isnull=True,estado_envio="pendiente").order_by('-id_envio')
     
     # Obtener vehículos activos del transportista actual
     vehiculos_activos = []
@@ -369,3 +369,38 @@ def generar_numero_seguimiento():
         # Verificar que no exista
         if not Envio.objects.filter(numero_seguimiento=numero).exists():
             return numero
+        
+        
+@login_required
+def cambiar_estado_envio(request, envio_id, nuevo_estado):
+
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+
+        envio = get_object_or_404(Envio, id_envio=envio_id)
+
+        # 🔐 Seguridad: solo su propio envío
+        if envio.id_transportista != transportista_obj:
+            messages.error(request, "No tienes permiso para este envío")
+            return redirect('mis_envios')
+
+        # 🔄 Validar transición lógica
+        if envio.estado_envio == "Asignado" and nuevo_estado == "En_Transito":
+            envio.estado_envio = "En_Transito"
+
+        elif envio.estado_envio == "En_Transito" and nuevo_estado == "Entregado":
+            envio.estado_envio = "Entregado"
+
+        else:
+            messages.warning(request, "Cambio de estado no permitido")
+            return redirect('mis_envios')
+
+        envio.save()
+
+        messages.success(request, f"Estado actualizado a {envio.estado_envio}")
+
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
+
+    return redirect('mis_envios')

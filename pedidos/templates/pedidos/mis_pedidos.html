@@ -1,47 +1,191 @@
+{% extends 'base_detalle_producto.html' %}
 {% load static %}
+{% load humanize %}
+
+{% block content %}
 <link rel="stylesheet" href="{% static 'css/mis_pedidos.css' %}">
 
-<div class="container">
+{% load static %}
+{% load humanize %}
 
-    <h1>📦 Mis Pedidos</h1>
+<div class="mis-pedidos-wrapper">
+     <div class="mis-pedidos-container ">
 
-    {% if not pedidos %}
-        <p>No tienes pedidos aún</p>
-    {% endif %}
+        <h1 class="titulo"> Mis Pedidos</h1>
 
-    {% for pedido in pedidos %}
+        {% if not pedidos %}
+        <p class="empty">Aún no tienes pedidos</p>
+        {% endif %}
 
-    <div class="pedido-card">
+        {% for pedido in pedidos %}
 
-        <div class="pedido-header">
-            <span>Pedido #{{ pedido.compra.id_compra }}</span>
-            <span class="estado {{ pedido.compra.estado }}">
-                {{ pedido.compra.estado }}
-            </span>
-        </div>
+        <div class="pedido-card">
 
-        <div class="pedido-body">
-
-            {% for item in pedido.detalles %}
-            <div class="producto">
-                <img src="{{ item.id_producto.imagen.url }}">
+            <!-- HEADER -->
+            <div class="pedido-header">
                 <div>
-                    <h4>{{ item.id_producto.nombre }}</h4>
-                    <p>Cantidad: {{ item.cantidad }}</p>
+                    <h3>Pedido #{{ pedido.compra.id_compra }}</h3>
+                    <p class="fecha">{{ pedido.compra.fecha_hora_compra }}</p>
                 </div>
-                <span>$ {{ item.subtotal }}</span>
+                <span class="estado-compra">{{ pedido.compra.estado }}</span>
             </div>
-            {% endfor %}
+
+            <!-- TIMELINE -->
+            <div class="timeline">
+
+                <!-- Pedido -->
+                <div class="step active">
+                    <span>🛒</span>
+                    <p>Pedido</p>
+                </div>
+
+                <div class="line {% if pedido.envio %}active-line{% endif %}"></div>
+
+                <!-- Preparación -->
+                <div class="step {% if pedido.envio %}active{% endif %}">
+                    <span>🚜</span>
+                    <p>Preparando</p>
+                </div>
+
+                <div
+                    class="line {% if pedido.envio and pedido.envio.estado_envio != 'Asignado' %}active-line{% endif %}">
+                </div>
+
+                <!-- En tránsito -->
+                <div
+                    class="step {% if pedido.envio and pedido.envio.estado_envio == 'En_Transito' or pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active{% endif %}">
+                    <span>🚚</span>
+                    <p>En camino</p>
+                </div>
+
+                <div
+                    class="line {% if pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active-line{% endif %}">
+                </div>
+
+                <!-- Entregado -->
+                <div class="step {% if pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active{% endif %}">
+                    <span>📦</span>
+                    <p>Entregado</p>
+                </div>
+
+            </div>
+
+            <!-- INFO ENVÍO -->
+            {% if pedido.envio %}
+            <div class="envio-info">
+
+                <div class="bloque">
+                    <strong>🚚 Transportista</strong>
+                    <p>
+                        {{ pedido.envio.id_transportista.id_usuario.nombre|default:"Sin asignar" }}
+                    </p>
+                </div>
+
+                <div class="bloque">
+                    <strong>📅 Recolección</strong>
+                    <p>{{ pedido.envio.fecha_salida|default:"Pendiente" }}</p>
+                </div>
+
+                <div class="bloque">
+                    <strong>📦 Entrega estimada</strong>
+                    <p>{{ pedido.envio.fecha_entrega|default:"Pendiente" }}</p>
+                </div>
+
+                <div class="bloque">
+                    <strong>🔎 Tracking</strong>
+                    <p>{{ pedido.envio.numero_seguimiento|default:"No disponible" }}</p>
+                </div>
+
+            </div>
+            {% endif %}
+
+            <!-- PRODUCTOS -->
+            <div class="productos">
+                {% for item in pedido.detalles %}
+                <div class="producto">
+
+                    {% with img=item.id_producto.imagen_principal_url %}
+                    {% if img %}
+                    <img src="{{ img }}" class="img-producto">
+                    {% else %}
+                    <img src="{% static 'img/default.png' %}" class="img-producto">
+                    {% endif %}
+                    {% endwith %}
+
+                    <div class="info">
+                        <h4>{{ item.id_producto.nombre }}</h4>
+                        <p>Cantidad: {{ item.cantidad }}</p>
+                    </div>
+
+                    <span class="precio">$ {{ item.subtotal|intcomma }}</span>
+
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- FOOTER -->
+            <div class="pedido-footer">
+                <strong>Total: $ {{ pedido.compra.total|intcomma }}</strong>
+            </div>
 
         </div>
 
-        <div class="pedido-footer">
-            <span>Total:</span>
-            <strong>$ {{ pedido.compra.total }}</strong>
-        </div>
+        {% endfor %}
 
     </div>
 
-    {% endfor %}
 
 </div>
+
+
+
+<style>
+    .mis-pedidos-wrapper .timeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+.mis-pedidos-wrapper .step {
+    text-align: center;
+    color: #bbb;
+    transition: 0.3s;
+    width: 80px;
+}
+
+.mis-pedidos-wrapper .step span {
+    font-size: 22px;
+}
+
+.mis-pedidos-wrapper .step.active {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.mis-pedidos-wrapper .line {
+    flex: 1;
+    height: 3px;
+    background: #ddd;
+}
+
+.mis-pedidos-wrapper .active-line {
+    background: #4caf50;
+}
+
+.mis-pedidos-wrapper .envio-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.mis-pedidos-wrapper .bloque {
+    background: #f1f8e9;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+</style>
+
+{% endblock %}

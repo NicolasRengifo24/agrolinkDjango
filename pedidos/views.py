@@ -293,6 +293,7 @@ def calcular_distancia(lat1, lng1, lat2, lng2):
 #pedidos del usuario
 
 #@login_required
+@login_required
 def mis_pedidos(request):
 
     usuario = request.user.usuario
@@ -311,16 +312,17 @@ def mis_pedidos(request):
 
     for compra in compras:
         detalles = DetallesCompra.objects.filter(id_compra=compra)
+        envio = Envio.objects.filter(id_compra=compra).first()  # 🔥 AQUÍ
 
         pedidos.append({
             "compra": compra,
-            "detalles": detalles
+            "detalles": detalles,
+            "envio": envio
         })
 
     return render(request, "pedidos/mis_pedidos.html", {
         "pedidos": pedidos
-    })
-    
+    })    
     
 
 @login_required

@@ -12,6 +12,7 @@ urlpatterns = [
     path('vehiculos/eliminar/<int:vehiculo_id>/', views.eliminar_vehiculo, name='eliminar_vehiculo'),
     path('mis-envios/', views.mis_envios, name='mis_envios'),
     path('aceptar-viaje/<int:envio_id>/', views.aceptar_viaje, name='aceptar_viaje'),
+    path('cambiar-estado/<int:envio_id>/<str:nuevo_estado>/', views.cambiar_estado_envio,name='cambiar_estado_envio'),
     
     
 ] 

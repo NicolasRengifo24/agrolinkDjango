@@ -1,20 +1,20 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f7fa;
+.mis-pedidos-wrapper {
+    padding-top: 100px; /* ajusta según altura del navbar */
 }
 
-.container {
+/* SOLO afecta esta vista */
+.mis-pedidos-container {
     max-width: 900px;
-    margin: 50px auto;
+    margin: auto;
 }
 
-h1 {
+.mis-pedidos-wrapper h1 {
     text-align: center;
     margin-bottom: 30px;
 }
 
 /* CARD */
-.pedido-card {
+.mis-pedidos-wrapper .pedido-card {
     background: white;
     border-radius: 15px;
     margin-bottom: 20px;
@@ -23,7 +23,7 @@ h1 {
 }
 
 /* HEADER */
-.pedido-header {
+.mis-pedidos-wrapper .pedido-header {
     background: #2c5364;
     color: white;
     padding: 10px 15px;
@@ -31,38 +31,15 @@ h1 {
     justify-content: space-between;
 }
 
-/* ESTADOS */
-.estado {
-    padding: 5px 10px;
-    border-radius: 10px;
-    text-transform: capitalize;
-}
-
-.estado.pagado {
-    background: #28a745;
-}
-
-.estado.pendiente {
-    background: #ffc107;
-}
-
-.estado.rechazado {
-    background: #dc3545;
-}
-
 /* BODY */
-.pedido-body {
-    padding: 15px;
-}
-
-.producto {
+.mis-pedidos-wrapper .producto {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
 }
 
-.producto img {
+.mis-pedidos-wrapper .producto img {
     width: 60px;
     height: 60px;
     border-radius: 10px;
@@ -70,7 +47,7 @@ h1 {
 }
 
 /* FOOTER */
-.pedido-footer {
+.mis-pedidos-wrapper .pedido-footer {
     padding: 10px 15px;
     background: #f1f1f1;
     display: flex;
