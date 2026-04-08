@@ -1,3 +1,6 @@
+import csv
+import io
+
 from django.shortcuts import render , redirect, get_object_or_404
 from django.http import JsonResponse
 from .models import Envio , Vehiculo
@@ -407,6 +410,7 @@ def cambiar_estado_envio(request, envio_id, nuevo_estado):
 
 
 
+
 ######### Esto es para el Api #######
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -419,3 +423,196 @@ def ciudades_cundinamarca_api(request):
         "success": True,
         "data": ciudades
     })
+    
+    
+## carga masiva 
+@login_required
+def cargar_vehiculos_csv(request):
+    """Carga masiva de vehículos desde archivo CSV"""
+    
+    if request.method == 'POST':
+        archivo = request.FILES.get('archivo')
+        
+        if not archivo:
+            messages.error(request, 'Debes seleccionar un archivo CSV')
+            return redirect('mostrar_vehiculos')
+        
+        if not archivo.name.endswith('.csv'):
+            messages.error(request, 'El archivo debe ser de tipo CSV')
+            return redirect('mostrar_vehiculos')
+        
+        # Obtener el transportista
+        try:
+            from usuarios.models import Usuario, Transportista
+            usuario = Usuario.objects.get(user=request.user)
+            transportista = Transportista.objects.get(id_usuario=usuario)
+            print(f"Transportista ID: {transportista.id_usuario.id_usuario}")
+        except Usuario.DoesNotExist:
+            messages.error(request, 'No tienes un perfil de usuario asociado')
+            return redirect('mostrar_vehiculos')
+        except Transportista.DoesNotExist:
+            messages.error(request, 'No tienes un perfil de transportista asociado')
+            return redirect('mostrar_vehiculos')
+        
+        # Leer el archivo
+        contenido = None
+        for codificacion in ['utf-8', 'latin-1', 'iso-8859-1', 'windows-1252']:
+            try:
+                archivo.seek(0)
+                contenido = archivo.read().decode(codificacion)
+                break
+            except UnicodeDecodeError:
+                continue
+        
+        if not contenido:
+            messages.error(request, 'No se pudo leer el archivo')
+            return redirect('mostrar_vehiculos')
+        
+        # Detectar delimitador
+        primera_linea = contenido.splitlines()[0]
+        if '\t' in primera_linea:
+            delimiter = '\t'
+        elif ';' in primera_linea:
+            delimiter = ';'
+        else:
+            delimiter = ','
+        
+        print(f"Delimitador detectado: '{delimiter}'")
+        
+        try:
+            import csv
+            import io
+            
+            io_string = io.StringIO(contenido)
+            reader = csv.DictReader(io_string, delimiter=delimiter)
+            
+            vehiculos_creados = 0
+            errores = []
+            fila_num = 0
+            
+            for row in reader:
+                fila_num += 1
+                
+                if not any(row.values()):
+                    print(f"Fila {fila_num}: VACÍA")
+                    continue
+                
+                print(f"\n--- Procesando fila {fila_num} ---")
+                print(f"Datos: {dict(row)}")
+                
+                try:
+                    tipo_vehiculo = row.get('tipo_vehiculo', '').strip()
+                    capacidad_carga = row.get('capacidad_carga', 0)
+                    placa_vehiculo = row.get('placa_vehiculo', '').strip().upper()
+                    estado = row.get('estado', 'ACTIVO').strip().upper()
+                    
+                    print(f"Tipo: '{tipo_vehiculo}'")
+                    print(f"Capacidad: '{capacidad_carga}'")
+                    print(f"Placa: '{placa_vehiculo}'")
+                    print(f"Estado: '{estado}'")
+                    
+                    # Validación 1: Tipo de vehículo
+                    if not tipo_vehiculo:
+                        error_msg = f"Fila {fila_num}: Tipo de vehículo requerido"
+                        errores.append(error_msg)
+                        print(f"❌ {error_msg}")
+                        continue
+                    
+                    # Validación 2: Placa
+                    if not placa_vehiculo:
+                        error_msg = f"Fila {fila_num}: Placa requerida"
+                        errores.append(error_msg)
+                        print(f"❌ {error_msg}")
+                        continue
+                    
+                    # Validación 3: Capacidad
+                    try:
+                        capacidad_float = float(capacidad_carga)
+                        if capacidad_float <= 0:
+                            error_msg = f"Fila {fila_num}: Capacidad de carga debe ser mayor a 0"
+                            errores.append(error_msg)
+                            print(f"❌ {error_msg}")
+                            continue
+                    except ValueError:
+                        error_msg = f"Fila {fila_num}: Capacidad de carga debe ser un número"
+                        errores.append(error_msg)
+                        print(f"❌ {error_msg}")
+                        continue
+                    
+                    # Validación 4: Placa duplicada
+                    if Vehiculo.objects.filter(placa_vehiculo=placa_vehiculo).exists():
+                        error_msg = f"Fila {fila_num}: La placa {placa_vehiculo} YA EXISTE en la base de datos"
+                        errores.append(error_msg)
+                        print(f"❌ {error_msg}")
+                        # Mostrar el vehículo existente
+                        vehiculo_existente = Vehiculo.objects.get(placa_vehiculo=placa_vehiculo)
+                        print(f"   Vehículo existente ID: {vehiculo_existente.id_vehiculo}, Transportista: {vehiculo_existente.id_transportista.id_usuario.nombre_usuario}")
+                        continue
+                    
+                    # Normalizar tipo
+                    tipo_original = tipo_vehiculo
+                    if tipo_vehiculo.lower() == 'camion':
+                        tipo_vehiculo = 'Camión'
+                    
+                    tipos_validos = ['Camión', 'Camioneta', 'Van', 'Furgón', 'Volqueta']
+                    if tipo_vehiculo not in tipos_validos:
+                        error_msg = f"Fila {fila_num}: Tipo '{tipo_vehiculo}' no válido. Válidos: {', '.join(tipos_validos)}"
+                        errores.append(error_msg)
+                        print(f"❌ {error_msg}")
+                        continue
+                    
+                    # Validar estado
+                    if estado not in ['ACTIVO', 'SUSPENDIDO', 'MANTENIMIENTO']:
+                        estado = 'ACTIVO'
+                    
+                    # Crear vehículo
+                    print(f"Creando vehículo con:")
+                    print(f"  - transportista: {transportista}")
+                    print(f"  - tipo: {tipo_vehiculo}")
+                    print(f"  - capacidad: {capacidad_float}")
+                    print(f"  - placa: {placa_vehiculo}")
+                    print(f"  - estado: {estado}")
+                    
+                    vehiculo = Vehiculo.objects.create(
+                        id_transportista=transportista,
+                        tipo_vehiculo=tipo_vehiculo,
+                        capacidad_carga=capacidad_float,
+                        placa_vehiculo=placa_vehiculo,
+                        estado=estado
+                    )
+                    
+                    vehiculos_creados += 1
+                    print(f"✅ Vehículo {placa_vehiculo} CREADO exitosamente (ID: {vehiculo.id_vehiculo})")
+                    
+                except Exception as e:
+                    error_msg = f"Fila {fila_num}: Error EXCEPCIÓN - {str(e)}"
+                    errores.append(error_msg)
+                    print(f"❌ {error_msg}")
+                    import traceback
+                    traceback.print_exc()
+            
+            print("\n" + "=" * 50)
+            print(f"RESUMEN FINAL:")
+            print(f"  - Vehículos creados: {vehiculos_creados}")
+            print(f"  - Errores: {len(errores)}")
+            for error in errores:
+                print(f"    * {error}")
+            print("=" * 50)
+            
+            # Mostrar resultados en el template
+            if vehiculos_creados > 0:
+                messages.success(request, f'✅ {vehiculos_creados} vehículos cargados exitosamente')
+            
+            if errores:
+                for error in errores[:10]:  # Mostrar primeros 10 errores
+                    messages.error(request, error)
+                
+        except Exception as e:
+            print(f"Error general: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f'Error al procesar CSV: {str(e)}')
+        
+        return redirect('mostrar_vehiculos')
+    
+    return redirect('mostrar_vehiculos')

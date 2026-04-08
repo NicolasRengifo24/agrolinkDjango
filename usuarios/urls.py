@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
     # Login y registro
     path('login/', views.login_view, name='login_view'),
@@ -44,5 +45,8 @@ urlpatterns = [
     path('servicios/cambiar_estado/<int:servicio_id>/', views.cambiar_estado_servicio, name='cambiar_estado_servicio'),
     path('servicios/eliminar/<int:servicio_id>/', views.eliminar_servicio_admin, name='eliminar_servicio_admin'),
     path('logout/', views.cerrar_sesion, name='logout'),
+    
+    
+
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

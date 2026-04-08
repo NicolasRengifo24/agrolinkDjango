@@ -230,6 +230,9 @@
       result.data.forEach(c => {
         select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
       });
+
+       // Agregar Bogotá manualmente
+    select.innerHTML += `<option value="Bogotá">Bogotá</option>`;
     }
 
     cargarCiudades();

@@ -666,7 +666,7 @@ def crear_usuario_admin(request):
                 id_usuario=usuario,
                 zonas_entrega=request.POST.get("txt_zonasEntrega")
             )
-        elif rol.upper() == "ASESOR":
+        elif rol.upper() == "SERVICIO":
             Asesor.objects.create(
                 id_usuario=usuario,
                 tipo_asesoria=request.POST.get("txt_tipoAsesoria")
@@ -727,52 +727,41 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            
+            
 
             user = authenticate(request, username=username, password=password)
-
             if user:
                 login(request, user)
-
                 try:
                     usuario = Usuario.objects.get(user=user)
                 except Usuario.DoesNotExist:
                     messages.error(request, "No se encontró información extendida del usuario")
                     return redirect('login_view')
 
-                # 🔥 LIMPIEZA CORRECTA DEL ROL
-                rol = usuario.rol.upper().strip()
-
-                print("ROL RAW:", usuario.rol)
-                print("ROL LIMPIO:", rol)
-
+                rol = usuario.rol.upper()
                 messages.success(request, f"Login correcto. Rol detectado: {rol}")
+                print(f"ROL DETECTADO: '{usuario.rol}'")
 
-                # 🔥 REDIRECCIONES
                 if rol == 'CLIENTE':
-                    return redirect('mostrar_productos')
-
+                    return redirect('mostrar_productos') 
+                # productos/inicio
                 elif rol == 'ADMINISTRADOR':
                     return redirect('usuarios')
 
-                elif rol == 'TRANSPORTISTA':
+                elif rol == 'TRANSPORTISTA' :
                     return redirect('inicio_transportista')
-
+                
                 elif rol == 'PRODUCTOR':
                     return redirect('lista_productos')
-
-                elif rol == 'ASESOR':
-                    return redirect('asesor_servicios')
 
                 else:
                     messages.error(request, f"Rol desconocido: {rol}")
                     return redirect('login_view')
-
             else:
                 messages.error(request, "Credenciales inválidas")
-
     else:
         form = LoginForm()
-
     return render(request, 'usuarios/login.html', {'form': form})
 
 

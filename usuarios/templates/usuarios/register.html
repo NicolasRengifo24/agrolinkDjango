@@ -108,6 +108,7 @@
           <div class="col-12">
             <label class="form-label fw-semibold">Selecciona tu rol *</label>
             <select name="role" id="roleSelect" class="form-select form-select-lg" required>
+              <option value="ADMINISTRADOR">Administrador - Gestiona La Plataforma</option>
               <option value="CLIENTE" selected>Cliente - Comprador de productos</option>
               <option value="PRODUCTOR">Productor - Vendo productos agrícolas</option>
               <option value="TRANSPORTISTA">Transportista - Ofrezco servicio de transporte</option>
@@ -222,7 +223,7 @@
         <hr class="my-4">
 
         <div class="d-flex justify-content-between align-items-center">
-          <a class="btn btn-outline-secondary">
+          <a class="btn btn-outline-secondary" href="{% url 'login_view' %}">
             <i class="bi bi-arrow-left me-1"></i>
             Volver
           </a>
@@ -232,6 +233,63 @@
           </button>
         </div>
       </form>
+      <hr class="my-4">
+
+      <div class="card bg-light">
+        <div class="card-body">
+          <h5 class="text-success mb-3">
+            <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+            Carga Masiva de Usuarios
+          </h5>
+
+          <form action="{% url 'cargar_usuarios' %}" method="POST" enctype="multipart/form-data" id="csvUploadForm">
+            {% csrf_token %}
+
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-filetype-csv me-1"></i>
+                  Archivo CSV
+                </label>
+                <input type="file" name="archivo" id="csvFile" class="form-control" accept=".csv" required>
+                <div class="form-text mt-2">
+                  <i class="bi bi-info-circle-fill text-info me-1"></i>
+                  <strong>Formato requerido:</strong>
+                  <ul class="mt-2 mb-0 small">
+                    <li>Separador: punto y coma (;) o coma (,)</li>
+                    <li>Columnas obligatorias: nombre, apellido, nombre_usuario, correo, cedula, direccion</li>
+                    <li>Columnas opcionales: ciudad, departamento, telefono, rol, contrasena_usuario</li>
+                    <li>Roles válidos: CLIENTE, PRODUCTOR, TRANSPORTISTA, ASESOR, ADMINISTRADOR</li>
+                  </ul>
+                  <div class="mt-2">
+                    <a href="#" class="btn btn-sm btn-outline-info" id="downloadTemplate">
+                      <i class="bi bi-download me-1"></i>
+                      Descargar plantilla CSV
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100" id="uploadBtn" onclick="handleCsvUpload(this)">
+                  <i class="bi bi-cloud-upload me-2"></i>
+                  Cargar Usuarios
+                </button>
+              </div>
+            </div>
+
+            <!-- Barra de progreso (oculta inicialmente) -->
+            <div id="uploadProgress" class="mt-3" style="display: none;">
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                  style="width: 100%">
+                  Procesando archivo...
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -253,6 +311,7 @@
         'PRODUCTOR': 'productorFields',
         'TRANSPORTISTA': 'transportistaFields',
         'ASESOR': 'asesorFields'
+
       };
 
       const fieldId = roleFieldsMap[selectedRole];
@@ -296,7 +355,7 @@
     // Inicializar los campos requeridos al cargar la página
     updateRequiredFields('CLIENTE');
 
-    
+
     // esto es del api //
 
     // carga de los departamentos desde el api 
@@ -310,10 +369,98 @@
       result.data.forEach(c => {
         select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
       });
+      // Agregar Bogotá manualmente
+      select.innerHTML += `<option value="Bogotá">Bogotá</option>`;
     }
 
     cargarCiudades();
   </script>
+  <script>
+// Función para manejar la carga de CSV
+function handleCsvUpload(button) {
+    const fileInput = document.getElementById('csvFile');
+    const form = document.getElementById('csvUploadForm');
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Por favor, selecciona un archivo CSV');
+        event.preventDefault();
+        return false;
+    }
+    
+    const file = fileInput.files[0];
+    if (!file.name.endsWith('.csv')) {
+        alert('El archivo debe tener extensión .csv');
+        event.preventDefault();
+        return false;
+    }
+    
+    // Mostrar barra de progreso
+    document.getElementById('uploadProgress').style.display = 'block';
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Procesando...';
+    
+    // El formulario se enviará automáticamente
+    return true;
+}
+
+// Descargar plantilla CSV
+document.getElementById('downloadTemplate')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    const headers = ['nombre', 'nombre_usuario', 'contrasena_usuario', 'apellido', 'correo', 'ciudad', 'departamento', 'direccion', 'cedula', 'telefono', 'rol'];
+    const exampleRow = ['Juan', 'juan_perez', '123456', 'Pérez', 'juan@email.com', 'Bogotá', 'Cundinamarca', 'Calle 123', '123456789', '3001234567', 'CLIENTE'];
+    
+    let csvContent = headers.join(';') + '\n';
+    csvContent += exampleRow.join(';') + '\n';
+    
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.href = url;
+    link.setAttribute('download', 'plantilla_usuarios_agrolink.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+});
+</script>
+
+<style>
+.role-field {
+    display: none;
+}
+.role-field.active {
+    display: block;
+}
+.role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-left: 10px;
+}
+.role-badge.cliente {
+    background-color: #0d6efd;
+    color: white;
+}
+.role-badge.productor {
+    background-color: #198754;
+    color: white;
+}
+.role-badge.transportista {
+    background-color: #ffc107;
+    color: black;
+}
+.role-badge.asesor {
+    background-color: #6f42c1;
+    color: white;
+}
+.text-purple {
+    color: #6f42c1;
+}
+</style>
 
 </body>
 

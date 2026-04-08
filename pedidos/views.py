@@ -134,6 +134,20 @@ def confirmacion_pago(request):
             compra.estado = "pagado"
             compra.metodo_pago = "epayco"
             compra.save()
+            
+            # ========================================
+    # 🔥 RESTAR STOCK DE PRODUCTOS
+    # ========================================
+    detalles = compra.detallescompra_set.all()
+    for detalle in detalles:
+        producto = detalle.id_producto
+        if producto.stock is not None:
+            if producto.stock >= detalle.cantidad:
+                producto.stock -= detalle.cantidad
+                producto.save()
+                print(f"📉 Stock actualizado: {producto.nombre_producto} → {producto.stock}")
+            else:
+                print(f"⚠️ Stock insuficiente para {producto.nombre_producto}")
 
             # ========================================
             # 🔥 CREAR ENVÍO

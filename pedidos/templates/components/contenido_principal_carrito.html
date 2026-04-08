@@ -37,7 +37,13 @@
             {% for item in detalles %}
             <div class="cart-card mb-3" data-aos="fade-up">
 
-                <img src="{{ item.id_producto.imagen.url }}" alt="producto">
+                {% with img=item.id_producto.imagen_principal_url %}
+                {% if img %}
+                <img src="{{ img }}" class="img-producto">
+                {% else %}
+                <img src="{% static 'img/default.png' %}" class="img-producto">
+                {% endif %}
+                {% endwith %}
 
                 <div class="flex-grow-1">
                     <h5 class="fw-bold">{{ item.id_producto.nombre }}</h5>
@@ -112,7 +118,7 @@
                 <!-- Botón de pago -->
                 <script src="https://checkout.epayco.co/checkout.js"></script>
 
-            
+
 
                 <script>
                     document.getElementById("btn-pagar").addEventListener("click", function () {

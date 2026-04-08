@@ -19,5 +19,7 @@ urlpatterns = [
     ## api ##
     path("api/cundinamarca/ciudades/",ciudades_cundinamarca_api, name="ciudades_cundinamarca_api"),    
     
+    path('cargar-vehiculos-csv/', views.cargar_vehiculos_csv, name='cargar_vehiculos_csv'),
+    
 ] 
 

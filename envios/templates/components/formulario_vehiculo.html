@@ -1,97 +1,221 @@
 {% load static %}
 <div class="card shadow-sm border-0">
     <div class="card-body p-4">
-        <h4 class="fw-bold mb-4">
-            <i class="bi bi-plus-circle me-2 text-success"></i>Agregar un vehículo
-        </h4>
-        
-        <form id="formAgregarVehiculo" method="post" enctype="multipart/form-data" action="{% url 'agregar_vehiculo' %}">
-            {% csrf_token %}
-            
-            <div class="row g-3">
-                <!-- Tipo de vehículo -->
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Tipo de vehículo *</label>
-                    <select class="form-select" id="tipoVehiculo" name="tipo_vehiculo" required>
-                        <option value="" selected disabled>Selecciona un tipo</option>
-                        <option value="Camión">🚛 Camión</option>
-                        <option value="Camioneta">🚙 Camioneta</option>
-                        <option value="Van">🚐 Van</option>
-                        <option value="Furgón">📦 Furgón</option>
-                        <option value="Volqueta">⛟ Volqueta</option>
-                    </select>
-                </div>
-                
-                <!-- Placa -->
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Placa *</label>
-                    <input type="text" class="form-control" id="placa" name="placa_vehiculo"
-                           placeholder="Ej: ABC-123" required>
-                    <div class="form-text">Ingresa la placa sin espacios</div>
-                </div>
-                
-                <!-- Capacidad -->
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Capacidad máxima (kg) *</label>
-                    <input type="range" class="form-range peso-slider" 
-                           min="0" max="15000" step="100" value="0"
-                           oninput="actualizarValorSlider(this.value)">
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <small class="text-muted">0 kg</small>
-                        <span class="badge bg-success valor-peso">0 kg</span>
-                        <small class="text-muted">15000 kg</small>
+        <!-- Pestañas -->
+        <ul class="nav nav-tabs mb-4" id="vehiculoTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual"
+                    type="button" role="tab">
+                    <i class="bi bi-plus-circle me-2 text-success"></i>Registro Manual
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="csv-tab" data-bs-toggle="tab" data-bs-target="#csv" type="button"
+                    role="tab">
+                    <i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Carga Masiva (CSV)
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="vehiculoTabContent">
+
+            <!-- Pestaña 1: Registro Manual -->
+            <div class="tab-pane fade show active" id="manual" role="tabpanel">
+                <h4 class="fw-bold mb-4">
+                    <i class="bi bi-plus-circle me-2 text-success"></i>Agregar un vehículo
+                </h4>
+
+                <!-- ✅ URL corregida -->
+                <form method="post" enctype="multipart/form-data" action="{% url 'agregar_vehiculo' %}">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tipo de vehículo *</label>
+                            <select class="form-select" name="tipo_vehiculo" required>
+                                <option value="" selected disabled>Selecciona un tipo</option>
+                                <option value="Camión">🚛 Camión</option>
+                                <option value="Camioneta">🚙 Camioneta</option>
+                                <option value="Van">🚐 Van</option>
+                                <option value="Furgón">📦 Furgón</option>
+                                <option value="Volqueta">⛟ Volqueta</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Placa *</label>
+                            <input type="text" class="form-control" name="placa_vehiculo" placeholder="Ej: ABC123"
+                                required>
+                            <div class="form-text">Sin espacios, solo letras y números</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Capacidad máxima (kg) *</label>
+                            <input type="number" class="form-control" name="capacidad_carga" step="0.01"
+                                placeholder="Ej: 5000" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Estado</label>
+                            <select class="form-select" name="estado">
+                                <option value="ACTIVO">Activo</option>
+                                <option value="SUSPENDIDO">Suspendido</option>
+                                <option value="MANTENIMIENTO">Mantenimiento</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Documento propiedad</label>
+                            <input type="file" class="form-control" name="documento_propiedad"
+                                accept=".pdf,.jpg,.png,.webp">
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                                <i class="bi bi-save me-2"></i>Registrar vehículo
+                            </button>
+                        </div>
                     </div>
-                    <!-- Campo oculto que guardará el valor para enviar al servidor -->
-                    <input type="hidden" name="capacidad_carga" id="capacidad_carga" value="0">
-                </div>
-                
-                <!-- Documentos -->
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Documentos del vehículo</label>
-                    <input class="form-control" type="file" id="documentos" name="documento_propiedad" multiple accept=".pdf,.jpg,.png,.webp">
-                    <div class="form-text">
-                        <i class="bi bi-info-circle"></i> Sube SOAT, tarjeta de propiedad (PDF o imagen)
-                    </div>
-                </div>
-                
-                <!-- Botón submit -->
-                <div class="col-12 mt-4">
-                    <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
-                        <i class="bi bi-save me-2"></i>Registrar vehículo
-                    </button>
-                </div>
+                </form>
             </div>
-        </form>
+
+            <!-- Pestaña 2: Carga Masiva CSV -->
+            <div class="tab-pane fade" id="csv" role="tabpanel">
+                <h4 class="fw-bold mb-4">
+                    <i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>Carga masiva de vehículos
+                </h4>
+
+                <form method="POST" enctype="multipart/form-data" action="{% url 'cargar_vehiculos_csv' %}">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <strong>Instrucciones:</strong>
+                                <ul class="mt-2 mb-0">
+                                    <li>El archivo debe ser CSV (separado por punto y coma o coma)</li>
+                                    <li>Columnas requeridas: <code>tipo_vehiculo, capacidad_carga, placa_vehiculo</code>
+                                    </li>
+                                    <li>Columna opcional: <code>estado</code> (ACTIVO, SUSPENDIDO, MANTENIMIENTO)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Seleccionar archivo CSV *</label>
+                            <input type="file" class="form-control" name="archivo" accept=".csv" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Formato de ejemplo:</label>
+                            <pre class="bg-light p-3 rounded small">
+tipo_vehiculo;capacidad_carga;placa_vehiculo;estado
+Camión;15000;ABC123;ACTIVO
+Camioneta;1000;BCD234;ACTIVO</pre>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="button" class="btn btn-outline-secondary" id="descargarPlantilla">
+                                <i class="bi bi-download me-1"></i>Descargar plantilla CSV
+                            </button>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                                <i class="bi bi-cloud-upload me-2"></i>Cargar vehículos
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+</div>
 </div>
 
 <script>
-    // Función para actualizar el valor del slider y el campo oculto
-    function actualizarValorSlider(valor) {
-        // Actualizar el span que muestra el valor
-        const valorSpan = document.querySelector('.valor-peso');
-        if (valorSpan) {
-            valorSpan.textContent = `${valor} kg`;
+    // Descargar plantilla CSV
+    document.getElementById('descargarPlantilla')?.addEventListener('click', function () {
+        const headers = ['tipo_vehiculo', 'capacidad_carga', 'placa_vehiculo', 'estado'];
+        const ejemplo = [
+            ['Camión', '5000', 'ABC123', 'ACTIVO'],
+            ['Camioneta', '1200', 'DEF456', 'ACTIVO'],
+            ['Furgón', '2500', 'GHI789', 'ACTIVO']
+        ];
+
+        let csvContent = headers.join(';') + '\n';
+        ejemplo.forEach(row => {
+            csvContent += row.join(';') + '\n';
+        });
+
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', 'plantilla_vehiculos.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    });
+
+    // Mostrar mensaje de carga
+    document.getElementById('btnCargarCSV')?.addEventListener('click', function (e) {
+        const fileInput = document.querySelector('#csv input[type="file"]');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Por favor, selecciona un archivo CSV');
+            return;
         }
+
+        this.disabled = true;
+        this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Procesando...';
+    });
+</script>
+<script>
+    // Depuración del formulario CSV
+    const formCSV = document.querySelector('#csv form');
+    if (formCSV) {
+        console.log('Formulario CSV encontrado');
         
-        // Actualizar el campo oculto que se enviará al servidor
-        const capacidadInput = document.getElementById('capacidad_carga');
-        if (capacidadInput) {
-            capacidadInput.value = valor;
-        }
+        formCSV.addEventListener('submit', function(e) {
+            console.log('Evento submit disparado');
+            const fileInput = this.querySelector('input[name="archivo"]');
+            console.log('Archivo seleccionado:', fileInput.files[0]);
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                e.preventDefault();
+                alert('Por favor, selecciona un archivo CSV');
+                return false;
+            }
+            
+            console.log('Enviando formulario...');
+            return true;
+        });
     }
     
-    // Inicializar cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar con valor 0
-        actualizarValorSlider(0);
+    // Descargar plantilla CSV
+    document.getElementById('descargarPlantilla')?.addEventListener('click', function() {
+        const headers = ['tipo_vehiculo', 'capacidad_carga', 'placa_vehiculo', 'estado'];
+        const ejemplo = [
+            ['Camión', '15000', 'ABC123', 'ACTIVO'],
+            ['Camioneta', '1000', 'BCD234', 'ACTIVO']
+        ];
         
-        // También puedes agregar evento al slider por si acaso
-        const slider = document.querySelector('.peso-slider');
-        if (slider) {
-            slider.addEventListener('input', function(e) {
-                actualizarValorSlider(e.target.value);
-            });
-        }
+        let csvContent = headers.join(';') + '\n';
+        ejemplo.forEach(row => {
+            csvContent += row.join(';') + '\n';
+        });
+        
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', 'plantilla_vehiculos.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     });
 </script>
