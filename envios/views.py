@@ -404,3 +404,18 @@ def cambiar_estado_envio(request, envio_id, nuevo_estado):
         messages.error(request, f"Error: {str(e)}")
 
     return redirect('mis_envios')
+
+
+
+######### Esto es para el Api #######
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .services import UbicacionService
+
+@api_view(['GET'])
+def ciudades_cundinamarca_api(request):
+    ciudades = UbicacionService.obtener_ciudades_cundinamarca()
+    return Response({
+        "success": True,
+        "data": ciudades
+    })

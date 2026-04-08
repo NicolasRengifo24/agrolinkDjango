@@ -29,17 +29,19 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="ciudad" class="form-label">Ciudad</label>
-                                <input type="text" class="form-control" id="ciudad" name="ciudad"
-                                    value="{{ finca.ciudad|default:'' }}">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ciudad *</label>
+                                <select id="ciudad" name="txt_ciudad" class="form-select" required>
+                                    <option value="">Seleccione una ciudad</option>
+                                </select>
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="departamento" class="form-label">Departamento</label>
-                                <input type="text" class="form-control" id="departamento" name="departamento"
-                                    value="{{ finca.departamento|default:'' }}">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Departamento *</label>
+                                <input type="text" name="txt_departamento" class="form-control" value="Cundinamarca"
+                                    readonly />
                             </div>
+
                         </div>
 
                         <!-- Campos ocultos para coordenadas -->
@@ -215,5 +217,21 @@
             }
         });
     });
+
+
+    // carga de los departamentos desde el api 
+    async function cargarCiudades() {
+      const res = await fetch("/api/cundinamarca/ciudades/");
+      const result = await res.json();
+
+      const select = document.getElementById("ciudad");
+      select.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+      result.data.forEach(c => {
+        select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+      });
+    }
+
+    cargarCiudades();
 </script>
 {% endblock %}

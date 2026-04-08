@@ -1,5 +1,8 @@
 from django.urls import path
 from . import views
+## api 
+from django.urls import path
+from .views import ciudades_cundinamarca_api
 
 
 
@@ -13,7 +16,8 @@ urlpatterns = [
     path('mis-envios/', views.mis_envios, name='mis_envios'),
     path('aceptar-viaje/<int:envio_id>/', views.aceptar_viaje, name='aceptar_viaje'),
     path('cambiar-estado/<int:envio_id>/<str:nuevo_estado>/', views.cambiar_estado_envio,name='cambiar_estado_envio'),
-    
+    ## api ##
+    path("api/cundinamarca/ciudades/",ciudades_cundinamarca_api, name="ciudades_cundinamarca_api"),    
     
 ] 
 
