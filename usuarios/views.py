@@ -97,7 +97,7 @@ def registrar_usuario(request):
         ciudad = request.POST.get('txt_ciudad')
         departamento = request.POST.get('txt_departamento')
         direccion = request.POST.get('txt_direccion')
-        rol = request.POST.get('role')
+        rol = request.POST.get('role').upper()
 
         # Validar usuario existente
         if User.objects.filter(username=username).exists():
@@ -142,7 +142,7 @@ def registrar_usuario(request):
         elif rol == "ASESOR":
             Asesor.objects.create(id_usuario=usuario)
 
-        elif rol == "ADMIN":
+        elif rol == "ADMINISTRADOR":
             Administrador.objects.create(id_usuario=usuario)
 
         messages.success(request, "Usuario registrado correctamente. Ya puedes iniciar sesión.")
@@ -582,13 +582,17 @@ def ver_servicio_detalle(request, id):
     })
 
 
-def cambiar_estado_servicio(request, servicio_id):
-    
-    servicio = get_object_or_404(Servicio.objects.select_related('id_asesor__id_usuario'), id_servicio=servicio_id)
 
-    servicio.estado = servicio.id_asesor.id_usuario.estado  # True o False
+def cambiar_estado_servicio(request, servicio_id):
+    servicio = get_object_or_404(Servicio, id_servicio=servicio_id)
+
+    # Cambiar el estado propio del servicio
+    if servicio.estado == "activo":
+        servicio.estado = "inactivo"
+    else:
+        servicio.estado = "activo"
+
     servicio.save()
-    
     return redirect('ver_lista_servicios_admin')
 
 def eliminar_servicio_admin(request, servicio_id):
@@ -666,7 +670,7 @@ def crear_usuario_admin(request):
                 id_usuario=usuario,
                 zonas_entrega=request.POST.get("txt_zonasEntrega")
             )
-        elif rol.upper() == "SERVICIO":
+        elif rol.upper() == "ASESOR":
             Asesor.objects.create(
                 id_usuario=usuario,
                 tipo_asesoria=request.POST.get("txt_tipoAsesoria")
@@ -747,7 +751,7 @@ def login_view(request):
                     return redirect('mostrar_productos') 
                 # productos/inicio
                 elif rol == 'ADMINISTRADOR':
-                    return redirect('usuarios')
+                    return redirect('ver_listas_usuarios_admin')
 
                 elif rol == 'TRANSPORTISTA' :
                     return redirect('inicio_transportista')

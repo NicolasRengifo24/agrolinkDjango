@@ -22,7 +22,7 @@
                 {% for p in productos %}
                 <tr class="producto-item" data-stock="{{ p.stock }}">
                     
-                    <td>{{ forloop.counter }}</td>
+                    <td>{{ p.id_producto }}</td>
 
                     <td>
                         <strong>{{ p.nombre_producto }}</strong><br>

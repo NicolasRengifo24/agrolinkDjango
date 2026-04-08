@@ -1,0 +1,217 @@
+/* ============================================================
+   detalle_servicio_full.css
+   Vista moderna y centrada de detalle de servicio
+   Compatible con Bootstrap 5
+   ============================================================ */
+
+/* ── Fondo de la página ───────────────────────────────────── */
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #e0f2fe, #fef3c7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ── Wrapper principal ───────────────────────────────────── */
+.ds-wrapper {
+  width: 100%;
+  max-width: 960px;
+  padding: 20px;
+}
+
+/* ── Card centrada ───────────────────────────────────────── */
+.ds-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+  padding: 35px;
+  transition: all 0.3s ease;
+}
+
+.ds-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Título principal ────────────────────────────────────── */
+.ds-title {
+  font-size: 26px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ds-title .bi {
+  color: #2563eb;
+  font-size: 28px;
+}
+
+/* ── Badges de estado ───────────────────────────────────── */
+.ds-badge {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 50px;
+  display: inline-block;
+}
+
+.ds-badge--success {
+  background: linear-gradient(120deg, #bbf7d0, #16a34a);
+  color: #065f46;
+}
+
+.ds-badge--danger {
+  background: linear-gradient(120deg, #fecaca, #dc2626);
+  color: #7f1d1d;
+}
+
+.ds-badge--secondary {
+  background: linear-gradient(120deg, #e2e8f0, #64748b);
+  color: #1e293b;
+}
+
+/* ── Separador ─────────────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 25px 0;
+}
+
+/* ── Columnas info principal ─────────────────────────────── */
+.ds-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.ds-col {
+  flex: 1;
+  min-width: 280px;
+}
+
+.ds-col p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #374151;
+  margin-bottom: 18px;
+}
+
+.ds-col p strong {
+  display: inline-block;
+  min-width: 120px;
+  color: #111827;
+}
+
+/* ── Títulos de sección (Máquinas, Certificados) ────────── */
+.ds-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ds-section-title .bi {
+  color: #2563eb;
+}
+
+/* ── Tablas ─────────────────────────────────────────────── */
+.ds-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ds-table th,
+.ds-table td {
+  border: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.ds-table thead th {
+  background: #1f2937;
+  color: #f3f4f6;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ds-table tbody tr:hover {
+  background: #f1f5f9;
+  transition: background 0.2s ease;
+}
+
+/* ── Texto vacío ───────────────────────────────────────── */
+.text-muted {
+  color: #9ca3af !important;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* ── Botón volver ───────────────────────────────────────── */
+.ds-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  border: none;
+  color: #ffffff !important;
+  font-weight: 700;
+  padding: 12px 26px;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.ds-btn-back:hover {
+  background: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  color: #ffffff !important;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ds-card {
+    padding: 25px !important;
+    border-radius: 20px;
+  }
+
+  .ds-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .ds-col p strong {
+    min-width: unset;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .ds-title {
+    font-size: 22px;
+  }
+
+  .ds-section-title {
+    font-size: 18px;
+  }
+
+  .ds-btn-back {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 0;
+  }
+}

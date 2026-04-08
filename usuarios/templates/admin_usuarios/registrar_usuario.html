@@ -181,8 +181,8 @@
             </div>
         </div>
 
-        <!-- SERVICIO: Tipo de Asesoría -->
-        <div id="servicioFields" class="role-field">
+        <!-- ASESOR: Tipo de Asesoría -->
+        <div id="asesorFields" class="role-field">
             <h5 class="text-purple mb-3">
             <i class="bi bi-briefcase me-2"></i>
             Información de Prestador de Servicio
@@ -215,7 +215,7 @@
 
         <hr class="my-4">
 
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center { url 'usuarios' }">
         <a class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>
             Volver
@@ -246,7 +246,7 @@
         'CLIENTE': 'clienteFields',
         'PRODUCTOR': 'productorFields',
         'TRANSPORTISTA': 'transportistaFields',
-        'SERVICIO': 'servicioFields'
+        'ASESOR': 'asesorFields'
     };
 
     const fieldId = roleFieldsMap[selectedRole];
@@ -260,7 +260,7 @@
         'CLIENTE': 'Cliente',
         'PRODUCTOR': 'Productor',
         'TRANSPORTISTA': 'Transportista',
-        'SERVICIO': 'Prestador de Servicio'
+        'ASESOR': 'Prestador de Servicio'
     };
 
     badge.textContent = roleNames[selectedRole];

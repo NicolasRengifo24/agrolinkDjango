@@ -46,11 +46,13 @@
 
           
           <td>
-    {% if s.estado %}
-        Activo
-    {% else %}
-        Inactivo
-    {% endif %}
+  {% if s.estado == "activo" %}
+    <span class="badge bg-success">Activo</span>
+  {% elif s.estado == "inactivo" %}
+    <span class="badge bg-danger">Inactivo</span>
+  {% else %}
+    <span class="badge bg-secondary">Sin estado</span>
+  {% endif %}
 </td>
 
         
