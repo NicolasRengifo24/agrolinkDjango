@@ -23,7 +23,7 @@ def carrito(request):
     #  VALIDAR QUE SEA CLIENTE
     if usuario.rol.upper() != "CLIENTE":
         messages.error(request, "Solo los clientes pueden acceder al carrito")
-        return redirect('inicio')
+        return redirect('mostrar_productos')
 
     #  Obtener cliente de forma segura
     try:

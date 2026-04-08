@@ -1,0 +1,35 @@
+<div class="modal fade" id="eliminarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-trash me-2"></i>Eliminar Servicio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="modal-body text-center">
+                    <p>¿Seguro que deseas eliminar este servicio?</p>
+
+                    <!-- 🔥 ESTE ES EL CLAVE -->
+                    <input type="hidden" name="eliminar_id" id="delete_id">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        Sí, eliminar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

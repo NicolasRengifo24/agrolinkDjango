@@ -29,6 +29,7 @@ urlpatterns = [
     path('', include('usuarios.urls')), # prefijo para usuarios
     path('', include('envios.urls')), 
     path('', include('pedidos.urls')),
+    path('', include('servicios.urls')),
 ]
 
     
