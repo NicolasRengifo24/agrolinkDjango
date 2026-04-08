@@ -15,6 +15,7 @@ class Compra(models.Model):
     metodo_pago = models.CharField(max_length=50, blank=True, null=True)
     latitud_destino = models.FloatField(blank=True, null=True)
     longitud_destino = models.FloatField(blank=True, null=True)
+    
 
     class Meta:
         managed = True

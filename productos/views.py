@@ -362,6 +362,7 @@ def lista_productos(request):
 
 
 @login_required
+@login_required
 def crear_producto(request):
     try:
         productor = request.user.usuario.productor
@@ -384,20 +385,28 @@ def crear_producto(request):
         )
         producto.save()
         
-        # Guardar imagen - Versión simplificada
+        # Guardar imagen
         if 'imagenes' in request.FILES:
             imagen_file = request.FILES['imagenes']
-            print(f"Guardando imagen: {imagen_file.name}, tamaño: {imagen_file.size}")
-            
-            # Siempre guardar como principal si es la primera/única
             ImagenesProducto.objects.create(
                 id_producto=producto,
                 url_imagen=imagen_file,
                 es_principal=1
             )
-            print("Imagen guardada exitosamente")
+        
+        # 🔥 IMPORTANTE: Crear la relación con la finca
+        finca_id = request.POST.get('fincaIds')
+        if finca_id:
+            from productos.models import ProductoFinca
+            ProductoFinca.objects.create(
+                id_producto=producto,
+                id_finca_id=finca_id,
+                cantidad_produccion=0,
+                fecha_cosecha=None
+            )
+            print(f"✅ Producto asociado a finca ID: {finca_id}")
         else:
-            print("No hay archivo de imagen en request.FILES")
+            print("⚠️ No se seleccionó ninguna finca")
         
         messages.success(request, 'Producto creado exitosamente')
         return redirect('lista_productos')
@@ -408,7 +417,6 @@ def crear_producto(request):
         'productor_nombre': f"{productor.id_usuario.nombre} {productor.id_usuario.apellido}",
     }
     return render(request, 'productos/crear_producto.html', context)
-
 
 @login_required
 def buscar_productos(request):

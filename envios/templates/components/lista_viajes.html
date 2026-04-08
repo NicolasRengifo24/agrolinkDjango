@@ -8,8 +8,8 @@
             <span class="badge bg-primary rounded-pill">{{envios.count}} viajes encontrados</span>
         </div>
     </div>
+    
     {% for envio in envios %}
-    <!-- Viaje 1 -->
     <div class="card card-viaje">
         <div class="card-body">
             <div class="row">
@@ -18,11 +18,12 @@
                         <div>
                             <span class="badge bg-success badge-estado mb-2">Disponible</span>
                             <h5>{{ envio.id_compra.detallescompra_set.first.id_producto.nombre_producto }}</h5>
-                            <p class="text-muted"> {{envio.id_compra.id_cliente.id_usuario.ciudad}}
+                             {% with detalle=envio.id_compra.detallescompra_set.first %}
+                            <p class="text-muted">{{detalle.id_producto.finca.ciudad }}
                                 <i class="fas fa-arrow-right mx-2"></i>
-                                {% with detalle=envio.id_compra.detallescompra_set.first %}
-                                {{detalle.id_producto.finca.ciudad }}
-                                {% endwith %}
+                              {% endwith %}  
+                                {{envio.id_compra.id_cliente.id_usuario.ciudad}}
+                               
                             </p>
                         </div>
                         <h4 class="text-dark">${{envio.costo_total | floatformat:0 | intcomma}}</h4>
@@ -32,11 +33,9 @@
                         <div class="col-md-6 info-cliente mb-3">
                             <h6>Cliente</h6>
                             <p class="mb-1"><strong>{{envio.id_compra.id_cliente.id_usuario.nombre}}
-                                    {{envio.id_compra.id_cliente.id_usuario.apellido}}</strong> </p>
-                            <p class="mb-1 small"><i
-                                    class="fas fa-phone me-2"></i>{{envio.id_compra.id_cliente.id_usuario.telefono}}</p>
-                            <p class="mb-0 small"><i class="fas fa-map-marker-alt me-2"></i>{{envio.direccion_destino }}
-                            </p>
+                                    {{envio.id_compra.id_cliente.id_usuario.apellido}}</strong></p>
+                            <p class="mb-1 small"><i class="fas fa-phone me-2"></i>{{envio.id_compra.id_cliente.id_usuario.telefono}}</p>
+                            <p class="mb-0 small"><i class="fas fa-map-marker-alt me-2"></i>{{envio.direccion_destino}}</p>
                         </div>
 
                         <div class="col-md-6 info-vendedor">
@@ -52,7 +51,7 @@
                             </p>
                             <p class="mb-0 small">
                                 <i class="fas fa-map-marker-alt me-2"></i>
-                                {{ envio.direccion_origen }} - {{detalle.id_producto.finca.nombre_finca }}
+                                 {{detalle.id_producto.finca.nombre_finca }}
                             </p>
                             {% endif %}
                             {% endwith %}
@@ -61,12 +60,11 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="mapa-mini mb-3" id="map">
-                        <!-- este es el mapa -->
-                    </div>
+                    <!-- ID único para cada mapa -->
+                    <div class="mapa-mini mb-3" id="mapa-mini-{{ envio.id_envio }}" style="height: 200px; width: 100%;"></div>
 
-                    <button class="btn btn-primary btn-mapa" onclick="abrirMapa('{{ envio.id_envio }}')">
-                        Ver mapa
+                    <button type="button" class="btn btn-primary btn-mapa w-100 mb-2" data-envio-id="{{ envio.id_envio }}">
+                        <i class="bi bi-map me-1"></i>Ver mapa completo
                     </button>
 
                     <div class="mb-3">
@@ -79,15 +77,13 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button class="btn btn-success btn-sm btn-aceptar-viaje" data-id="{{ envio.id_envio }}"
+                        <button type="button" class="btn btn-success btn-sm btn-aceptar-viaje"
+                            data-envio-id="{{ envio.id_envio }}"
                             data-origen="{{ envio.direccion_origen|escapejs }}"
                             data-destino="{{ envio.direccion_destino|escapejs }}"
                             data-distancia="{{ envio.distancia_km|default:'0' }}"
                             data-peso="{{ envio.peso_total_kg|default:'0' }}">
                             <i class="bi bi-check-circle me-1"></i>Aceptar Viaje
-                        </button>
-                        <button class="btn btn-outline" style="color: #1a512e;">
-                            <i class="fas fa-info-circle me-2"></i>Ver detalles
                         </button>
                     </div>
                 </div>
@@ -95,23 +91,158 @@
         </div>
     </div>
     {% endfor %}
+</div>
 
-    <div class="modal fade" id="mapModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h5 class="modal-title">Mapa del Envío</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div id="mapModalContainer" style="height: 500px;"></div>
-                </div>
-
+<!-- Modal del mapa -->
+<div class="modal fade" id="mapModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mapa del Envío</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="mapModalContainer" style="height: 500px;"></div>
             </div>
         </div>
     </div>
-
-
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Datos de envíos desde Django
+var enviosData = JSON.parse('{{ envios_json|escapejs }}');
+
+// Función para inicializar todos los mapas mini
+function inicializarMapasMini() {
+    enviosData.forEach(function(envio) {
+        var containerId = 'mapa-mini-' + envio.id;
+        var container = document.getElementById(containerId);
+        
+        if (container && envio.origen && envio.destino) {
+            // Crear mapa mini
+            var miniMap = L.map(containerId).setView([4.7, -74], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(miniMap);
+            
+            // Marcador origen
+            L.marker([envio.origen[0], envio.origen[1]])
+                .addTo(miniMap)
+                .bindPopup('Origen');
+            
+            // Marcador destino
+            L.marker([envio.destino[0], envio.destino[1]])
+                .addTo(miniMap)
+                .bindPopup('Destino');
+            
+            // Línea de ruta
+            L.polyline([envio.origen, envio.destino], {color: 'blue', weight: 2}).addTo(miniMap);
+            
+            // Ajustar vista para ver toda la ruta
+            miniMap.fitBounds([envio.origen, envio.destino]);
+        }
+    });
+}
+
+// Función para abrir el modal con el mapa completo
+function abrirMapaModal(envioId) {
+    var envio = enviosData.find(e => e.id == envioId);
+    
+    if (!envio || !envio.origen || !envio.destino) {
+        alert('No hay coordenadas disponibles para este envío');
+        return;
+    }
+    
+    // Mostrar modal
+    var modal = new bootstrap.Modal(document.getElementById('mapModal'));
+    modal.show();
+    
+    setTimeout(function() {
+        // Crear mapa en el modal
+        var mapModal = L.map('mapModalContainer').setView([4.7, -74], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(mapModal);
+        
+        // Marcador origen
+        L.marker([envio.origen[0], envio.origen[1]])
+            .addTo(mapModal)
+            .bindPopup('Origen: ' + (envio.direccion_origen || 'Origen'));
+        
+        // Marcador destino
+        L.marker([envio.destino[0], envio.destino[1]])
+            .addTo(mapModal)
+            .bindPopup('Destino: ' + (envio.direccion_destino || 'Destino'));
+        
+        // Dibujar ruta
+        L.polyline([envio.origen, envio.destino], {color: 'blue', weight: 4}).addTo(mapModal);
+        
+        // Ajustar vista
+        mapModal.fitBounds([envio.origen, envio.destino]);
+        
+        // Calcular distancia
+        var distancia = calcularDistancia(envio.origen, envio.destino);
+        L.popup()
+            .setLatLng(envio.origen)
+            .setContent("Distancia: " + distancia + " km")
+            .openOn(mapModal);
+    }, 100);
+}
+
+// Función para calcular distancia
+function calcularDistancia(origen, destino) {
+    var R = 6371;
+    var lat1 = origen[0] * Math.PI / 180;
+    var lat2 = destino[0] * Math.PI / 180;
+    var dLat = (destino[0] - origen[0]) * Math.PI / 180;
+    var dLon = (destino[1] - origen[1]) * Math.PI / 180;
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return (R * c).toFixed(2);
+}
+
+// Función para abrir modal de aceptar viaje
+function abrirModalAceptarViaje(envioId, origen, destino, distancia, peso) {
+    document.getElementById('envio_id').value = envioId;
+    document.getElementById('modal-origen').textContent = origen || 'No especificado';
+    document.getElementById('modal-destino').textContent = destino || 'No especificado';
+    document.getElementById('modal-distancia').textContent = distancia ? distancia + ' km' : 'No calculada';
+    document.getElementById('modal-peso').textContent = peso ? peso + ' kg' : 'No especificado';
+    
+    if (distancia && peso) {
+        var costoTotal = (distancia * 3000) + (peso * 200);
+        document.getElementById('costo_total_estimado').textContent = 
+            '$' + costoTotal.toLocaleString('es-CO');
+    }
+    
+    var modal = new bootstrap.Modal(document.getElementById('aceptarViajeModal'));
+    modal.show();
+}
+
+// Inicializar mapas cuando la página cargue
+document.addEventListener('DOMContentLoaded', function() {
+    inicializarMapasMini();
+
+    document.querySelectorAll('.btn-mapa').forEach(function(button) {
+        button.addEventListener('click', function() {
+            abrirMapaModal(parseInt(this.dataset.envioId, 10));
+        });
+    });
+
+    document.querySelectorAll('.btn-aceptar-viaje').forEach(function(button) {
+        button.addEventListener('click', function() {
+            abrirModalAceptarViaje(
+                parseInt(this.dataset.envioId, 10),
+                this.dataset.origen,
+                this.dataset.destino,
+                parseFloat(this.dataset.distancia || '0'),
+                parseFloat(this.dataset.peso || '0')
+            );
+        });
+    });
+});
+</script>

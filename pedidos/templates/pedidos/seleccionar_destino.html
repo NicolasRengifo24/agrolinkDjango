@@ -31,28 +31,20 @@
                             <form method="POST" id="destinoForm">
                                 {% csrf_token %}
                                 
-                                {% if latitud_existente %}
-                                <div class="alert alert-info" id="coordenadas_info">
-                                    <i class="bi bi-geo-alt-fill"></i>
-                                    <span id="coordenadas_texto">
-                                        {% if latitud_existente and longitud_existente %}
-                                        Coordenadas: {{ latitud_existente|floatformat:6 }}, {{ longitud_existente|floatformat:6 }}
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                {% else %}
                                 <div class="alert alert-info" id="coordenadas_info" style="display: none;">
                                     <i class="bi bi-geo-alt-fill"></i>
-                                    <span id="coordenadas_texto">
-                                        {% if latitud_existente and longitud_existente %}
-                                        Coordenadas: {{ latitud_existente|floatformat:6 }}, {{ longitud_existente|floatformat:6 }}
-                                        {% endif %}
-                                    </span>
+                                    <span id="coordenadas_texto"></span>
                                 </div>
-                                {% endif %}
+                                
+                                <div class="alert alert-success" id="distancia_info" style="display: none;">
+                                    <i class="bi bi-rulers"></i>
+                                    <span id="distancia_texto"></span>
+                                </div>
                                 
                                 <input type="hidden" name="latitud" id="latitud" value="{{ latitud_existente|default:'' }}">
                                 <input type="hidden" name="longitud" id="longitud" value="{{ longitud_existente|default:'' }}">
+                                <input type="hidden" name="distancia" id="distancia" value="0">
+                                <input type="hidden" name="distancia_km" id="distancia_km" value="0">
                                 
                                 <div class="mb-3">
                                     <label for="direccion" class="form-label">Dirección (opcional)</label>
@@ -78,8 +70,11 @@
                         <div class="card-body">
                             <h6>📦 Resumen del pedido</h6>
                             <hr>
-                            <p class="mb-1"><strong>Total a pagar:</strong> ${{ compra.total|floatformat:0|intcomma }}</p>
-                            <p class="mb-0 text-muted small">La ubicación es necesaria para calcular el costo de envío</p>
+                            <p class="mb-1"><strong>Total productos:</strong> ${{ compra.total|floatformat:0|intcomma }}</p>
+                            <p class="mb-1"><strong>Costo de envío:</strong> <span id="costo_envio_texto">$0</span></p>
+                            <hr>
+                            <p class="mb-0"><strong>Total a pagar:</strong> ${{ compra.total|floatformat:0|intcomma }}</p>
+                            <p class="text-muted small mt-2">La ubicación es necesaria para calcular el costo de envío</p>
                         </div>
                     </div>
                 </div>
@@ -93,7 +88,50 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+// Función para calcular distancia usando la fórmula de Haversine
+function calcularDistancia(origen, destino) {
+    var R = 6371; // radio de la tierra en km
+    
+    var lat1 = origen[0] * Math.PI / 180;
+    var lat2 = destino[0] * Math.PI / 180;
+    
+    var dLat = (destino[0] - origen[0]) * Math.PI / 180;
+    var dLon = (destino[1] - origen[1]) * Math.PI / 180;
+    
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    var distancia = R * c;
+    
+    return distancia;
+}
+
+// Función para calcular costo de envío
+function calcularCostoEnvio(distanciaKm, pesoKg) {
+    var tarifaPorKm = 3000;
+    var tarifaPorKg = 200;
+    
+    var costoDistancia = distanciaKm * tarifaPorKm;
+    var costoPeso = pesoKg * tarifaPorKg;
+    var costoTotal = costoDistancia + costoPeso;
+    
+    return {
+        costoDistancia: costoDistancia,
+        costoPeso: costoPeso,
+        costoTotal: costoTotal
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Coordenadas de origen (finca del productor) - DEBES PASAR ESTOS DATOS DESDE DJANGO
+    // TODO: Pasar lat_origen y lng_origen desde la vista
+    var latOrigen = 4.7110;  // Reemplazar con la latitud de la finca del producto
+    var lngOrigen = -74.0721;  // Reemplazar con la longitud de la finca del producto
+    var pesoTotal = parseFloat('{{ compra.peso_total|default:"0"|escapejs }}'.replace(',', '.')) || 0;  // Peso total del carrito
+    
     // Coordenadas iniciales
     var latInput = document.getElementById('latitud');
     var lngInput = document.getElementById('longitud');
@@ -115,10 +153,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Variable para el marcador
     var marker = null;
     
-    // Si ya hay coordenadas guardadas, mostrar marcador
+    // Si ya hay coordenadas guardadas, mostrar marcador y calcular distancia
     if (!isNaN(parseFloat(latInput.value)) && !isNaN(parseFloat(lngInput.value))) {
+        var destino = [latInicial, lngInicial];
+        var distancia = calcularDistancia([latOrigen, lngOrigen], destino);
+        var costo = calcularCostoEnvio(distancia, pesoTotal);
+        
+        document.getElementById('distancia').value = distancia;
+        document.getElementById('distancia_km').value = distancia;
+        document.getElementById('distancia_info').style.display = 'block';
+        document.getElementById('distancia_texto').innerHTML = 
+            '📏 Distancia: ' + distancia.toFixed(2) + ' km';
+        document.getElementById('costo_envio_texto').innerHTML = 
+            '$' + costo.costoTotal.toLocaleString('es-CO');
+        
         marker = L.marker([latInicial, lngInicial]).addTo(map);
         marker.bindPopup('📍 Tu ubicación de entrega').openPopup();
+        
+        document.getElementById('coordenadas_info').style.display = 'block';
+        document.getElementById('coordenadas_texto').innerHTML = 
+            '📍 Ubicación actual: ' + latInicial.toFixed(6) + ', ' + lngInicial.toFixed(6);
     }
     
     // Evento clic en el mapa
@@ -126,14 +180,28 @@ document.addEventListener('DOMContentLoaded', function() {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
         
+        // Calcular distancia y costo
+        var destino = [lat, lng];
+        var distancia = calcularDistancia([latOrigen, lngOrigen], destino);
+        var costo = calcularCostoEnvio(distancia, pesoTotal);
+        
         // Actualizar campos ocultos
         document.getElementById('latitud').value = lat;
         document.getElementById('longitud').value = lng;
+        document.getElementById('distancia').value = distancia;
+        document.getElementById('distancia_km').value = distancia;
         
         // Mostrar info de coordenadas
         document.getElementById('coordenadas_info').style.display = 'block';
         document.getElementById('coordenadas_texto').innerHTML = 
             '📍 Ubicación seleccionada: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+        
+        // Mostrar info de distancia y costo
+        document.getElementById('distancia_info').style.display = 'block';
+        document.getElementById('distancia_texto').innerHTML = 
+            '📏 Distancia: ' + distancia.toFixed(2) + ' km';
+        document.getElementById('costo_envio_texto').innerHTML = 
+            '$' + costo.costoTotal.toLocaleString('es-CO');
         
         // Mover o crear marcador
         if (marker) {
