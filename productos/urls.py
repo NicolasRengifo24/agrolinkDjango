@@ -1,7 +1,7 @@
 
 from django.urls import path
 from . import views
-from .views import lista_productos
+from .views import lista_productos, dashboard_productor
 
 
 
@@ -24,9 +24,16 @@ urlpatterns = [
     path('productor/productos/', views.lista_productos, name='lista_productos'),
     path('productor/productos/nuevo/', views.crear_producto, name='crear_producto'),
     path('productor/productos/buscar/', views.buscar_productos, name='buscar_productos'),
-    path('productor/productos/<int:producto_id>/', views.ver_producto, name='ver_producto'),
-    path('productor/productos/editar/<int:producto_id>/', views.editar_producto, name='editar_producto'),
     path('productor/productos/eliminar/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),
+    
+    
+    path('productos/<int:producto_id>/detalles/', views.ver_producto_detalles, name='ver_producto_detalles'),
+    path('productos/<int:producto_id>/editar-form/', views.editar_producto_form, name='editar_producto_form'),
+    path('productos/<int:producto_id>/actualizar/', views.actualizar_producto, name='actualizar_producto'),
+    path('productor/mis-ventas/', views.mis_ventas, name='mis_ventas'),
+    path('ventas/detalle/<int:producto_id>/', views.detalle_ventas_producto),
+    path('dashboard/', dashboard_productor, name='dashboard_productor'),
+    
     
 ] 
 

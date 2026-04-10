@@ -1,0 +1,413 @@
+{% extends 'base_productor.html' %}
+{% load humanize %}
+
+{% block content %}
+
+<style>
+    .table {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table thead {
+        font-size: 14px;
+    }
+
+    .table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    select,
+    input {
+        font-size: 13px;
+    }
+</style>
+
+<div class="container mt-4">
+
+    <h2>📊 Dashboard Productor Pro</h2>
+
+    <div class="row mt-3">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>💰 Ingresos</h6>
+                    <h3>${{ kpis.ingresos|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>📦 Unidades</h6>
+                    <h3>{{ kpis.unidades|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>🧾 Órdenes</h6>
+                    <h3>{{ kpis.ordenes|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <h6>🚚 Pendientes</h6>
+                    <h3>{{ pendientes }}</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <h2 class="mb-4 mt-4">Mis Ventas</h2>
+
+    {% if ventas %}
+
+    <div class="row">
+
+        {% for v in ventas %}
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        {{ v.id_producto__nombre_producto }}
+                    </h5>
+
+                    <hr>
+
+                    <p>
+                        📦 Vendidos:
+                        <strong>{{ v.total_vendido }}</strong>
+                    </p>
+
+                    <p>
+                        💰 Ganancias:
+                        <strong>${{ v.total_ingresos|intcomma }}</strong>
+                    </p>
+
+                    <p>
+                        🧾 Ventas:
+                        <strong>{{ v.total_ventas }}</strong>
+                    </p>
+
+                    <p>
+                        📅 Última venta:
+                        <strong>{{ v.ultima_venta|date:"d M Y" }}</strong>
+                    </p>
+
+                    <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="modal"
+                        data-bs-target="#modalDetalleVentas" data-producto-id="{{ v.id_producto__id_producto }}">
+                        Ver detalle
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- Pedidos Por Alistar -->
+    <div class="mt-4">
+
+        <h3 class="mb-4">📦 Pedidos por alistar</h3>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover table-striped align-middle shadow-sm">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Transportista</th>
+                        <th>Fecha recolección</th>
+                        <th>Estado envío</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for pedido in pedidos_alistar %}
+                    {% for d in pedido.detallescompra_set.all %}
+                    {% with envio=pedido.envio %}
+                    <tr>
+                        <!-- CLIENTE -->
+                        <td>{{ pedido.id_cliente }}</td>
+
+                        <!-- PRODUCTO -->
+                        <td>{{ d.id_producto.nombre_producto }}</td>
+
+                        <!-- CANTIDAD -->
+                        <td>{{ d.cantidad }}</td>
+
+                        <!-- TRANSPORTISTA -->
+                        <td>
+                            {% if envio %}
+                            {{ envio.id_transportista.id_usuario.nombre|default:"Esperando transportista" }}
+                            {{ envio.id_transportista.id_usuario.apellido }}
+                            {% else %}
+                            ⏳ Sin asignar
+                            {% endif %}
+                        </td>
+
+                        <!-- FECHA RECOLECCIÓN -->
+                        <td>
+                            {% if envio %}
+                            {{ envio.fecha_salida|default:"Pendiente" }}
+                            {% else %}
+                            ⏳ Pendiente
+                            {% endif %}
+                        </td>
+
+                        <!-- ESTADO -->
+                        <td>
+                            {% if pedido.envio %}
+                            {{ pedido.envio.estado_envio }}
+                            {% else %}
+                            ⏳ Pendiente
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <canvas id="ventasChart" class="mt-4"></canvas>
+
+    <h4 class="mt-4">🔥 Top productos</h4>
+
+    <table class="table table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Producto</th>
+                <th>Unidades</th>
+                <th>Ingresos</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for p in top_productos %}
+            <tr>
+                <td>{{ p.id_producto__nombre_producto }}</td>
+                <td>{{ p.unidades }}</td>
+                <td>${{ p.ingresos }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <div class="alert alert-info text-center">
+        🚜 Aún no tienes ventas registradas
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- Modal Detalle Ventas -->
+<div class="modal fade" id="modalDetalleVentas" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de ventas</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="contenidoDetalleVentas">
+                <div class="text-center">
+                    <div class="spinner-border"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+ 
+</div>
+
+<pre>
+ULTIMOS_7_DIAS: {{ ultimos_7_dias }}
+</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ ultimos_7_dias|json_script:"data7" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ======================================================
+    // 📊 DASHBOARD CHART (ÚLTIMOS 7 DÍAS)
+    // ======================================================
+    function initDashboardChart() {
+
+        const el = document.getElementById('data7');
+        const canvas = document.getElementById('ventasChart');
+
+        if (!el || !canvas) {
+            console.warn("📊 Dashboard: falta data7 o canvas");
+            return;
+        }
+
+        let data7;
+
+        try {
+            data7 = JSON.parse(el.textContent);
+        } catch (e) {
+            console.error("📊 Error JSON dashboard:", e);
+            return;
+        }
+
+        if (!Array.isArray(data7) || data7.length === 0) {
+            console.warn("📊 Dashboard: data7 vacío o inválido");
+            return;
+        }
+
+        new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: data7.map(d => d.fecha),
+                datasets: [{
+                    label: 'Ingresos últimos 7 días',
+                    data: data7.map(d => d.total),
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+
+    // ======================================================
+    // 📦 MODAL DETALLE DE VENTAS
+    // ======================================================
+    function initModal() {
+
+        const modal = document.getElementById('modalDetalleVentas');
+
+        if (!modal) return;
+
+        let chartInstance = null;
+
+        modal.addEventListener('show.bs.modal', function (event) {
+
+            const button = event.relatedTarget;
+            const productoId = button.getAttribute('data-producto-id');
+
+            const body = document.getElementById('contenidoDetalleVentas');
+
+            // 🔄 loader
+            body.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border"></div>
+                </div>
+            `;
+
+            fetch(`/ventas/detalle/${productoId}/`)
+                .then(res => res.json())
+                .then(data => {
+
+                    if (!data.success) {
+                        body.innerHTML = `
+                            <div class="alert alert-danger">
+                                ${data.error}
+                            </div>`;
+                        return;
+                    }
+
+                    body.innerHTML = data.html;
+
+                    setTimeout(() => {
+
+                        const canvas = document.getElementById('graficaDetalleProducto');
+
+                        if (!canvas) {
+                            console.warn("📦 Modal: canvas no existe");
+                            return;
+                        }
+
+                        if (chartInstance) {
+                            chartInstance.destroy();
+                        }
+
+                        chartInstance = new Chart(canvas, {
+                            type: 'line',
+                            data: {
+                                labels: data.grafica.map(e => e.fecha),
+                                datasets: [{
+                                    label: 'Ventas por día',
+                                    data: data.grafica.map(e => e.total),
+                                    borderWidth: 2,
+                                    tension: 0.3,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: true }
+                                }
+                            }
+                        });
+
+                    }, 100);
+
+                })
+                .catch(error => {
+                    console.error("📦 Error modal:", error);
+                    body.innerHTML = `
+                        <div class="alert alert-danger">
+                            Error al cargar detalle de ventas
+                        </div>`;
+                });
+
+        });
+    }
+
+
+    // ======================================================
+    // 🚀 INIT TODO
+    // ======================================================
+    initDashboardChart();
+    initModal();
+
+});
+</script>
+
+{% endblock %}

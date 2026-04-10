@@ -68,14 +68,36 @@ def carrito(request):
 def actualizar_carrito(request, detalle_id):
     detalle = get_object_or_404(DetallesCompra, id_detalle=detalle_id)
     
-    nueva_cantidad = int(request.POST.get('cantidad',1))
+    nueva_cantidad = int(request.POST.get('cantidad', 1))
     
-    if nueva_cantidad <=0:
-        messages.error(request, "cantidad invalida")
+    if nueva_cantidad <= 0:
+        messages.error(request, "Cantidad inválida")
         return redirect('carrito')
     
-    messages.success(request, "Stock actualizado")
+    # ✅ ACTUALIZAR CANTIDAD
+    detalle.cantidad = nueva_cantidad
+    
+    # ✅ ACTUALIZAR SUBTOTAL (MUY IMPORTANTE)
+    detalle.subtotal = nueva_cantidad * detalle.id_producto.precio
+    
+    detalle.save()
+
+    # 🔥 RECALCULAR COMPRA COMPLETA
+    detalles = DetallesCompra.objects.filter(id_compra=detalle.id_compra)
+
+    subtotal = sum(d.subtotal for d in detalles)
+    impuestos = subtotal * Decimal('0.19')
+    total = subtotal + impuestos
+
+    compra = detalle.id_compra
+    compra.subtotal = subtotal
+    compra.impuestos = impuestos
+    compra.total = total
+    compra.save()
+
+    messages.success(request, "Cantidad actualizada correctamente")
     return redirect('carrito')
+
 
 def eliminar_del_carrito(request, detalle_id):
     detalle = get_object_or_404(DetallesCompra, id_detalle=detalle_id)
@@ -400,15 +422,15 @@ def seleccionar_destino(request):
     distancia_existente = getattr(compra, 'distancia_km', 0)
     
     if request.method == 'POST':
-        latitud = request.POST.get('latitud')
-        longitud = request.POST.get('longitud')
+        latitud = request.POST.get('latitud') or compra.latitud_destino
+        longitud = request.POST.get('longitud') or compra.longitud_destino
         direccion = request.POST.get('direccion', '')
         distancia = request.POST.get('distancia', '0')
         
         print(f"📍 POST - Lat: {latitud}, Lng: {longitud}")
         print(f"📍 Distancia recibida: {distancia} km")
         
-        if not latitud or not longitud:
+        if latitud is None or longitud is None:
             messages.error(request, 'Debes seleccionar una ubicación en el mapa')
             return render(request, 'pedidos/seleccionar_destino.html', {
                 'compra': compra,
@@ -436,13 +458,13 @@ def seleccionar_destino(request):
 
             for detalle in detalles:
                  detalle.distancia_km = float(distancia_normalizada)
-            detalle.save()
+                 detalle.save()
 
             print(f"✅ Distancia guardada en detalles: {distancia_normalizada} km")  # ← Guardar distancia en la compra
             compra.save()
             
             print(f"✅ Datos guardados en compra {compra.id_compra}")
-            print(f"   Distancia: {compra.distancia_km} km")
+            print(f"Distancia detalle: {detalle.distancia_km} km")
             print(f"   Latitud: {compra.latitud_destino}")
             print(f"   Longitud: {compra.longitud_destino}")
             
@@ -450,6 +472,7 @@ def seleccionar_destino(request):
             return redirect('carrito')
             
         except Exception as e:
+            print("❌ ERROR REAL:", str(e))
             messages.error(request, f'Error al guardar: {str(e)}')
     
     return render(request, 'pedidos/seleccionar_destino.html', {

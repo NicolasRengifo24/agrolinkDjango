@@ -1,0 +1,24 @@
+<canvas id="graficaDetalleProducto" height="120"></canvas>
+<hr>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+            <th>Dirección</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in detalles %}
+        <tr>
+            <td>{{ d.id_compra.fecha_hora_compra|date:"d/m/Y H:i" }}</td>
+            <td>{{ d.cantidad }}</td>
+            <td>${{ d.subtotal }}</td>
+            <td>{{ d.id_compra.direccion_entrega }}</td>
+        </tr>
+        {% endfor %}
+        
+    </tbody>
+
+</table>

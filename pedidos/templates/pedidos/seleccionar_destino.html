@@ -126,24 +126,35 @@ function calcularCostoEnvio(distanciaKm, pesoKg) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Coordenadas de origen (finca del productor) - DEBES PASAR ESTOS DATOS DESDE DJANGO
-    // TODO: Pasar lat_origen y lng_origen desde la vista
-    var latOrigen = 4.7110;  // Reemplazar con la latitud de la finca del producto
-    var lngOrigen = -74.0721;  // Reemplazar con la longitud de la finca del producto
+   
+    var latOrigen = parseFloat("{{ lat_origen|default:'4.7110'|escapejs }}");
+    var lngOrigen = parseFloat("{{ lng_origen|default:'-74.0721'|escapejs }}");
     var pesoTotal = parseFloat('{{ compra.peso_total|default:"0"|escapejs }}'.replace(',', '.')) || 0;  // Peso total del carrito
     
     // Coordenadas iniciales
     var latInput = document.getElementById('latitud');
     var lngInput = document.getElementById('longitud');
     
-    var latInicial = parseFloat(latInput.value);
-    var lngInicial = parseFloat(lngInput.value);
+    var latInicial = parseFloat(
+    (latInput.value || "{{ latitud_existente|default:'4.7110'|escapejs }}").replace(',', '.')
+    );
+
+    var lngInicial = parseFloat(
+    (lngInput.value || "{{ longitud_existente|default:'-74.0721'|escapejs }}").replace(',', '.')
+    );
     
     if (isNaN(latInicial)) latInicial = 4.7110;
     if (isNaN(lngInicial)) lngInicial = -74.0721;
+
+    console.log("Lat inicial:", latInicial);
+    console.log("Lng inicial:", lngInicial);
     
     // Crear mapa
     var map = L.map('map').setView([latInicial, lngInicial], 13);
+
+    setTimeout(function() {
+    map.setView([latInicial, lngInicial], 13);
+    }, 100);
     
     // Cargar capa de mapa
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

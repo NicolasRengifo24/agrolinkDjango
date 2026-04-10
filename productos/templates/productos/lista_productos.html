@@ -1,36 +1,16 @@
 {% extends 'base_productor.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-box-seam me-2"></i>Gestión de Productos</h2>
+        <h2><i class="bi bi-box-seam me-2"></i>Administra Tus Productos</h2>
         <a href="{% url 'crear_producto' %}" class="btn btn-success">
             <i class="bi bi-plus-circle me-1"></i>Nuevo Producto
         </a>
     </div>
 
-    <!-- Alertas de éxito y error -->
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == 'success' %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle me-2"></i>{{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% elif message.tags == 'error' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>{{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% elif message.tags == 'warning' %}
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
 
     <!-- Filtros -->
     <div class="card mb-4">
@@ -38,16 +18,15 @@
             <form method="get" action="{% url 'buscar_productos' %}" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Ubicación</label>
-                    <input type="text" name="ubicacion" class="form-control" value="{{ ubicacion|default:'' }}" placeholder="Ciudad...">
+                    <input type="text" name="ubicacion" class="form-control" value="{{ ubicacion|default:'' }}"
+                        placeholder="Ciudad...">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Categoría</label>
                     <select name="categoriaId" class="form-select">
                         <option value="0">Todas las categorías</option>
                         {% for cat in categorias %}
-                            <option value="{{ cat.id_categoria }}" {% if cat.id_categoria == categoria_id %}selected{% endif %}>
-                                {{ cat.nombre_categoria }}
-                            </option>
+                        <option value="{{ cat.id_categoria }}" {% if cat.id_categoria == categoria_id %}selected{% endif %}>
                         {% endfor %}
                     </select>
                 </div>
@@ -66,64 +45,114 @@
     <!-- Lista de productos -->
     <div class="row g-4">
         {% for producto in productos %}
-            <div class="col-lg-4 col-md-6">
-                <div class="card h-100 shadow-sm">
-                    <!-- Imagen del producto -->
-                    <div class="position-relative" style="height: 200px; overflow: hidden;">
-                        {% if producto.imagen_principal_url %}
-                            <img class="card-img-top h-100" style="object-fit: cover;" src="{{ producto.imagen_principal_url }}" alt="Imagen del producto">
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <!-- Imagen del producto -->
+                <div class="position-relative" style="height: 200px; overflow: hidden;">
+                    {% if producto.imagen_principal_url %}
+                    <img class="card-img-top h-100" style="object-fit: cover;" src="{{ producto.imagen_principal_url }}"
+                        alt="Imagen del producto">
+                    {% else %}
+                    <img class="card-img-top h-100" style="object-fit: cover;" src="{% static 'imag/placeholder.jpg' %}"
+                        alt="Imagen del producto">
+                    {% endif %}
+                    <div class="position-absolute top-0 end-0 m-2">
+                        {% if producto.stock > 0 %}
+                        <span class="badge bg-success">{{ producto.stock }} unidades</span>
                         {% else %}
-                            <img class="card-img-top h-100" style="object-fit: cover;" src="{% static 'imag/placeholder.jpg' %}" alt="Imagen del producto">
+                        <span class="badge bg-danger">Sin stock</span>
                         {% endif %}
-                        <div class="position-absolute top-0 end-0 m-2">
-                            {% if producto.stock > 0 %}
-                                <span class="badge bg-success">{{ producto.stock }} unidades</span>
-                            {% else %}
-                                <span class="badge bg-danger">Sin stock</span>
-                            {% endif %}
-                        </div>
                     </div>
+                </div>
 
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">{{ producto.nombre_producto }}</h5>
-                        <p class="card-text text-muted mb-2">{{ producto.descripcion_producto|default:"" }}</p>
-                        <p class="text-muted mb-2">
-                            <small>
-                                <i class="bi bi-person me-1"></i>{{ producto.id_usuario.id_usuario.nombre }} {{ producto.id_usuario.id_usuario.apellido }}
-                                <br>
-                                <i class="bi bi-geo-alt me-1"></i>{{ producto.id_usuario.id_usuario.ciudad }}
-                            </small>
-                        </p>
-                        <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="h5 text-success mb-0">${{ producto.precio|floatformat:2 }}</span>
-                                <small class="text-muted">{{ producto.id_categoria.nombre_categoria }}</small>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ producto.nombre_producto }}</h5>
+                    <p class="card-text text-muted mb-2">{{ producto.descripcion_producto|default:"" }}</p>
+                    <p class="text-muted mb-2">
+                        <small>
+                            <i class="bi bi-person me-1"></i>{{ producto.id_usuario.id_usuario.nombre }} {{ producto.id_usuario.id_usuario.apellido }}
+                            <br>
+                            <i class="bi bi-geo-alt me-1"></i>{{ producto.id_usuario.id_usuario.ciudad }}
+                        </small>
+                    </p>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="h5 text-success mb-0">${{ producto.precio|floatformat:0|intcomma}}</span>
+                            <small class="text-muted">{{ producto.id_categoria.nombre_categoria }}</small>
+                        </div>
+                        <!-- Botones originales -->
+                        <div class="btn-group w-100">
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#verProductoModal" data-producto-id="{{ producto.id_producto }}">
+                                <i class="bi bi-eye"></i> Ver
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#editarProductoModal" data-producto-id="{{ producto.id_producto }}">
+                                <i class="bi bi-pencil"></i> Editar
+                            </button>
+                            <form action="{% url 'eliminar_producto' producto.id_producto %}" method="post"
+                                style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('¿Está seguro de eliminar este producto?')">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Modal Ver Producto -->
+                        <div class="modal fade" id="verProductoModal" tabindex="-1"
+                            aria-labelledby="verProductoModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="verProductoModalLabel">Detalles del Producto</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" id="verProductoContent">
+                                        <div class="text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="btn-group w-100">
-                                <a href="{% url 'ver_producto' producto.id_producto %}" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-eye"></i> Ver
-                                </a>
-                                <a href="{% url 'editar_producto' producto.id_producto %}" class="btn btn-outline-warning btn-sm">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </a>
-                                <form action="{% url 'eliminar_producto' producto.id_producto %}" method="post" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-outline-danger btn-sm"
-                                            onclick="return confirm('¿Está seguro de eliminar este producto?')">
-                                        <i class="bi bi-trash"></i> Eliminar
-                                    </button>
-                                </form>
+                        </div>
+
+                        <!-- MODAL GLOBAL EDITAR -->
+                        <div class="modal fade" id="editarProductoModal" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Editar Producto</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+
+                                    <div class="modal-body" id="editarProductoContent">
+                                        <div class="text-center">
+                                            <div class="spinner-border"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
         {% empty %}
-            <div class="text-center py-5">
-                <i class="bi bi-box display-1 text-muted"></i>
-                <h4 class="text-muted mt-3">No se encontraron productos</h4>
-                <p class="text-muted">Intente ajustar los filtros o <a href="{% url 'crear_producto' %}">crear un nuevo producto</a></p>
-            </div>
+        <div class="text-center py-5">
+            <i class="bi bi-box display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">No se encontraron productos</h4>
+            <p class="text-muted">Intente ajustar los filtros o <a href="{% url 'crear_producto' %}">crear un nuevo
+                    producto</a></p>
+        </div>
         {% endfor %}
     </div>
 
@@ -133,4 +162,152 @@
         </a>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("JS cargado");
+
+    // --- Modal: Ver Producto ---
+    const verProductoModal = document.getElementById('verProductoModal');
+    if (verProductoModal) {
+        verProductoModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const productoId = button.getAttribute('data-producto-id');
+            const modalBody = document.getElementById('verProductoContent');
+
+            // Loading
+            modalBody.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            `;
+
+            // Fetch datos producto
+            fetch(`/productos/${productoId}/detalles/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const producto = data.producto;
+                        modalBody.innerHTML = `
+                            <div class="row">
+                                <div class="col-md-5">
+                                    ${producto.imagen_principal ?
+                                        `<img src="${producto.imagen_principal}" class="img-fluid rounded" alt="${producto.nombre_producto}">` :
+                                        '<div class="alert alert-info">No hay imagen disponible</div>'
+                                    }
+                                </div>
+                                <div class="col-md-7">
+                                    <h4>${producto.nombre_producto}</h4>
+                                    <p><strong>Categoría:</strong> ${producto.categoria}</p>
+                                    <p><strong>Precio:</strong> $${producto.precio}</p>
+                                    <p><strong>Stock:</strong> ${producto.stock} unidades</p>
+                                    <p><strong>Peso:</strong> ${producto.peso_kg} kg</p>
+                                    <p><strong>Descripción:</strong> ${producto.descripcion_producto || 'Sin descripción'}</p>
+                                    
+                                    <hr>
+                                    <h5>Información de Fincas</h5>
+                                    ${producto.fincas && producto.fincas.length > 0 ?
+                                        producto.fincas.map(finca => `
+                                            <div class="card mb-2">
+                                                <div class="card-body">
+                                                    <strong>${finca.nombre_finca}</strong><br>
+                                                    Producción: ${finca.cantidad_produccion} kg<br>
+                                                    Fecha cosecha: ${finca.fecha_cosecha || 'No especificada'}
+                                                </div>
+                                            </div>
+                                        `).join('') :
+                                        '<p>No hay fincas asociadas</p>'
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar los datos del producto</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar los datos del producto</div>';
+                });
+        });
+    }
+
+    // --- Modal: Editar Producto ---
+    const editarProductoModal = document.getElementById('editarProductoModal');
+    if (editarProductoModal) {
+        editarProductoModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const productoId = button.getAttribute('data-producto-id');
+            const modalBody = document.getElementById('editarProductoContent');
+
+            // Loading
+            modalBody.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border"></div>
+                </div>
+            `;
+
+            fetch(`/productos/${productoId}/editar-form/`)
+                .then(response => {
+                    console.log("STATUS:", response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("DATA:", data);
+                    if (data.success) {
+                        modalBody.innerHTML = data.form_html;
+                    } else {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Error cargando formulario</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('ERROR REAL:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar</div>';
+                });
+        });
+    }
+});
+
+// --- Submit del formulario de edición ---
+document.addEventListener('submit', function(e) {
+    if (e.target && e.target.id === 'editarProductoForm') {
+        e.preventDefault();
+
+        console.log("🔥 Submit detectado");
+
+        const form = e.target;
+        const productoId = form.dataset.productoId;
+        const formData = new FormData(form);
+
+        fetch(`/productos/${productoId}/actualizar/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Respuesta:", data);
+
+            if (data.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editarProductoModal'));
+                modal.hide();
+
+                alert('✅ Producto actualizado');
+                location.reload();
+            } else {
+                alert('❌ ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error("ERROR:", error);
+        });
+    }
+});
+</script>
+
+
+
 {% endblock %}

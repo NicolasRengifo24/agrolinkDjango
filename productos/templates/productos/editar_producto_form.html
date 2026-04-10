@@ -1,0 +1,58 @@
+<form id="editarProductoForm" data-producto-id="{{ producto.id_producto }}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="nombre_producto" class="form-label">Nombre del Producto</label>
+        <input type="text" class="form-control" id="nombre_producto" name="nombre_producto" 
+               value="{{ producto.nombre_producto }}" required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="categoria" class="form-label">Categoría</label>
+        <select class="form-select" id="categoria" name="categoria" required>
+            <option value="">Seleccione una categoría</option>
+            {% for categoria in categorias %}
+                <option value="{{ categoria.id_categoria }}" 
+                        {% if producto.id_categoria.id_categoria == categoria.id_categoria %}selected{% endif %}>
+                    {{ categoria.nombre_categoria }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="precio" class="form-label">Precio</label>
+            <input type="number" step="0.01" class="form-control" id="precio" name="precio" 
+                   value="{{ producto.precio|floatformat:0|cut:',' }}" required>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <label for="stock" class="form-label">Stock</label>
+            <input type="number" class="form-control" id="stock" name="stock" 
+                   value="{{ producto.stock }}" required>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="peso_kg" class="form-label">Peso (kg)</label>
+        <input type="number" step="0.01" class="form-control" id="peso_kg" name="peso_kg" 
+               value="{{ producto.peso_kg | floatformat:0|cut:','}}">
+    </div>
+    
+    <div class="mb-3">
+        <label for="descripcion_producto" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion_producto" name="descripcion_producto" rows="3">{{ producto.descripcion_producto }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label for="imagenes" class="form-label">Imágenes</label>
+        <input type="file" class="form-control" id="imagenes" name="imagenes" multiple accept="image/*">
+        <small class="text-muted">Puede seleccionar múltiples imágenes</small>
+    </div>
+    
+    <div class="modal-footer px-0 pb-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
+</form>
+

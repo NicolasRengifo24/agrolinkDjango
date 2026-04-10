@@ -1,18 +1,27 @@
-from .models import Producto, ProductoFinca, CategoriaProducto
-from pedidos.models import DetallesCompra
+from datetime import timedelta
+
+from django.http import JsonResponse
+from envios.models import Envio
+from .models import Producto, ProductoFinca, CategoriaProducto 
+from pedidos.models import DetallesCompra 
 from django.shortcuts import render, redirect,get_object_or_404 
 from django.contrib.auth.decorators import login_required
 from .models import Producto, ProductoFinca, CategoriaProducto, Finca ,ImagenesProducto
 from pedidos.models import DetallesCompra, Compra
 from usuarios.models import Usuario
-from django.db.models import Sum, Avg, Count
+from django.db.models import Prefetch, Sum, Avg, Count, Max
 from calificaciones.models import Calificacion
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
-from django.db.models import Q
+from django.db.models import Q , F
 from usuarios.models import Productor
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
+from django.db.models.functions import TruncDate
+from django.utils.timezone import now
+
 
 
 
@@ -28,13 +37,13 @@ def inicio(request):
     categorias = CategoriaProducto.objects.all()
     categoria = request.GET.get('categoria')
 
-    # 🔥 PRODUCTOS (CON ESTRELLAS)
+    #  PRODUCTOS (CON ESTRELLAS)
     productos = Producto.objects.prefetch_related('imagenProducto').annotate(
         promedio_estrellas=Avg('calificaciones__puntaje'),
         total_calificaciones=Count('calificaciones')
     )
 
-    # 🔎 filtro por categoría (AHORA SÍ FUNCIONA)
+    #  filtro por categoría 
     total_usuarios = Usuario.objects.count()
     categorias = CategoriaProducto.objects.all()
 
@@ -43,7 +52,7 @@ def inicio(request):
     if categoria:
         productos = productos.filter(id_categoria=categoria)
 
-    # 🌱 productos por finca (LO TUYO ORIGINAL)
+    # productos por finca
     productos_finca = ProductoFinca.objects.select_related(
         'id_finca', 'id_producto', 'id_finca__id_usuario'
     )
@@ -295,8 +304,8 @@ def editar_finca(request, finca_id):
         # Actualizar datos
         finca.nombre_finca = request.POST.get('nombre_finca')
         finca.direccion_finca = request.POST.get('direccion_finca')
-        finca.ciudad = request.POST.get('ciudad')
-        finca.departamento = request.POST.get('departamento')
+        finca.ciudad = request.POST.get('txt_ciudad')
+        finca.departamento = request.POST.get('txt_departamento')
         
         # Procesar coordenadas
         latitud = request.POST.get('latitud', '').strip()
@@ -324,39 +333,53 @@ def lista_fincas(request):
     return render(request, 'finca/lista_fincas.html', {'fincas': fincas})
 
 
+
 @login_required
 def lista_productos(request):
     """Vista para listar los productos del productor actual"""
+    
+    # Obtener parámetros de filtro desde GET
+    ubicacion = request.GET.get('ubicacion', '')
+    categoria_id_str = request.GET.get('categoriaId', '0')
+    
+    # Convertir categoria_id a entero de forma segura
+    try:
+        categoria_id = int(categoria_id_str)
+    except (ValueError, TypeError):
+        categoria_id = 0
+    
+    # Obtener productos del productor actual
     try:
         productor = request.user.usuario.productor
         productos = Producto.objects.filter(id_usuario=productor)
     except (AttributeError, Productor.DoesNotExist):
-        productos = []
+        productos = Producto.objects.none()  # QuerySet vacío en lugar de lista vacía
         messages.warning(request, 'No tienes un perfil de productor asociado')
     
+    # Obtener todas las categorías para el filtro
     categorias = CategoriaProducto.objects.all()
     
-    # Aplicar filtros si existen
-    ubicacion = request.GET.get('ubicacion', '')
-    categoria_id = request.GET.get('categoriaId', 0)
-    
+    # Aplicar filtros
     if ubicacion:
         productos = productos.filter(
-            Q(id_usuario__id_usuario__ciudad__icontains=ubicacion) |
-            Q(id_usuario__id_usuario__departamento__icontains=ubicacion)
-        )
+            Q(fincas__id_finca__ciudad__icontains=ubicacion) |
+            Q(fincas__id_finca__departamento__icontains=ubicacion)
+        ).distinct()  # distinct() para evitar duplicados por la relación many-to-many
     
-    if categoria_id and categoria_id != '0':
+    if categoria_id > 0:  # Solo filtrar si es mayor que 0
         productos = productos.filter(id_categoria_id=categoria_id)
+    
+    # Ordenar productos (opcional)
+    productos = productos.order_by('-id_producto')  # Los más recientes primero
     
     context = {
         'productos': productos,
         'categorias': categorias,
         'ubicacion': ubicacion,
-        'categoria_id': int(categoria_id) if categoria_id else 0,
+        'categoria_id': categoria_id,  # Ya es un entero
     }
+    
     return render(request, 'productos/lista_productos.html', context)
-
 
 
 
@@ -449,7 +472,100 @@ def ver_producto(request, producto_id):
         'imagenes': imagenes,
         'imagen_principal': imagenes.filter(es_principal=1).first(),
     }
-    return render(request, 'ver_producto.html', context)
+    return render(request, 'productos/detalle_producto.html', context)
+
+
+def ver_producto_detalles(request, producto_id):
+    """Vista para obtener los detalles de un producto en JSON"""
+    try:
+        producto = get_object_or_404(Producto, id_producto=producto_id)
+        
+        # Obtener fincas asociadas
+        fincas_asociadas = ProductoFinca.objects.filter(id_producto=producto).select_related('id_finca')
+        
+        fincas_data = []
+        for pf in fincas_asociadas:
+            fincas_data.append({
+                'nombre_finca': pf.id_finca.nombre_finca,
+                'cantidad_produccion': str(pf.cantidad_produccion) if pf.cantidad_produccion else 'N/A',
+                'fecha_cosecha': pf.fecha_cosecha.strftime('%d/%m/%Y') if pf.fecha_cosecha else None
+            })
+        
+        producto_data = {
+            'id_producto': producto.id_producto,
+            'nombre_producto': producto.nombre_producto,
+            'descripcion_producto': producto.descripcion_producto,
+            'precio': str(producto.precio) if producto.precio else '0',
+            'stock': producto.stock,
+            'peso_kg': str(producto.peso_kg) if producto.peso_kg else '0',
+            'categoria': producto.id_categoria.nombre_categoria if producto.id_categoria else 'Sin categoría',
+            'imagen_principal': producto.imagen_principal_url(),
+            'fincas': fincas_data
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'producto': producto_data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+        
+        
+        
+
+def editar_producto_form(request, producto_id):
+    """Vista para obtener el formulario de edición en HTML"""
+    try:
+        producto = get_object_or_404(Producto, id_producto=producto_id)
+        categorias = CategoriaProducto.objects.all()
+        
+        # Renderizar el formulario HTML
+        form_html = render_to_string('productos/editar_producto_form.html', {
+            'producto': producto,
+            'categorias': categorias
+        })
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@csrf_exempt
+def actualizar_producto(request, producto_id):
+    """Vista para actualizar el producto via AJAX"""
+    if request.method == 'POST':
+        try:
+            producto = get_object_or_404(Producto, id_producto=producto_id)
+            
+            # Actualizar campos
+            producto.nombre_producto = request.POST.get('nombre_producto')
+            producto.descripcion_producto = request.POST.get('descripcion_producto')
+            producto.precio = request.POST.get('precio')
+            producto.stock = request.POST.get('stock')
+            producto.peso_kg = request.POST.get('peso_kg')
+            producto.id_categoria_id = request.POST.get('categoria')
+            
+            producto.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Producto actualizado correctamente'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
 
 
 @login_required
@@ -546,3 +662,210 @@ def eliminar_producto(request, producto_id):
             messages.error(request, f'Error al eliminar el producto: {str(e)}')
     
     return redirect('lista_productos')
+
+ 
+
+
+
+
+
+def mis_ventas(request):
+
+    productor = request.user.usuario.productor
+
+    # 🔹 PRODUCTOS DEL PRODUCTOR
+    productos = Producto.objects.filter(id_usuario=productor)
+
+    # 🔹 RESUMEN DE VENTAS POR PRODUCTO
+    ventas = (
+        DetallesCompra.objects
+        .filter(id_producto__id_usuario=productor)
+        .values('id_producto__id_producto', 'id_producto__nombre_producto')
+        .annotate(
+            total_vendido=Sum('cantidad'),
+            total_ingresos=Sum('subtotal'),
+            total_ventas=Count('id_compra', distinct=True),
+            ultima_venta=Max('id_compra__fecha_hora_compra')
+        )
+    )
+
+    # 🔹 PEDIDOS POR ALISTAR
+    pedidos_alistar = (
+        Compra.objects
+        .filter(detallescompra__id_producto__id_usuario=productor)
+        .select_related('id_cliente')
+        .prefetch_related(
+            Prefetch(
+                'detallescompra_set',
+                queryset=DetallesCompra.objects.select_related('id_producto')
+            )
+        )
+        .distinct()
+        .order_by('-fecha_hora_compra')
+    )
+    
+
+    # 🔹 ENVÍOS
+    envios = Envio.objects.filter(
+    id_compra__in=pedidos_alistar.values_list('id_compra', flat=True)
+)
+
+    envios_dict = {
+        e.id_compra.id_compra: e for e in envios if e.id_compra
+    }
+
+    # 🔥 ASIGNAR ENVÍO A CADA PEDIDO
+    for p in pedidos_alistar:
+        p.envio = envios_dict.get(p.id_compra)
+
+    # 🔹 GRÁFICA GENERAL (opcional)
+    ventas_chart = (
+        DetallesCompra.objects
+        .filter(id_producto__id_usuario=productor)
+        .values('id_producto__nombre_producto')
+        .annotate(total_ingresos=Sum('subtotal'))
+    )
+
+    context = {
+        'productos': productos,
+        'ventas': ventas,
+        'ventas_chart': list(ventas_chart),
+
+        # 🔥 NUEVO
+        'pedidos_alistar': pedidos_alistar,
+    }
+
+    return render(request, 'productos/mis_ventas.html', context)
+
+
+def detalle_ventas_producto(request, producto_id):
+    try:
+        # 🔹 1. Traer detalles del producto
+        detalles = (
+            DetallesCompra.objects
+            .filter(id_producto__id_producto=producto_id)
+            .select_related('id_compra', 'id_producto')
+            .order_by('-id_compra__fecha_hora_compra')
+        )
+
+        # 🔹 2. Renderizar HTML del modal
+        html = render_to_string(
+            'productos/detalle_ventas.html',
+            {'detalles': detalles},
+            request=request
+        )
+
+        # 🔹 3. Datos para gráfica (ventas por día)
+        ventas_por_dia = (
+    DetallesCompra.objects
+    .filter(id_producto__id_producto=producto_id)
+    .annotate(fecha=TruncDate('id_compra__fecha_hora_compra'))
+    .values('fecha')
+    .annotate(total=Sum('subtotal'))
+    .order_by('fecha')
+)
+
+        # 🔹 4. Convertir a lista para JSON
+        data_grafica = [
+            {
+               'fecha': v['fecha'].strftime('%Y-%m-%d'),
+                'total': float(v['total'])
+            }
+            for v in ventas_por_dia
+        ]
+
+        return JsonResponse({
+            'success': True,
+            'html': html,
+            'grafica': data_grafica
+        })
+    except Exception as e:
+        print("❌ ERROR detalle ventas:", str(e))
+
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+
+def dashboard_productor(request):
+    print("🔥 ENTRÉ A DASHBOARD_PRODUCTOR")
+
+    productor = request.user.usuario.productor
+    
+    print("PRODUCTOR:", productor)
+    print("TIPO:", type(productor))
+
+    # 📊 FECHAS
+    hoy = now().date()
+    hace_7_dias = hoy - timedelta(days=7)
+    hace_30_dias = hoy - timedelta(days=30)
+
+    base = DetallesCompra.objects.filter(
+        id_producto__id_usuario=productor
+    )
+
+    # 💰 KPIs
+    kpis = base.aggregate(
+        ingresos=Sum('subtotal'),
+        unidades=Sum('cantidad'),
+        ordenes=Count('id_compra', distinct=True),
+        ticket_promedio=Avg('subtotal')
+    )
+
+    # 📈 ingresos últimos 7 días
+    ultimos_7_dias_qs = (
+    DetallesCompra.objects
+    .filter(
+        id_producto__id_usuario_id=productor.id_usuario
+    )
+    .values('id_compra__fecha_hora_compra__date')
+    .annotate(total=Sum('subtotal'))
+    .order_by('id_compra__fecha_hora_compra__date')
+    )
+
+    ultimos_7_dias = [
+        {
+            "fecha": str(x["id_compra__fecha_hora_compra__date"]),
+            "total": float(x["total"] or 0)
+        }
+        for x in ultimos_7_dias_qs
+    ]
+
+    print("DEBUG DASHBOARD FINAL:", ultimos_7_dias)
+
+    # 📦 productos top
+    top_productos = (
+        base.values('id_producto__nombre_producto')
+        .annotate(
+            unidades=Sum('cantidad'),
+            ingresos=Sum('subtotal')
+        )
+        .order_by('-ingresos')[:5]
+    )
+
+    # 🚚 estados de pedidos
+    estados = (
+        Compra.objects.filter(
+            detallescompra__id_producto__id_usuario=productor
+        )
+        .values('estado')
+        .annotate(total=Count('id_compra'))
+    )
+
+    # 🚨 pedidos pendientes
+    pendientes = Compra.objects.filter(
+        detallescompra__id_producto__id_usuario=productor,
+        estado='Pendiente'
+    ).count()
+    
+    
+
+    return render(request, 'productos/dashboard_pro.html', {
+    'kpis': kpis,
+    'ultimos_7_dias': ultimos_7_dias,
+    'top_productos': list(top_productos),
+    'estados': list(estados),
+    'pendientes': pendientes
+})
