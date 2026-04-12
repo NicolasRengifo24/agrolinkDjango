@@ -1,7 +1,7 @@
 
 from django.urls import path
 from . import views
-from .views import lista_productos, dashboard_productor
+from .views import lista_productos
 
 
 
@@ -32,7 +32,7 @@ urlpatterns = [
     path('productos/<int:producto_id>/actualizar/', views.actualizar_producto, name='actualizar_producto'),
     path('productor/mis-ventas/', views.mis_ventas, name='mis_ventas'),
     path('ventas/detalle/<int:producto_id>/', views.detalle_ventas_producto),
-    path('dashboard/', dashboard_productor, name='dashboard_productor'),
+    
     
     
 ] 

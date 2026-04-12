@@ -61,7 +61,7 @@
             <div class="card shadow-sm border-warning">
                 <div class="card-body">
                     <h6>🚚 Pendientes</h6>
-                    <h3>{{ pendientes }}</h3>
+                    <h3 class="text-warning fw-bold">{{ kpis.pendientes }}</h3>
                 </div>
             </div>
         </div>
@@ -148,7 +148,10 @@
                     {% with envio=pedido.envio %}
                     <tr>
                         <!-- CLIENTE -->
-                        <td>{{ pedido.id_cliente }}</td>
+                        <td>
+                        {{ d.id_compra.id_cliente.id_usuario.nombre }}
+                        {{ d.id_compra.id_cliente.id_usuario.apellido }}
+                        </td>
 
                         <!-- PRODUCTO -->
                         <td>{{ d.id_producto.nombre_producto }}</td>
@@ -251,9 +254,7 @@
  
 </div>
 
-<pre>
-ULTIMOS_7_DIAS: {{ ultimos_7_dias }}
-</pre>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 

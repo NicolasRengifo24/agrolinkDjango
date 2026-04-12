@@ -671,15 +671,15 @@ def eliminar_producto(request, producto_id):
 
 def mis_ventas(request):
 
-    productor = request.user.usuario.productor
+    usuario_id = request.user.usuario.id_usuario  # 🔥 CLAVE
 
-    # 🔹 PRODUCTOS DEL PRODUCTOR
-    productos = Producto.objects.filter(id_usuario=productor)
+    # 🔹 PRODUCTOS
+    productos = Producto.objects.filter(id_usuario_id=usuario_id)
 
-    # 🔹 RESUMEN DE VENTAS POR PRODUCTO
+    # 🔹 RESUMEN DE VENTAS
     ventas = (
         DetallesCompra.objects
-        .filter(id_producto__id_usuario=productor)
+        .filter(id_producto__id_usuario_id=usuario_id)
         .values('id_producto__id_producto', 'id_producto__nombre_producto')
         .annotate(
             total_vendido=Sum('cantidad'),
@@ -692,8 +692,8 @@ def mis_ventas(request):
     # 🔹 PEDIDOS POR ALISTAR
     pedidos_alistar = (
         Compra.objects
-        .filter(detallescompra__id_producto__id_usuario=productor)
-        .select_related('id_cliente')
+        .filter(detallescompra__id_producto__id_usuario_id=usuario_id)
+        .select_related('id_cliente__id_usuario')
         .prefetch_related(
             Prefetch(
                 'detallescompra_set',
@@ -703,40 +703,79 @@ def mis_ventas(request):
         .distinct()
         .order_by('-fecha_hora_compra')
     )
-    
 
     # 🔹 ENVÍOS
     envios = Envio.objects.filter(
-    id_compra__in=pedidos_alistar.values_list('id_compra', flat=True)
-)
+        id_compra__in=pedidos_alistar.values_list('id_compra', flat=True)
+    )
 
     envios_dict = {
         e.id_compra.id_compra: e for e in envios if e.id_compra
     }
 
-    # 🔥 ASIGNAR ENVÍO A CADA PEDIDO
     for p in pedidos_alistar:
         p.envio = envios_dict.get(p.id_compra)
 
-    # 🔹 GRÁFICA GENERAL (opcional)
+    # 🔹 GRÁFICA GENERAL
     ventas_chart = (
         DetallesCompra.objects
-        .filter(id_producto__id_usuario=productor)
+        .filter(id_producto__id_usuario_id=usuario_id)
         .values('id_producto__nombre_producto')
         .annotate(total_ingresos=Sum('subtotal'))
     )
+
+    # 🔹 ÚLTIMOS 7 DÍAS
+    hoy = now().date()
+    hace_7_dias = hoy - timedelta(days=7)
+
+    ultimos_7_dias_qs = (
+        DetallesCompra.objects
+        .filter(
+            id_producto__id_usuario_id=usuario_id,
+            id_compra__fecha_hora_compra__date__gte=hace_7_dias
+        )
+        .values('id_compra__fecha_hora_compra__date')
+        .annotate(total=Sum('subtotal'))
+        .order_by('id_compra__fecha_hora_compra__date')
+    )
+
+    ultimos_7_dias = [
+        {
+            "fecha": str(x["id_compra__fecha_hora_compra__date"]),
+            "total": float(x["total"] or 0)
+        }
+        for x in ultimos_7_dias_qs
+    ]
+
+    # 🔹 KPIs
+    base = DetallesCompra.objects.filter(
+        id_producto__id_usuario_id=usuario_id
+    )
+
+    kpis_raw = base.aggregate(
+        ingresos=Sum('subtotal'),
+        unidades=Sum('cantidad'),
+        ordenes=Count('id_compra', distinct=True),
+        ticket_promedio=Avg('subtotal')
+    )
+
+    kpis = {
+        'ingresos': kpis_raw['ingresos'] or 0,
+        'unidades': kpis_raw['unidades'] or 0,
+        'ordenes': kpis_raw['ordenes'] or 0,
+        'ticket_promedio': kpis_raw['ticket_promedio'] or 0,
+    }
 
     context = {
         'productos': productos,
         'ventas': ventas,
         'ventas_chart': list(ventas_chart),
-
-        # 🔥 NUEVO
         'pedidos_alistar': pedidos_alistar,
+        'ultimos_7_dias': ultimos_7_dias,
+        'kpis': kpis
     }
 
     return render(request, 'productos/mis_ventas.html', context)
-
 
 def detalle_ventas_producto(request, producto_id):
     try:
@@ -788,7 +827,7 @@ def detalle_ventas_producto(request, producto_id):
         })
 
 
-
+'''
 def dashboard_productor(request):
     print("🔥 ENTRÉ A DASHBOARD_PRODUCTOR")
 
@@ -803,16 +842,25 @@ def dashboard_productor(request):
     hace_30_dias = hoy - timedelta(days=30)
 
     base = DetallesCompra.objects.filter(
-        id_producto__id_usuario=productor
+    id_producto__id_usuario=productor.id_usuario
     )
+    
+    print("BASE COUNT:", base.count())
 
     # 💰 KPIs
     kpis = base.aggregate(
-        ingresos=Sum('subtotal'),
-        unidades=Sum('cantidad'),
-        ordenes=Count('id_compra', distinct=True),
-        ticket_promedio=Avg('subtotal')
-    )
+    ingresos=Sum('subtotal'),
+    unidades=Sum('cantidad'),
+    ordenes=Count('id_compra', distinct=True),
+    ticket_promedio=Avg('subtotal')
+)
+
+    kpis = {
+        'ingresos': kpis['ingresos'] or 0,
+        'unidades': kpis['unidades'] or 0,
+        'ordenes': kpis['ordenes'] or 0,
+        'ticket_promedio': kpis['ticket_promedio'] or 0,
+    }
 
     # 📈 ingresos últimos 7 días
     ultimos_7_dias_qs = (
@@ -856,9 +904,11 @@ def dashboard_productor(request):
 
     # 🚨 pedidos pendientes
     pendientes = Compra.objects.filter(
-        detallescompra__id_producto__id_usuario=productor,
-        estado='Pendiente'
+    detallescompra__id_producto__id_usuario_id=productor.id_usuario,
+    estado='Pendiente'
     ).count()
+    
+    
     
     
 
@@ -869,3 +919,5 @@ def dashboard_productor(request):
     'estados': list(estados),
     'pendientes': pendientes
 })
+'''
+
