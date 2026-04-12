@@ -33,6 +33,9 @@ urlpatterns = [
     path('productor/mis-ventas/', views.mis_ventas, name='mis_ventas'),
     path('ventas/detalle/<int:producto_id>/', views.detalle_ventas_producto),
     
+    # reporte 
+    path('productor/reporte/pdf/', views.reporte_ventas_pdf, name='reporte_pdf'),
+    
     
     
 ] 

@@ -688,6 +688,20 @@ def mis_ventas(request):
             ultima_venta=Max('id_compra__fecha_hora_compra')
         )
     )
+    
+    top_productos = (
+        DetallesCompra.objects
+        .filter(id_producto__id_usuario_id=usuario_id)
+        .values(
+            'id_producto__id_producto',
+            'id_producto__nombre_producto'
+        )
+        .annotate(
+            unidades=Sum('cantidad'),
+            ingresos=Sum('subtotal')
+        )
+        .order_by('-ingresos')[:5]
+    )
 
     # 🔹 PEDIDOS POR ALISTAR
     pedidos_alistar = (
@@ -708,6 +722,21 @@ def mis_ventas(request):
     envios = Envio.objects.filter(
         id_compra__in=pedidos_alistar.values_list('id_compra', flat=True)
     )
+    
+        # 1. Pedidos sin envío
+    pedidos_sin_envio = Compra.objects.filter(
+        detallescompra__id_producto__id_usuario_id=usuario_id,
+        envio__isnull=True
+    ).distinct().count()
+
+    # 2. Envíos sin transportista
+    envios_sin_transportista = Envio.objects.filter(
+        id_compra__detallescompra__id_producto__id_usuario_id=usuario_id,
+        id_transportista__isnull=True
+    ).distinct().count()
+
+    # 🔥 TOTAL REAL
+    pendientes_logistica = pedidos_sin_envio + envios_sin_transportista
 
     envios_dict = {
         e.id_compra.id_compra: e for e in envios if e.id_compra
@@ -764,6 +793,8 @@ def mis_ventas(request):
         'unidades': kpis_raw['unidades'] or 0,
         'ordenes': kpis_raw['ordenes'] or 0,
         'ticket_promedio': kpis_raw['ticket_promedio'] or 0,
+        'pendientes': pendientes_logistica,
+
     }
 
     context = {
@@ -772,7 +803,8 @@ def mis_ventas(request):
         'ventas_chart': list(ventas_chart),
         'pedidos_alistar': pedidos_alistar,
         'ultimos_7_dias': ultimos_7_dias,
-        'kpis': kpis
+        'kpis': kpis,
+        'top_productos': list(top_productos),
     }
 
     return render(request, 'productos/mis_ventas.html', context)
@@ -827,97 +859,208 @@ def detalle_ventas_producto(request, producto_id):
         })
 
 
-'''
-def dashboard_productor(request):
-    print("🔥 ENTRÉ A DASHBOARD_PRODUCTOR")
+ # esto es Para el reporte 
+ 
+from django.http import HttpResponse
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
+from datetime import datetime
+from django.db.models import Sum
 
-    productor = request.user.usuario.productor
-    
-    print("PRODUCTOR:", productor)
-    print("TIPO:", type(productor))
+def reporte_ventas_pdf(request):
 
-    # 📊 FECHAS
-    hoy = now().date()
-    hace_7_dias = hoy - timedelta(days=7)
-    hace_30_dias = hoy - timedelta(days=30)
+    usuario = request.user.usuario
+    productor = usuario.productor
+    usuario_id = usuario.id_usuario
 
-    base = DetallesCompra.objects.filter(
-    id_producto__id_usuario=productor.id_usuario
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_ventas_agrolink.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+
+    elementos = []
+
+    # =========================
+    # 🔥 HEADER
+    # =========================
+    elementos.append(Paragraph("📊 REPORTE PROFESIONAL - AGROLINK", styles['Title']))
+    elementos.append(Spacer(1, 12))
+
+    # 👤 PRODUCTOR
+    elementos.append(Paragraph("👤 Información del Productor", styles['Heading2']))
+    elementos.append(Spacer(1, 8))
+
+    elementos.append(Paragraph(f"Nombre: {usuario.nombre} {usuario.apellido}", styles['Normal']))
+    elementos.append(Paragraph(f"Correo: {usuario.correo}", styles['Normal']))
+    elementos.append(Paragraph(f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+
+    elementos.append(Spacer(1, 20))
+
+    # =========================
+    # 🌱 FINCAS
+    # =========================
+    fincas = Finca.objects.filter(id_usuario_id=usuario_id)
+
+    elementos.append(Paragraph("🌱 Fincas Registradas", styles['Heading2']))
+    elementos.append(Spacer(1, 10))
+
+    if fincas.exists():
+        data_fincas = [["Nombre", "Ciudad", "Departamento"]]
+
+        for f in fincas:
+            data_fincas.append([
+                f.nombre_finca or "N/A",
+                f.ciudad or "N/A",
+                f.departamento or "N/A"
+            ])
+
+        tabla = Table(data_fincas)
+        tabla.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.green),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+
+        elementos.append(tabla)
+    else:
+        elementos.append(Paragraph("No hay fincas registradas", styles['Normal']))
+
+    elementos.append(Spacer(1, 20))
+
+    # =========================
+    # 📦 PRODUCTOS
+    # =========================
+    productos = Producto.objects.filter(
+        id_usuario_id=usuario_id
+    ).prefetch_related('fincas__id_finca')
+
+    elementos.append(Paragraph("📦 Productos", styles['Heading2']))
+    elementos.append(Spacer(1, 10))
+
+    data_productos = [["Producto", "Precio", "Stock", "Kg/Unidad", "Finca"]]
+
+    for p in productos:
+        finca = p.finca()
+
+        data_productos.append([
+            p.nombre_producto,
+            f"${int(p.precio or 0):,}",
+            p.stock or 0,
+            f"{p.peso_kg or 0} kg",
+            finca.nombre_finca if finca else "No asignada"
+        ])
+
+    tabla = Table(data_productos)
+    tabla.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkgreen),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    elementos.append(tabla)
+    elementos.append(Spacer(1, 20))
+
+    # =========================
+    # 💰 VENTAS
+    # =========================
+    ventas = (
+        DetallesCompra.objects
+        .filter(id_producto__id_usuario_id=usuario_id)
+        .values(
+            'id_producto__nombre_producto',
+            'id_producto__id_producto'
+        )
+        .annotate(
+            total=Sum('subtotal'),
+            unidades=Sum('cantidad')
+        )
+        .order_by('-total')
     )
-    
-    print("BASE COUNT:", base.count())
 
-    # 💰 KPIs
-    kpis = base.aggregate(
-    ingresos=Sum('subtotal'),
-    unidades=Sum('cantidad'),
-    ordenes=Count('id_compra', distinct=True),
-    ticket_promedio=Avg('subtotal')
-)
+    elementos.append(Paragraph("💰 Ingresos por Producto", styles['Heading2']))
+    elementos.append(Spacer(1, 10))
 
-    kpis = {
-        'ingresos': kpis['ingresos'] or 0,
-        'unidades': kpis['unidades'] or 0,
-        'ordenes': kpis['ordenes'] or 0,
-        'ticket_promedio': kpis['ticket_promedio'] or 0,
+    data_ventas = [["Producto", "Unidades", "Kg/Unidad", "Total Kg", "Ingresos", "Finca"]]
+
+    # 🔥 MAPA DE PRODUCTOS (optimización)
+    productos_map = {
+        p.id_producto: p for p in productos
     }
 
-    # 📈 ingresos últimos 7 días
-    ultimos_7_dias_qs = (
-    DetallesCompra.objects
-    .filter(
-        id_producto__id_usuario_id=productor.id_usuario
+    for v in ventas:
+        producto = productos_map.get(v['id_producto__id_producto'])
+        finca = producto.finca() if producto else None
+
+        peso_unitario = float(producto.peso_kg or 0) if producto else 0
+        total_kg = peso_unitario * (v['unidades'] or 0)
+
+        data_ventas.append([
+            v['id_producto__nombre_producto'],
+            v['unidades'],
+            f"{peso_unitario} kg",
+            f"{int(total_kg):,} kg",
+            f"${int(v['total'] or 0):,}",
+            finca.nombre_finca if finca else "No asignada"
+        ])
+
+    tabla = Table(data_ventas)
+    tabla.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    elementos.append(tabla)
+    elementos.append(Spacer(1, 20))
+
+    # =========================
+    # 🏆 TOP PRODUCTO
+    # =========================
+    top = ventas.first()
+
+    if top:
+        producto = productos_map.get(top['id_producto__id_producto'])
+        finca = producto.finca() if producto else None
+
+        elementos.append(Paragraph("🏆 Producto Más Vendido", styles['Heading2']))
+        elementos.append(Spacer(1, 10))
+
+        elementos.append(Paragraph(f"Producto: {top['id_producto__nombre_producto']}", styles['Normal']))
+        elementos.append(Paragraph(f"Unidades: {top['unidades']}", styles['Normal']))
+        elementos.append(Paragraph(f"Ingresos: ${int(top['total'] or 0):,}", styles['Normal']))
+        elementos.append(Paragraph(f"Finca: {finca.nombre_finca if finca else 'No asignada'}", styles['Normal']))
+
+    elementos.append(Spacer(1, 20))
+
+    # =========================
+    # 📊 TOTALES
+    # =========================
+    totales = DetallesCompra.objects.filter(
+        id_producto__id_usuario_id=usuario_id
+    ).aggregate(
+        ingresos=Sum('subtotal'),
+        unidades=Sum('cantidad')
     )
-    .values('id_compra__fecha_hora_compra__date')
-    .annotate(total=Sum('subtotal'))
-    .order_by('id_compra__fecha_hora_compra__date')
-    )
 
-    ultimos_7_dias = [
-        {
-            "fecha": str(x["id_compra__fecha_hora_compra__date"]),
-            "total": float(x["total"] or 0)
-        }
-        for x in ultimos_7_dias_qs
-    ]
+    elementos.append(Paragraph("📊 Totales Generales", styles['Heading2']))
+    elementos.append(Spacer(1, 10))
 
-    print("DEBUG DASHBOARD FINAL:", ultimos_7_dias)
+    elementos.append(Paragraph(
+        f"Ingresos Totales: ${int(totales['ingresos'] or 0):,}",
+        styles['Normal']
+    ))
 
-    # 📦 productos top
-    top_productos = (
-        base.values('id_producto__nombre_producto')
-        .annotate(
-            unidades=Sum('cantidad'),
-            ingresos=Sum('subtotal')
-        )
-        .order_by('-ingresos')[:5]
-    )
+    elementos.append(Paragraph(
+        f"Unidades Vendidas: {totales['unidades'] or 0}",
+        styles['Normal']
+    ))
 
-    # 🚚 estados de pedidos
-    estados = (
-        Compra.objects.filter(
-            detallescompra__id_producto__id_usuario=productor
-        )
-        .values('estado')
-        .annotate(total=Count('id_compra'))
-    )
+    # =========================
+    # 🚀 GENERAR PDF
+    # =========================
+    doc.build(elementos)
 
-    # 🚨 pedidos pendientes
-    pendientes = Compra.objects.filter(
-    detallescompra__id_producto__id_usuario_id=productor.id_usuario,
-    estado='Pendiente'
-    ).count()
-    
-    
-    
-    
-
-    return render(request, 'productos/dashboard_pro.html', {
-    'kpis': kpis,
-    'ultimos_7_dias': ultimos_7_dias,
-    'top_productos': list(top_productos),
-    'estados': list(estados),
-    'pendientes': pendientes
-})
-'''
-
+    return response

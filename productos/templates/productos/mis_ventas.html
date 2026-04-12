@@ -26,7 +26,7 @@
 
 <div class="container mt-4">
 
-    <h2>📊 Dashboard Productor Pro</h2>
+    <h2> Revisa Tus Metricas</h2>
 
     <div class="row mt-3">
 
@@ -34,7 +34,7 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h6>💰 Ingresos</h6>
-                    <h3>${{ kpis.ingresos|default:0 }}</h3>
+                    <h3>${{ kpis.ingresos| floatformat:0 | intcomma}}</h3>
                 </div>
             </div>
         </div>
@@ -66,7 +66,15 @@
             </div>
         </div>
 
+         <br>
+         <div class="mt-4">
+        <a href="{% url 'reporte_pdf' %}" class="btn btn-danger mb-3">
+        📄 Descargar Reporte PDF
+        </a>
     </div>
+
+    </div>
+   
 
     <h2 class="mb-4 mt-4">Mis Ventas</h2>
 
@@ -94,12 +102,12 @@
 
                     <p>
                         💰 Ganancias:
-                        <strong>${{ v.total_ingresos|intcomma }}</strong>
+                        <strong>${{ v.total_ingresos| floatformat:0 | intcomma }}</strong>
                     </p>
 
                     <p>
                         🧾 Ventas:
-                        <strong>{{ v.total_ventas }}</strong>
+                        <strong>{{ v.total_ventas | floatformat:0 }}</strong>
                     </p>
 
                     <p>
@@ -217,7 +225,7 @@
             <tr>
                 <td>{{ p.id_producto__nombre_producto }}</td>
                 <td>{{ p.unidades }}</td>
-                <td>${{ p.ingresos }}</td>
+                <td>${{ p.ingresos | floatformat:0 | intcomma }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -251,6 +259,10 @@
 
         </div>
     </div>
+
+     
+
+   
  
 </div>
 
