@@ -178,30 +178,42 @@ def mostrar_productos(request):
     return render(request, "productos/inicio.html", {"productos": productos})
 
 
+
+
+
+
 def detalle_producto(request, id):
     producto = Producto.objects.prefetch_related('imagenProducto').filter(
         id_producto=id
     ).first()
-    
-    
+
     if producto and producto.id_categoria:
         relacionados = Producto.objects.prefetch_related('imagenProducto').filter(
             id_categoria=producto.id_categoria
         ).exclude(id_producto=producto.id_producto)[:4]
 
+    # ⭐ estadísticas
+    stats = Calificacion.objects.filter(
+        id_compra__detallescompra__id_producto=producto
+    ).aggregate(
+        promedio=Avg('puntaje_producto'),
+        total=Count('id_calificacion')
+    )
 
-    # CORREGIDO: usar id_producto en lugar de producto
-    
+    producto.promedio_estrellas = stats["promedio"] or 0
+    producto.total_calificaciones = stats["total"] or 0
+
+    # ⭐ comentarios (IMPORTANTE)
+    calificaciones = Calificacion.objects.filter(
+        id_compra__detallescompra__id_producto=producto
+    ).select_related('id_compra')
 
     return render(request, 'productos/detalle_producto.html', {
         'producto': producto,
-        
-        'relacionados' : relacionados,
+        'relacionados': relacionados,
+        'calificaciones': calificaciones
     })
-
-
-
-
+    
 
 @login_required
 def agregar_al_carrito(request, producto_id):
