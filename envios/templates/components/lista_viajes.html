@@ -19,8 +19,7 @@
                             <span class="badge bg-success badge-estado mb-2">Disponible</span>
                             <h5>{{ envio.id_compra.detallescompra_set.first.id_producto.nombre_producto }}</h5>
                              {% with detalle=envio.id_compra.detallescompra_set.first %}
-                            <p class="text-muted">{{detalle.id_producto.finca.ciudad }}
-                                <i class="fas fa-arrow-right mx-2"></i>
+                            <p class="text-muted">{{ detalle.id_producto.finca.ciudad }}<i class="fas fa-arrow-right mx-2"></i>
                               {% endwith %}  
                                 {{envio.id_compra.id_cliente.id_usuario.ciudad}}
                                

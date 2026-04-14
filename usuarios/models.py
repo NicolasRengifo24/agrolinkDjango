@@ -32,7 +32,7 @@ class Usuario(models.Model):
 
 class Transportista(models.Model):
     id_usuario = models.OneToOneField(Usuario, models.DO_NOTHING, db_column='id_usuario', primary_key=True)
-    id_calificacion = models.ForeignKey('calificaciones.Calificacion', models.DO_NOTHING, db_column='id_calificacion', blank=True, null=True)
+    
     zonas_entrega = models.CharField(max_length=250, blank=True, null=True)
 
     class Meta:
@@ -43,7 +43,7 @@ class Transportista(models.Model):
 
 class Productor(models.Model):
     id_usuario = models.OneToOneField(Usuario, models.DO_NOTHING, db_column='id_usuario', primary_key=True)
-    id_calificacion = models.ForeignKey('calificaciones.Calificacion', models.DO_NOTHING, db_column='id_calificacion', blank=True, null=True)
+    
     tipo_cultivo = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
@@ -56,7 +56,7 @@ class Productor(models.Model):
 
 class Cliente(models.Model):
     id_usuario = models.OneToOneField(Usuario, models.DO_NOTHING, db_column='id_usuario', primary_key=True)
-    id_calificacion = models.ForeignKey('calificaciones.Calificacion', models.DO_NOTHING, db_column='id_calificacion', blank=True, null=True)
+    
     preferencias = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
@@ -66,7 +66,7 @@ class Cliente(models.Model):
 
 class Asesor(models.Model):
     id_usuario = models.OneToOneField(Usuario, models.DO_NOTHING, db_column='id_usuario', primary_key=True)
-    id_calificacion = models.ForeignKey('calificaciones.Calificacion', models.DO_NOTHING, db_column='id_calificacion', blank=True, null=True)
+    
     tipo_asesoria = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:

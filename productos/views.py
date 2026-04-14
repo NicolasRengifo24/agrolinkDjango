@@ -45,11 +45,9 @@ def inicio(request):
     
 
     # 🧠 QUERY BASE (IMPORTANTE: NO repetirla)
-    productos = Producto.objects.prefetch_related('imagenProducto').annotate(
-        promedio_estrellas=Avg('calificaciones__puntaje'),
-        total_calificaciones=Count('calificaciones')
-    )
-    
+    productos = Producto.objects.prefetch_related('imagenProducto')
+        
+
     if busqueda:
 
     #  Buscar en servicios primero
@@ -116,9 +114,6 @@ def inicio(request):
     if producto_destacado_data:
         producto_destacado = Producto.objects.prefetch_related('imagenProducto').filter(
             id_producto=producto_destacado_data['id_producto']
-        ).annotate(
-            promedio_estrellas=Avg('calificaciones__puntaje'),
-            total_calificaciones=Count('calificaciones')
         ).first()
 
     if producto_destacado:
@@ -156,9 +151,6 @@ def mostrar_productos(request):
 def detalle_producto(request, id):
     producto = Producto.objects.prefetch_related('imagenProducto').filter(
         id_producto=id
-    ).annotate(
-        promedio_estrellas=Avg('calificaciones__puntaje'),
-        total_calificaciones=Count('calificaciones')
     ).first()
     
     
@@ -169,13 +161,11 @@ def detalle_producto(request, id):
 
 
     # CORREGIDO: usar id_producto en lugar de producto
-    comentarios = Calificacion.objects.filter(
-        id_producto=producto
-    ).order_by('-fecha')[:3]
+    
 
     return render(request, 'productos/detalle_producto.html', {
         'producto': producto,
-        'comentarios': comentarios,
+        
         'relacionados' : relacionados,
     })
 
@@ -340,8 +330,8 @@ def editar_finca(request, finca_id):
         # Actualizar datos
         finca.nombre_finca = request.POST.get('nombre_finca')
         finca.direccion_finca = request.POST.get('direccion_finca')
-        finca.ciudad = request.POST.get('txt_ciudad')
-        finca.departamento = request.POST.get('txt_departamento')
+        finca.ciudad = request.POST.get('ciudad')
+        finca.departamento = request.POST.get('departamento')
         
         # Procesar coordenadas
         latitud = request.POST.get('latitud', '').strip()

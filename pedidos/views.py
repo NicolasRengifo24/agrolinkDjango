@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings          
 from .models import Compra, DetallesCompra
+from calificaciones.models import Calificacion
 from usuarios.models import Cliente, Usuario
 from envios.models import Envio
 from decimal import Decimal
@@ -58,7 +59,7 @@ def carrito(request):
     'epayco_key': settings.EPAYCO_PUBLIC_KEY,
     'total_epayco': f"{compra.total:.2f}" if compra else '0.00',
 
-    #  NUEVO
+    
     'url_respuesta': f"{settings.NGROK_URL}/respuesta-pago/",
     'url_confirmacion': f"{settings.NGROK_URL}/confirmacion-pago/",
     'cart_count': cart_count,
@@ -347,8 +348,22 @@ def mis_pedidos(request):
     compras = Compra.objects.filter(
         id_cliente=cliente
     ).exclude(estado="carrito").order_by('-fecha_hora_compra')
+    
+    # 🔥 compras que necesitan calificación
+    compras_sin_calificar = compras.filter(
+        envio__estado_envio='ENTREGADO'
+    ).exclude(
+        id_compra__in=Calificacion.objects.values_list('id_compra_id', flat=True)
+    )
 
     pedidos = []
+    
+    compras_sin_calificar_ids = set(
+        compras_sin_calificar.values_list('id_compra', flat=True)
+    )
+    
+    for pedido in pedidos:
+        pedido.necesita_calificacion = pedido.compra.id_compra in compras_sin_calificar_ids
 
     for compra in compras:
         detalles = DetallesCompra.objects.filter(id_compra=compra)
@@ -361,7 +376,8 @@ def mis_pedidos(request):
         })
 
     return render(request, "pedidos/mis_pedidos.html", {
-        "pedidos": pedidos
+        "pedidos": pedidos,
+        'compras_sin_calificar' : compras_sin_calificar,
     })    
     
 
@@ -485,3 +501,7 @@ def seleccionar_destino(request):
         'lng_origen': lng_origen,
         'peso_total': peso_total,
     })
+    
+    
+    
+    

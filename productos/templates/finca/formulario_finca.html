@@ -31,14 +31,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Ciudad *</label>
-                                <select id="ciudad" name="txt_ciudad" class="form-select" required>
+                                <select id="ciudad" name="ciudad" class="form-select" required>
                                     <option value="">Seleccione una ciudad</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Departamento *</label>
-                                <input type="text" name="txt_departamento" class="form-control" value="Cundinamarca"
+                                <input type="text" name="departamento" class="form-control" value="Cundinamarca"
                                     readonly />
                             </div>
 
@@ -218,6 +218,12 @@
         });
     });
 
+    const form = document.getElementById("fincaForm");
+    const submitBtn = document.getElementById("btnGuardar");
+
+    form.style.opacity = 0.5;
+    submitBtn.disabled = true;
+
 
     // carga de los departamentos desde el api 
     async function cargarCiudades() {
@@ -231,8 +237,12 @@
         select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
       });
 
+        // 🔥 habilitar formulario cuando ya cargó todo
+        form.style.opacity = 1;
+        submitBtn.disabled = false;
        // Agregar Bogotá manualmente
-    select.innerHTML += `<option value="Bogotá">Bogotá</option>`;
+        select.innerHTML += `<option value="Bogotá">Bogotá</option>`;
+
     }
 
     cargarCiudades();

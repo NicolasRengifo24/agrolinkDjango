@@ -77,77 +77,123 @@
     </div>
     {% endif %}
 
-    <!-- PRODUCTOS -->
-    <div class="productos">
-        {% for item in pedido.detalles %}
-        <div class="producto">
+    {% if pedido.necesita_calificacion %}
+    <div class="modal fade" id="modalCalificacion{{ pedido.compra.id_compra }}">
 
-            {% with img=item.id_producto.imagen_principal_url %}
-            {% if img %}
-            <img src="{{ img }}" class="img-producto">
-            {% else %}
-            <img src="{% static 'img/default.png' %}" class="img-producto">
-            {% endif %}
-            {% endwith %}
+        <!-- Modal -->
+        <form method="post" action="{% url 'guardar_calificacion' %}">
+            {% csrf_token %}
 
-            <div class="info">
-                <h4>{{ item.id_producto.nombre }}</h4>
-                <p>Cantidad: {{ item.cantidad }}</p>
+            <input type="hidden" name="compra_id" value="{{ pedido.compra.id_compra }}">
+
+            ⭐ Producto:
+            <input type="number" name="producto" min="1" max="5" required>
+
+            👨‍🌾 Productor:
+            <input type="number" name="productor" min="1" max="5" required>
+
+            🚚 Transportista:
+            <input type="number" name="transportista" min="1" max="5" required>
+
+            💬 Comentario:
+            <textarea name="comentario"></textarea>
+
+            <button type="submit" class="btn btn-success">Enviar</button>
+        </form>
+
+
+
+        <!-- PRODUCTOS -->
+        <div class="productos">
+            {% for item in pedido.detalles %}
+            <div class="producto">
+
+                {% with img=item.id_producto.imagen_principal_url %}
+                {% if img %}
+                <img src="{{ img }}" class="img-producto">
+                {% else %}
+                <img src="{% static 'img/default.png' %}" class="img-producto">
+                {% endif %}
+                {% endwith %}
+
+                <div class="info">
+                    <h4>{{ item.id_producto.nombre }}</h4>
+                    <p>Cantidad: {{ item.cantidad }}</p>
+                </div>
+
+                <span class="precio">$ {{ item.subtotal|intcomma }}</span>
+
             </div>
-
-            <span class="precio">$ {{ item.subtotal|intcomma }}</span>
-
+            {% endfor %}
         </div>
-        {% endfor %}
+
+        <!-- FOOTER -->
+        <div class="pedido-footer">
+            <strong>Total: $ {{ pedido.compra.total|intcomma }}</strong>
+        </div>
+
     </div>
+    <style>
+        .mis-pedidos-wrapper .line {
+            flex: 1;
+            height: 4px;
+            background: #ddd;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+        }
 
-    <!-- FOOTER -->
-    <div class="pedido-footer">
-        <strong>Total: $ {{ pedido.compra.total|intcomma }}</strong>
-    </div>
+        .mis-pedidos-wrapper .progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            transition: width 0.6s ease-in-out;
+        }
 
-</div>
-<style>
-    .mis-pedidos-wrapper .line {
-    flex: 1;
-    height: 4px;
-    background: #ddd;
-    position: relative;
-    overflow: hidden;
-    border-radius: 5px;
-}
+        .mis-pedidos-wrapper .progress.active {
+            width: 100%;
+        }
 
-.mis-pedidos-wrapper .progress {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #4caf50, #81c784);
-    transition: width 0.6s ease-in-out;
-}
+        /* animación suave de los pasos */
+        .mis-pedidos-wrapper .step {
+            text-align: center;
+            color: #bbb;
+            transition: all 0.4s ease;
+        }
 
-.mis-pedidos-wrapper .progress.active {
-    width: 100%;
-}
+        .mis-pedidos-wrapper .step.active {
+            color: #2e7d32;
+            transform: scale(1.1);
+        }
 
-/* animación suave de los pasos */
-.mis-pedidos-wrapper .step {
-    text-align: center;
-    color: #bbb;
-    transition: all 0.4s ease;
-}
+        /* efecto pulse cuando está activo */
+        .mis-pedidos-wrapper .step.active span {
+            animation: pulse 1.2s infinite;
+        }
 
-.mis-pedidos-wrapper .step.active {
-    color: #2e7d32;
-    transform: scale(1.1);
-}
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
 
-/* efecto pulse cuando está activo */
-.mis-pedidos-wrapper .step.active span {
-    animation: pulse 1.2s infinite;
-}
+            50% {
+                transform: scale(1.2);
+            }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-</style>
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+
+
+    {% if pedido.necesita_calificacion %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var modal = new bootstrap.Modal(
+                document.getElementById('modalCalificacion{{ pedido.compra.id_compra }}')
+            );
+            modal.show();
+        });
+    </script>
+    {% endif %}

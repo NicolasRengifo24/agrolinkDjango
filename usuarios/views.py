@@ -758,6 +758,9 @@ def login_view(request):
                 
                 elif rol == 'PRODUCTOR':
                     return redirect('lista_productos')
+                
+                elif rol == 'ASESOR' : 
+                    return redirect('asesor_servicios')
 
                 else:
                     messages.error(request, f"Rol desconocido: {rol}")

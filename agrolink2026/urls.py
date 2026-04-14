@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('usuarios.urls')),  # 👈 login, register
     path('productos/', include('productos.urls')),  # 👈 productos
-    path('calificaciones/', include('calificaciones.urls')),  # 👈 calificaciones   
+    path('calificaciones/', include('calificaciones.urls')), 
     path('', include('productos.urls')),        # raíz para productos
     path('', include('usuarios.urls')), # prefijo para usuarios
     path('', include('envios.urls')), 

@@ -1,0 +1,1809 @@
+[
+{
+  "model": "usuarios.usuario",
+  "pk": 1,
+  "fields": {
+    "user": 1,
+    "nombre": "Admin",
+    "nombre_usuario": "admin",
+    "apellido": "Sistema",
+    "correo": "admin@agrolink.com",
+    "ciudad": "Bogotß",
+    "departamento": "Cundinamarca",
+    "direccion": "Calle 100 #10-10",
+    "cedula": "1000000000",
+    "telefono": "3000000000",
+    "estado": true,
+    "rol": "ROLE_ADMIN",
+    "latitud": 4.711,
+    "longitud": -74.0721
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 2,
+  "fields": {
+    "user": 3,
+    "nombre": "Juan",
+    "nombre_usuario": "juan_productor",
+    "apellido": "PÚrez",
+    "correo": "juan@agrolink.com",
+    "ciudad": "ChÝa",
+    "departamento": "Cundinamarca",
+    "direccion": "Vereda San JosÚ",
+    "cedula": "1000000001",
+    "telefono": "3001111111",
+    "estado": true,
+    "rol": "ROLE_PRODUCTOR",
+    "latitud": 4.8607,
+    "longitud": -74.0582
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 3,
+  "fields": {
+    "user": 4,
+    "nombre": "MarÝa",
+    "nombre_usuario": "maria_productora",
+    "apellido": "Gonzßlez",
+    "correo": "maria@agrolink.com",
+    "ciudad": "Cajicß",
+    "departamento": "Cundinamarca",
+    "direccion": "Finca La Esperanza",
+    "cedula": "1000000002",
+    "telefono": "3002222222",
+    "estado": true,
+    "rol": "ROLE_PRODUCTOR",
+    "latitud": 4.918,
+    "longitud": -74.0283
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 4,
+  "fields": {
+    "user": 5,
+    "nombre": "Carlos",
+    "nombre_usuario": "carlos_productor",
+    "apellido": "RodrÝguez",
+    "correo": "carlos@agrolink.com",
+    "ciudad": "Zipaquirß",
+    "departamento": "Cundinamarca",
+    "direccion": "Vereda El Carmen",
+    "cedula": "1000000003",
+    "telefono": "3003333333",
+    "estado": true,
+    "rol": "ROLE_PRODUCTOR",
+    "latitud": 5.022,
+    "longitud": -74.0047
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 5,
+  "fields": {
+    "user": 6,
+    "nombre": "Laura",
+    "nombre_usuario": "laura_cliente",
+    "apellido": "MartÝnez",
+    "correo": "laura@cliente.com",
+    "ciudad": "Bogotß",
+    "departamento": "Cundinamarca",
+    "direccion": "Calle 50 #20-30",
+    "cedula": "2000000001",
+    "telefono": "3004444444",
+    "estado": true,
+    "rol": "ROLE_CLIENTE",
+    "latitud": 4.6482,
+    "longitud": -74.0816
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 6,
+  "fields": {
+    "user": 7,
+    "nombre": "Pedro",
+    "nombre_usuario": "pedro_cliente",
+    "apellido": "L¾pez",
+    "correo": "pedro@cliente.com",
+    "ciudad": "Bogotß",
+    "departamento": "Cundinamarca",
+    "direccion": "Carrera 15 #85-40",
+    "cedula": "2000000002",
+    "telefono": "3005555555",
+    "estado": true,
+    "rol": "ROLE_CLIENTE",
+    "latitud": 4.6889,
+    "longitud": -74.0583
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 7,
+  "fields": {
+    "user": 8,
+    "nombre": "Miguel",
+    "nombre_usuario": "miguel_trans",
+    "apellido": "RamÝrez",
+    "correo": "miguel@transporte.com",
+    "ciudad": "Bogotß",
+    "departamento": "Cundinamarca",
+    "direccion": "Calle 80 #90-20",
+    "cedula": "3000000001",
+    "telefono": "3006666666",
+    "estado": true,
+    "rol": "ROLE_TRANSPORTISTA",
+    "latitud": 4.7007,
+    "longitud": -74.0621
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 8,
+  "fields": {
+    "user": 9,
+    "nombre": "Ana",
+    "nombre_usuario": "ana_asesora",
+    "apellido": "Torres",
+    "correo": "ana@asesor.com",
+    "ciudad": "Bogotß",
+    "departamento": "Cundinamarca",
+    "direccion": "Carrera 7 #40-50",
+    "cedula": "4000000001",
+    "telefono": "3007777777",
+    "estado": true,
+    "rol": "ROLE_ASESOR",
+    "latitud": 4.6533,
+    "longitud": -74.0836
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 9,
+  "fields": {
+    "user": 10,
+    "nombre": "elian",
+    "nombre_usuario": "elianCliente",
+    "apellido": "melo",
+    "correo": "elian@gmail.com",
+    "ciudad": "Bogota",
+    "departamento": "Cundinamarca",
+    "direccion": "cra 65 # 45- 67",
+    "cedula": "1003948577",
+    "telefono": "3333333333",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 10,
+  "fields": {
+    "user": 11,
+    "nombre": "mario",
+    "nombre_usuario": "cantiflas",
+    "apellido": "moreno",
+    "correo": "mario@gmail.com",
+    "ciudad": "Neiva",
+    "departamento": "Huila",
+    "direccion": "cll 45 # 4-67",
+    "cedula": "1005837599",
+    "telefono": "4935849586",
+    "estado": true,
+    "rol": "PRODUCTOR",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 11,
+  "fields": {
+    "user": 2,
+    "nombre": "elian",
+    "nombre_usuario": "elianCliente2",
+    "apellido": "melo",
+    "correo": "elian2@gmail.com",
+    "ciudad": "Bogota",
+    "departamento": "Cundinamarca",
+    "direccion": "cra45#5-78",
+    "cedula": "2995684677",
+    "telefono": "4935849586",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 12,
+  "fields": {
+    "user": null,
+    "nombre": "",
+    "nombre_usuario": "",
+    "apellido": "",
+    "correo": "",
+    "ciudad": "Bogota",
+    "departamento": "Cundinamarca",
+    "direccion": "cra 45#5-69",
+    "cedula": "1002938744",
+    "telefono": "2023933822",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 14,
+  "fields": {
+    "user": 12,
+    "nombre": "sonia",
+    "nombre_usuario": "soniacliente",
+    "apellido": "melo",
+    "correo": "sonia@gmail.com",
+    "ciudad": "Bogota",
+    "departamento": "Cundinamarca",
+    "direccion": "cll 45 # 67-67",
+    "cedula": "4444444444",
+    "telefono": "4444444444",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 15,
+  "fields": {
+    "user": 13,
+    "nombre": "jose",
+    "nombre_usuario": "joseCliente",
+    "apellido": "lopez",
+    "correo": "jose@gmail.com",
+    "ciudad": "Neiva",
+    "departamento": "Huila",
+    "direccion": "cll 100 # 50-9",
+    "cedula": "8888888888",
+    "telefono": "9999999999",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 16,
+  "fields": {
+    "user": 14,
+    "nombre": "mapu",
+    "nombre_usuario": "mapucliente",
+    "apellido": "giraldo",
+    "correo": "mapu@gmail.com",
+    "ciudad": "Bogota",
+    "departamento": "Cundinamarca",
+    "direccion": "tv 43 # 5-67",
+    "cedula": "9998877655",
+    "telefono": "8888888888",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 17,
+  "fields": {
+    "user": 15,
+    "nombre": "jairo",
+    "nombre_usuario": "jairotransporte",
+    "apellido": "mendez",
+    "correo": "jairotr@gmail.com",
+    "ciudad": "Neiva",
+    "departamento": "Huila",
+    "direccion": "cra 100 # 6-89",
+    "cedula": "0000000000",
+    "telefono": "8888888888",
+    "estado": true,
+    "rol": "TRANSPORTISTA",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 18,
+  "fields": {
+    "user": 16,
+    "nombre": "william",
+    "nombre_usuario": "williamproductor",
+    "apellido": "medina",
+    "correo": "williamprod@gmail.com",
+    "ciudad": "Neiva",
+    "departamento": "Huila",
+    "direccion": "vereda el triunfo",
+    "cedula": "2004958677",
+    "telefono": "4440004400",
+    "estado": true,
+    "rol": "PRODUCTOR",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 19,
+  "fields": {
+    "user": 17,
+    "nombre": "maria paula",
+    "nombre_usuario": "mapucliente1",
+    "apellido": "rodriguez",
+    "correo": "mapu1@gmail.com",
+    "ciudad": "Bogota",
+    "departamento": "Cundinamarca",
+    "direccion": "cll 45 # 67-67",
+    "cedula": "1004857688",
+    "telefono": "9998887766",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 21,
+  "fields": {
+    "user": 19,
+    "nombre": "alfredo",
+    "nombre_usuario": "alfredoproductor",
+    "apellido": "aguirre",
+    "correo": "alfredo@gmail.com",
+    "ciudad": "CaparrapÝ",
+    "departamento": "Cundinamarca",
+    "direccion": "cra 3 # 5-35",
+    "cedula": "1994837466",
+    "telefono": "3009487839",
+    "estado": true,
+    "rol": "PRODUCTOR",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.usuario",
+  "pk": 22,
+  "fields": {
+    "user": 20,
+    "nombre": "laura",
+    "nombre_usuario": "lauracliente",
+    "apellido": "mendoza",
+    "correo": "laura@gmail.com",
+    "ciudad": "Bogotß",
+    "departamento": "Cundinamarca",
+    "direccion": "cra 45 # 5 -78",
+    "cedula": "2991827366",
+    "telefono": "3948574488",
+    "estado": true,
+    "rol": "CLIENTE",
+    "latitud": null,
+    "longitud": null
+  }
+},
+{
+  "model": "usuarios.transportista",
+  "pk": 7,
+  "fields": {
+    "zonas_entrega": "Bogotß, ChÝa, Cajicß, Zipaquirß, Soacha"
+  }
+},
+{
+  "model": "usuarios.transportista",
+  "pk": 17,
+  "fields": {
+    "zonas_entrega": "Huila , Tolima"
+  }
+},
+{
+  "model": "usuarios.productor",
+  "pk": 2,
+  "fields": {
+    "tipo_cultivo": "Monocultivo"
+  }
+},
+{
+  "model": "usuarios.productor",
+  "pk": 3,
+  "fields": {
+    "tipo_cultivo": "Policultivo"
+  }
+},
+{
+  "model": "usuarios.productor",
+  "pk": 4,
+  "fields": {
+    "tipo_cultivo": "Huerta"
+  }
+},
+{
+  "model": "usuarios.productor",
+  "pk": 10,
+  "fields": {
+    "tipo_cultivo": "Frutas"
+  }
+},
+{
+  "model": "usuarios.productor",
+  "pk": 18,
+  "fields": {
+    "tipo_cultivo": null
+  }
+},
+{
+  "model": "usuarios.productor",
+  "pk": 21,
+  "fields": {
+    "tipo_cultivo": null
+  }
+},
+{
+  "model": "usuarios.cliente",
+  "pk": 5,
+  "fields": {
+    "preferencias": "Productos orgßnicos"
+  }
+},
+{
+  "model": "usuarios.cliente",
+  "pk": 6,
+  "fields": {
+    "preferencias": "Frutas y verduras frescas"
+  }
+},
+{
+  "model": "usuarios.cliente",
+  "pk": 9,
+  "fields": {
+    "preferencias": "frutas"
+  }
+},
+{
+  "model": "usuarios.cliente",
+  "pk": 11,
+  "fields": {
+    "preferencias": "Sin Preferencias"
+  }
+},
+{
+  "model": "usuarios.cliente",
+  "pk": 19,
+  "fields": {
+    "preferencias": null
+  }
+},
+{
+  "model": "usuarios.cliente",
+  "pk": 22,
+  "fields": {
+    "preferencias": null
+  }
+},
+{
+  "model": "usuarios.asesor",
+  "pk": 8,
+  "fields": {
+    "tipo_asesoria": "TÚcnica AgrÝcola"
+  }
+},
+{
+  "model": "usuarios.administrador",
+  "pk": 1,
+  "fields": {}
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 1,
+  "fields": {
+    "nombre_categoria": "Frutas"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 2,
+  "fields": {
+    "nombre_categoria": "Verduras"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 3,
+  "fields": {
+    "nombre_categoria": "Hortalizas"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 4,
+  "fields": {
+    "nombre_categoria": "Legumbres"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 5,
+  "fields": {
+    "nombre_categoria": "Cereales"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 6,
+  "fields": {
+    "nombre_categoria": "TubÚrculos"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 7,
+  "fields": {
+    "nombre_categoria": "Hierbas Aromßticas"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 8,
+  "fields": {
+    "nombre_categoria": "Productos Orgßnicos"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 9,
+  "fields": {
+    "nombre_categoria": "Lßcteos"
+  }
+},
+{
+  "model": "productos.categoriaproducto",
+  "pk": 10,
+  "fields": {
+    "nombre_categoria": "Otros"
+  }
+},
+{
+  "model": "productos.finca",
+  "pk": 1,
+  "fields": {
+    "id_usuario": 2,
+    "nombre_finca": "Finca El ParaÝso",
+    "direccion_finca": "Vereda San JosÚ, ChÝa",
+    "certificado_bpa": "BPA-2024-001",
+    "certificado_mirfe": "Sin Certificado",
+    "certificado_mipe": "Sin Certificado",
+    "registro_ica": "Sin Certificado",
+    "latitud": 4.8607,
+    "longitud": -74.0582,
+    "ciudad": "ChÝa",
+    "departamento": "Cundinamarca"
+  }
+},
+{
+  "model": "productos.finca",
+  "pk": 2,
+  "fields": {
+    "id_usuario": 3,
+    "nombre_finca": "Finca La Esperanza",
+    "direccion_finca": "Km 5 vÝa Cajicß",
+    "certificado_bpa": "BPA-2024-002",
+    "certificado_mirfe": "Sin Certificado",
+    "certificado_mipe": "Sin Certificado",
+    "registro_ica": "Sin Certificado",
+    "latitud": 4.918,
+    "longitud": -74.0283,
+    "ciudad": "Cajicß",
+    "departamento": "Cundinamarca"
+  }
+},
+{
+  "model": "productos.finca",
+  "pk": 3,
+  "fields": {
+    "id_usuario": 4,
+    "nombre_finca": "Finca Verde",
+    "direccion_finca": "Vereda El Carmen, Zipaquirß",
+    "certificado_bpa": "Sin Certificado",
+    "certificado_mirfe": "Sin Certificado",
+    "certificado_mipe": "Sin Certificado",
+    "registro_ica": "Sin Certificado",
+    "latitud": 5.022,
+    "longitud": -74.0047,
+    "ciudad": "Zipaquirß",
+    "departamento": "Cundinamarca"
+  }
+},
+{
+  "model": "productos.finca",
+  "pk": 4,
+  "fields": {
+    "id_usuario": 10,
+    "nombre_finca": "la frutica",
+    "direccion_finca": "vereda el triunfo",
+    "certificado_bpa": null,
+    "certificado_mirfe": null,
+    "certificado_mipe": null,
+    "registro_ica": null,
+    "latitud": null,
+    "longitud": null,
+    "ciudad": null,
+    "departamento": "huila"
+  }
+},
+{
+  "model": "productos.finca",
+  "pk": 5,
+  "fields": {
+    "id_usuario": 18,
+    "nombre_finca": "Finca la calera",
+    "direccion_finca": "via la calera km 10",
+    "certificado_bpa": null,
+    "certificado_mirfe": null,
+    "certificado_mipe": null,
+    "registro_ica": null,
+    "latitud": 4.711692,
+    "longitud": -73.966527,
+    "ciudad": "La Calera",
+    "departamento": "Cundinamarca"
+  }
+},
+{
+  "model": "productos.finca",
+  "pk": 6,
+  "fields": {
+    "id_usuario": 18,
+    "nombre_finca": "Finca Pepillo",
+    "direccion_finca": "cra 7a # 3",
+    "certificado_bpa": null,
+    "certificado_mirfe": null,
+    "certificado_mipe": null,
+    "registro_ica": null,
+    "latitud": 4.728409,
+    "longitud": -74.342192,
+    "ciudad": "Bojacß",
+    "departamento": "Cundinamarca"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 1,
+  "fields": {
+    "id_usuario": 2,
+    "id_categoria": 1,
+    "precio": "8500.00",
+    "nombre_producto": "Tomate Chonto",
+    "descripcion_producto": "Tomate fresco de primera calidad, cultivado orgßnicamente",
+    "stock": 497,
+    "peso_kg": "1.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 2,
+  "fields": {
+    "id_usuario": 2,
+    "id_categoria": 2,
+    "precio": "3500.00",
+    "nombre_producto": "Lechuga Crespa",
+    "descripcion_producto": "Lechuga fresca, ideal para ensaladas",
+    "stock": 295,
+    "peso_kg": "0.50"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 3,
+  "fields": {
+    "id_usuario": 3,
+    "id_categoria": 3,
+    "precio": "2500.00",
+    "nombre_producto": "Zanahoria",
+    "descripcion_producto": "Zanahoria orgßnica, rica en vitaminas",
+    "stock": 400,
+    "peso_kg": "1.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 4,
+  "fields": {
+    "id_usuario": 3,
+    "id_categoria": 1,
+    "precio": "12000.00",
+    "nombre_producto": "Fresa",
+    "descripcion_producto": "Fresas frescas y dulces",
+    "stock": 198,
+    "peso_kg": "0.50"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 5,
+  "fields": {
+    "id_usuario": 4,
+    "id_categoria": 6,
+    "precio": "4500.00",
+    "nombre_producto": "Papa Criolla",
+    "descripcion_producto": "Papa criolla de primera calidad",
+    "stock": 600,
+    "peso_kg": "1.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 6,
+  "fields": {
+    "id_usuario": 2,
+    "id_categoria": 1,
+    "precio": "5000.00",
+    "nombre_producto": "Fresa",
+    "descripcion_producto": "Fresa Hidriponica",
+    "stock": 100,
+    "peso_kg": "1.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 7,
+  "fields": {
+    "id_usuario": 4,
+    "id_categoria": 7,
+    "precio": "2500.00",
+    "nombre_producto": "Menta",
+    "descripcion_producto": "menta organica",
+    "stock": 500,
+    "peso_kg": "1.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 8,
+  "fields": {
+    "id_usuario": 2,
+    "id_categoria": 6,
+    "precio": "45000.00",
+    "nombre_producto": "Papa Sabanera",
+    "descripcion_producto": "Papa sabanera organica",
+    "stock": 500,
+    "peso_kg": "45.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 9,
+  "fields": {
+    "id_usuario": 10,
+    "id_categoria": 1,
+    "precio": "3500.00",
+    "nombre_producto": "Aguacate",
+    "descripcion_producto": "Aguacate hass",
+    "stock": 900,
+    "peso_kg": "1.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 11,
+  "fields": {
+    "id_usuario": 18,
+    "id_categoria": 6,
+    "precio": "50000.00",
+    "nombre_producto": "yuca",
+    "descripcion_producto": "organicaaa",
+    "stock": 10,
+    "peso_kg": "45.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 13,
+  "fields": {
+    "id_usuario": 18,
+    "id_categoria": 1,
+    "precio": "55000.00",
+    "nombre_producto": "lulo Premium",
+    "descripcion_producto": "organico",
+    "stock": 98,
+    "peso_kg": "50.00"
+  }
+},
+{
+  "model": "productos.producto",
+  "pk": 14,
+  "fields": {
+    "id_usuario": 18,
+    "id_categoria": 6,
+    "precio": "48000.00",
+    "nombre_producto": "Papa R12",
+    "descripcion_producto": "papa r12 organica",
+    "stock": 100,
+    "peso_kg": "45.00"
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 1,
+  "fields": {
+    "id_producto": 1,
+    "url_imagen": "productos/tomate.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 3,
+  "fields": {
+    "id_producto": 2,
+    "url_imagen": "productos/lechuga.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 4,
+  "fields": {
+    "id_producto": 3,
+    "url_imagen": "productos/zanahoria.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 5,
+  "fields": {
+    "id_producto": 4,
+    "url_imagen": "productos/fresa.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 7,
+  "fields": {
+    "id_producto": 5,
+    "url_imagen": "productos/papacriolla.jpg",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 8,
+  "fields": {
+    "id_producto": 6,
+    "url_imagen": "productos/fresa.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 11,
+  "fields": {
+    "id_producto": 8,
+    "url_imagen": "productos/papa_1emJq57.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 12,
+  "fields": {
+    "id_producto": 7,
+    "url_imagen": "productos/ment_HKPcWs3.webp",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 13,
+  "fields": {
+    "id_producto": 9,
+    "url_imagen": "productos/aguacate.jpg",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 14,
+  "fields": {
+    "id_producto": 11,
+    "url_imagen": "productos/istockphoto-179038063-612x612.jpg",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 16,
+  "fields": {
+    "id_producto": 13,
+    "url_imagen": "productos/lulo_3g7DCgV.jpg",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.imagenesproducto",
+  "pk": 17,
+  "fields": {
+    "id_producto": 14,
+    "url_imagen": "productos/papar12.jpg",
+    "es_principal": 1
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 1,
+  "fields": {
+    "id_finca": 1,
+    "id_producto": 1,
+    "cantidad_produccion": "500.00",
+    "fecha_cosecha": "2025-01-15"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 2,
+  "fields": {
+    "id_finca": 1,
+    "id_producto": 2,
+    "cantidad_produccion": "300.00",
+    "fecha_cosecha": "2025-01-10"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 3,
+  "fields": {
+    "id_finca": 2,
+    "id_producto": 3,
+    "cantidad_produccion": "400.00",
+    "fecha_cosecha": "2025-01-20"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 4,
+  "fields": {
+    "id_finca": 2,
+    "id_producto": 4,
+    "cantidad_produccion": "200.00",
+    "fecha_cosecha": "2025-01-18"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 5,
+  "fields": {
+    "id_finca": 3,
+    "id_producto": 5,
+    "cantidad_produccion": "600.00",
+    "fecha_cosecha": "2025-01-12"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 6,
+  "fields": {
+    "id_finca": 1,
+    "id_producto": 6,
+    "cantidad_produccion": "400.00",
+    "fecha_cosecha": "2026-03-11"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 7,
+  "fields": {
+    "id_finca": 1,
+    "id_producto": 8,
+    "cantidad_produccion": "900.00",
+    "fecha_cosecha": "2026-03-18"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 8,
+  "fields": {
+    "id_finca": 1,
+    "id_producto": 7,
+    "cantidad_produccion": "500.00",
+    "fecha_cosecha": "2026-03-18"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 9,
+  "fields": {
+    "id_finca": 4,
+    "id_producto": 9,
+    "cantidad_produccion": "900.00",
+    "fecha_cosecha": "2026-03-20"
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 10,
+  "fields": {
+    "id_finca": 1,
+    "id_producto": 11,
+    "cantidad_produccion": "0.00",
+    "fecha_cosecha": null
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 12,
+  "fields": {
+    "id_finca": 5,
+    "id_producto": 13,
+    "cantidad_produccion": "0.00",
+    "fecha_cosecha": null
+  }
+},
+{
+  "model": "productos.productofinca",
+  "pk": 13,
+  "fields": {
+    "id_finca": 6,
+    "id_producto": 14,
+    "cantidad_produccion": "0.00",
+    "fecha_cosecha": null
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 1,
+  "fields": {
+    "id_cliente": 5,
+    "fecha_hora_compra": "2025-01-05T10:30:00Z",
+    "subtotal": "50000.00",
+    "impuestos": "9500.00",
+    "valor_envio": "15000.00",
+    "estado": "carrito",
+    "total": "74500.00",
+    "direccion_entrega": "Calle 50 #20-30, Bogotß",
+    "metodo_pago": "Tarjeta de CrÚdito",
+    "latitud_destino": null,
+    "longitud_destino": null
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 7,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-06T19:42:17Z",
+    "subtotal": "100000.00",
+    "impuestos": "19000.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "119000.00",
+    "direccion_entrega": "5-81, Carrera 45, San Francisco, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.619952591661011,
+    "longitud_destino": -74.11141547364699
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 8,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-07T04:24:29Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "Casa Luker, Avenida Calle 13, UPZs de Bogotß, Localidad Kennedy, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110831, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.638629543063646,
+    "longitud_destino": -74.11954092484858
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 9,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-07T22:05:28Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "Carrera 65A, Pradera Sur, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.625968095224284,
+    "longitud_destino": -74.12078850225878
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 10,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-07T22:14:51Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "5-81, Carrera 45, San Francisco, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.620959662800452,
+    "longitud_destino": -74.1106709634699
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 11,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-07T22:19:11Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "Calle 4, San Gabriel, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.623230455091795,
+    "longitud_destino": -74.1193719276756
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 12,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-07T23:19:30Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "Carrera 39B, Primavera Occidental, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.612458246491543,
+    "longitud_destino": -74.10918624266439
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 13,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-07T23:27:13Z",
+    "subtotal": "165000.00",
+    "impuestos": "31350.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "196350.00",
+    "direccion_entrega": "Calle 5 Bis, San Francisco, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.619423406700989,
+    "longitud_destino": -74.11126146911943
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 14,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-08T01:59:43Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "Carrera 68B, Granjas de Techo, UPZs Localidad Fontib¾n, Localidad Fontib¾n, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110931, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.64239371353607,
+    "longitud_destino": -74.11649798586411
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 15,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-08T03:44:28Z",
+    "subtotal": "90000.00",
+    "impuestos": "17100.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "107100.00",
+    "direccion_entrega": "Carrera 1, Los Olivares, UPZs de Bogotß, Localidad Usme, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110521, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.5168552153247665,
+    "longitud_destino": -74.10540897162845
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 16,
+  "fields": {
+    "id_cliente": 19,
+    "fecha_hora_compra": "2026-04-08T04:43:28Z",
+    "subtotal": "135000.00",
+    "impuestos": "25650.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "160650.00",
+    "direccion_entrega": "Transversal 53, Provivienda Oriental, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111621, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.611360764674836,
+    "longitud_destino": -74.12383119431703
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 18,
+  "fields": {
+    "id_cliente": 22,
+    "fecha_hora_compra": "2026-04-10T14:51:10Z",
+    "subtotal": "90000.00",
+    "impuestos": "17100.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "107100.00",
+    "direccion_entrega": "Diagonal 2, Banderas, UPZs de Bogotß, Localidad Kennedy, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110851, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.632235353098883,
+    "longitud_destino": -74.15076387925531
+  }
+},
+{
+  "model": "pedidos.compra",
+  "pk": 19,
+  "fields": {
+    "id_cliente": 22,
+    "fecha_hora_compra": "2026-04-12T15:52:42Z",
+    "subtotal": "110000.00",
+    "impuestos": "20900.00",
+    "valor_envio": null,
+    "estado": "pagado",
+    "total": "130900.00",
+    "direccion_entrega": "Calle 128B Bis, El Rinc¾n, UPZs de Bogotß, Localidad Suba, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111131, Colombia",
+    "metodo_pago": "epayco",
+    "latitud_destino": 4.722719720251391,
+    "longitud_destino": -74.09165055388512
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 1,
+  "fields": {
+    "id_compra": 1,
+    "id_producto": 1,
+    "cantidad": 3,
+    "precio_unitario": "8500.00",
+    "subtotal": "25500.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 2,
+  "fields": {
+    "id_compra": 1,
+    "id_producto": 2,
+    "cantidad": 5,
+    "precio_unitario": "3500.00",
+    "subtotal": "17500.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 3,
+  "fields": {
+    "id_compra": 1,
+    "id_producto": 4,
+    "cantidad": 2,
+    "precio_unitario": "12000.00",
+    "subtotal": "24000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 10,
+  "fields": {
+    "id_compra": 2,
+    "id_producto": 5,
+    "cantidad": 20,
+    "precio_unitario": "4500.00",
+    "subtotal": "90000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 14,
+  "fields": {
+    "id_compra": 3,
+    "id_producto": 6,
+    "cantidad": 5,
+    "precio_unitario": "5000.00",
+    "subtotal": "25000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 16,
+  "fields": {
+    "id_compra": 4,
+    "id_producto": 8,
+    "cantidad": 3,
+    "precio_unitario": "45000.00",
+    "subtotal": "135000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 17,
+  "fields": {
+    "id_compra": 5,
+    "id_producto": 2,
+    "cantidad": 5,
+    "precio_unitario": "3500.00",
+    "subtotal": "17500.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 18,
+  "fields": {
+    "id_compra": 6,
+    "id_producto": 4,
+    "cantidad": 5,
+    "precio_unitario": "12000.00",
+    "subtotal": "60000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 19,
+  "fields": {
+    "id_compra": 7,
+    "id_producto": 11,
+    "cantidad": 2,
+    "precio_unitario": "50000.00",
+    "subtotal": "100000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 21,
+  "fields": {
+    "id_compra": 8,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 22,
+  "fields": {
+    "id_compra": 9,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 24,
+  "fields": {
+    "id_compra": 10,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 25,
+  "fields": {
+    "id_compra": 11,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": null
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 26,
+  "fields": {
+    "id_compra": 12,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": 11.702853424826515
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 27,
+  "fields": {
+    "id_compra": 13,
+    "id_producto": 13,
+    "cantidad": 3,
+    "precio_unitario": "55000.00",
+    "subtotal": "165000.00",
+    "distancia_km": 11.069200940755357
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 28,
+  "fields": {
+    "id_compra": 14,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": 9.077824500331081
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 29,
+  "fields": {
+    "id_compra": 15,
+    "id_producto": 14,
+    "cantidad": 2,
+    "precio_unitario": "45000.00",
+    "subtotal": "90000.00",
+    "distancia_km": 21.901309286001727
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 30,
+  "fields": {
+    "id_compra": 16,
+    "id_producto": 14,
+    "cantidad": 3,
+    "precio_unitario": "45000.00",
+    "subtotal": "135000.00",
+    "distancia_km": 12.474871892727112
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 33,
+  "fields": {
+    "id_compra": 18,
+    "id_producto": 14,
+    "cantidad": 2,
+    "precio_unitario": "45000.00",
+    "subtotal": "90000.00",
+    "distancia_km": 23.75776603342993
+  }
+},
+{
+  "model": "pedidos.detallescompra",
+  "pk": 34,
+  "fields": {
+    "id_compra": 19,
+    "id_producto": 13,
+    "cantidad": 2,
+    "precio_unitario": "55000.00",
+    "subtotal": "110000.00",
+    "distancia_km": 13.92009157921832
+  }
+},
+{
+  "model": "envios.vehiculo",
+  "pk": 1,
+  "fields": {
+    "id_transportista": 7,
+    "tipo_vehiculo": "Camioneta",
+    "capacidad_carga": "1500.00",
+    "documento_propiedad": "DOC-VEH-001",
+    "placa_vehiculo": "ABC123",
+    "estado": "ACTIVO"
+  }
+},
+{
+  "model": "envios.vehiculo",
+  "pk": 2,
+  "fields": {
+    "id_transportista": 7,
+    "tipo_vehiculo": "Cami¾n",
+    "capacidad_carga": "5000.00",
+    "documento_propiedad": "DOC-VEH-002",
+    "placa_vehiculo": "XYZ789",
+    "estado": "ACTIVO"
+  }
+},
+{
+  "model": "envios.vehiculo",
+  "pk": 3,
+  "fields": {
+    "id_transportista": 17,
+    "tipo_vehiculo": "Cami¾n",
+    "capacidad_carga": "4000.00",
+    "documento_propiedad": null,
+    "placa_vehiculo": "ZGO918",
+    "estado": "ACTIVO"
+  }
+},
+{
+  "model": "envios.vehiculo",
+  "pk": 7,
+  "fields": {
+    "id_transportista": 17,
+    "tipo_vehiculo": "Camioneta",
+    "capacidad_carga": "15000.00",
+    "documento_propiedad": null,
+    "placa_vehiculo": "ABC905",
+    "estado": "ACTIVO"
+  }
+},
+{
+  "model": "envios.vehiculo",
+  "pk": 8,
+  "fields": {
+    "id_transportista": 17,
+    "tipo_vehiculo": "Camioneta",
+    "capacidad_carga": "1000.00",
+    "documento_propiedad": null,
+    "placa_vehiculo": "BCD234",
+    "estado": "ACTIVO"
+  }
+},
+{
+  "model": "envios.envio",
+  "pk": 9,
+  "fields": {
+    "id_compra": 13,
+    "id_vehiculo": 3,
+    "id_transportista": 17,
+    "estado_envio": "Entregado",
+    "fecha_salida": "2026-04-08",
+    "fecha_entrega": "2026-04-09",
+    "numero_seguimiento": "AGRO-20260407-PP2WMC",
+    "direccion_origen": "via la calera km 10",
+    "direccion_destino": "Calle 5 Bis, San Francisco, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111611, Colombia",
+    "latitud_origen": 4.711692,
+    "longitud_origen": -73.966527,
+    "latitud_destino": 4.619423406700989,
+    "longitud_destino": -74.11126146911943,
+    "distancia_km": 11.069200940755357,
+    "peso_total_kg": 150.0,
+    "costo_base": "33207.60",
+    "costo_peso": "30000.00",
+    "costo_total": "63207.60",
+    "tarifa_por_km": "3000.00",
+    "tarifa_por_kg": "200.00"
+  }
+},
+{
+  "model": "envios.envio",
+  "pk": 10,
+  "fields": {
+    "id_compra": 14,
+    "id_vehiculo": 3,
+    "id_transportista": 17,
+    "estado_envio": "En_Transito",
+    "fecha_salida": "2026-04-09",
+    "fecha_entrega": "2026-04-10",
+    "numero_seguimiento": "AGRO-20260407-OJ7HBD",
+    "direccion_origen": "via la calera km 10",
+    "direccion_destino": "Carrera 68B, Granjas de Techo, UPZs Localidad Fontib¾n, Localidad Fontib¾n, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110931, Colombia",
+    "latitud_origen": 4.711692,
+    "longitud_origen": -73.966527,
+    "latitud_destino": 4.64239371353607,
+    "longitud_destino": -74.11649798586411,
+    "distancia_km": 9.077824500331081,
+    "peso_total_kg": 100.0,
+    "costo_base": "27233.47",
+    "costo_peso": "20000.00",
+    "costo_total": "47233.47",
+    "tarifa_por_km": "3000.00",
+    "tarifa_por_kg": "200.00"
+  }
+},
+{
+  "model": "envios.envio",
+  "pk": 11,
+  "fields": {
+    "id_compra": 15,
+    "id_vehiculo": 3,
+    "id_transportista": 17,
+    "estado_envio": "Entregado",
+    "fecha_salida": "2026-04-08",
+    "fecha_entrega": "2026-04-09",
+    "numero_seguimiento": "AGRO-20260407-PT1QWW",
+    "direccion_origen": "cra 7a # 3",
+    "direccion_destino": "Carrera 1, Los Olivares, UPZs de Bogotß, Localidad Usme, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110521, Colombia",
+    "latitud_origen": 4.728409061278938,
+    "longitud_origen": -74.3421918153763,
+    "latitud_destino": 4.5168552153247665,
+    "longitud_destino": -74.10540897162845,
+    "distancia_km": 21.901309286001727,
+    "peso_total_kg": 90.0,
+    "costo_base": "65703.93",
+    "costo_peso": "18000.00",
+    "costo_total": "83703.93",
+    "tarifa_por_km": "3000.00",
+    "tarifa_por_kg": "200.00"
+  }
+},
+{
+  "model": "envios.envio",
+  "pk": 12,
+  "fields": {
+    "id_compra": 16,
+    "id_vehiculo": null,
+    "id_transportista": null,
+    "estado_envio": "pendiente",
+    "fecha_salida": null,
+    "fecha_entrega": null,
+    "numero_seguimiento": "AGRO-20260407-INQONN",
+    "direccion_origen": "cra 7a # 3",
+    "direccion_destino": "Transversal 53, Provivienda Oriental, UPZs de Bogotß, Localidad Puente Aranda, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111621, Colombia",
+    "latitud_origen": 4.728409061278938,
+    "longitud_origen": -74.3421918153763,
+    "latitud_destino": 4.611360764674836,
+    "longitud_destino": -74.12383119431703,
+    "distancia_km": 12.474871892727112,
+    "peso_total_kg": 135.0,
+    "costo_base": "37424.62",
+    "costo_peso": "27000.00",
+    "costo_total": "64424.62",
+    "tarifa_por_km": "3000.00",
+    "tarifa_por_kg": "200.00"
+  }
+},
+{
+  "model": "envios.envio",
+  "pk": 13,
+  "fields": {
+    "id_compra": 18,
+    "id_vehiculo": 8,
+    "id_transportista": 17,
+    "estado_envio": "Entregado",
+    "fecha_salida": "2026-04-10",
+    "fecha_entrega": "2026-04-11",
+    "numero_seguimiento": "AGRO-20260410-FX4203",
+    "direccion_origen": "cra 7a # 3",
+    "direccion_destino": "Diagonal 2, Banderas, UPZs de Bogotß, Localidad Kennedy, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 110851, Colombia",
+    "latitud_origen": 4.728409061278938,
+    "longitud_origen": -74.3421918153763,
+    "latitud_destino": 4.632235353098883,
+    "longitud_destino": -74.15076387925531,
+    "distancia_km": 23.75776603342993,
+    "peso_total_kg": 90.0,
+    "costo_base": "71273.30",
+    "costo_peso": "18000.00",
+    "costo_total": "89273.30",
+    "tarifa_por_km": "3000.00",
+    "tarifa_por_kg": "200.00"
+  }
+},
+{
+  "model": "envios.envio",
+  "pk": 14,
+  "fields": {
+    "id_compra": 19,
+    "id_vehiculo": 8,
+    "id_transportista": 17,
+    "estado_envio": "Entregado",
+    "fecha_salida": "2026-04-12",
+    "fecha_entrega": "2026-04-13",
+    "numero_seguimiento": "AGRO-20260412-KAE5YZ",
+    "direccion_origen": "via la calera km 10",
+    "direccion_destino": "Calle 128B Bis, El Rinc¾n, UPZs de Bogotß, Localidad Suba, Bogotß, Bogotß, Distrito Capital, RAP (Especial) Central, 111131, Colombia",
+    "latitud_origen": 4.711692,
+    "longitud_origen": -73.966527,
+    "latitud_destino": 4.722719720251391,
+    "longitud_destino": -74.09165055388512,
+    "distancia_km": 13.92009157921832,
+    "peso_total_kg": 100.0,
+    "costo_base": "41760.27",
+    "costo_peso": "20000.00",
+    "costo_total": "61760.27",
+    "tarifa_por_km": "3000.00",
+    "tarifa_por_kg": "200.00"
+  }
+},
+{
+  "model": "servicios.servicio",
+  "pk": 1,
+  "fields": {
+    "id_asesor": 8,
+    "categoria": null,
+    "descripcion": "AsesorÝa en cultivos orgßnicos y certificaci¾n BPA",
+    "estado": "Activo"
+  }
+},
+{
+  "model": "servicios.servicio",
+  "pk": 2,
+  "fields": {
+    "id_asesor": 8,
+    "categoria": null,
+    "descripcion": "Capacitaci¾n en manejo de plagas",
+    "estado": "Activo"
+  }
+},
+{
+  "model": "servicios.maquinas",
+  "pk": 1,
+  "fields": {
+    "id_asesor": 8,
+    "tipo_maquina": "Tractor",
+    "documento_propiedad": "DOC-MAQ-001",
+    "modelo": "John Deere 5055E",
+    "registro_rnma": "RNMA-2023-001",
+    "tarjeta_registro_maquinaria": "Sin Tarjeta"
+  }
+},
+{
+  "model": "servicios.maquinas",
+  "pk": 2,
+  "fields": {
+    "id_asesor": 8,
+    "tipo_maquina": "Fumigadora",
+    "documento_propiedad": "DOC-MAQ-002",
+    "modelo": "Jacto PJH",
+    "registro_rnma": "RNMA-2023-002",
+    "tarjeta_registro_maquinaria": "Sin Tarjeta"
+  }
+},
+{
+  "model": "servicios.certificados",
+  "pk": 1,
+  "fields": {
+    "id_usuario": 8,
+    "tipo_certificado": "Ingeniero Agr¾nomo",
+    "descripcion_cert": "Universidad Nacional de Colombia",
+    "fecha_expedicion": "2020-06-15"
+  }
+},
+{
+  "model": "servicios.certificados",
+  "pk": 2,
+  "fields": {
+    "id_usuario": 8,
+    "tipo_certificado": "Certificaci¾n BPA",
+    "descripcion_cert": "ICA - Instituto Colombiano Agropecuario",
+    "fecha_expedicion": "2021-03-10"
+  }
+}
+]

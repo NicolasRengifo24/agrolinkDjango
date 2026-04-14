@@ -43,68 +43,71 @@
                     </a>
                 </li>
 
-                <!-- MAQUINAS -->
+                <!-- MAQUINAS 
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'maquinas_asesor' %}">
                         <i class="bi bi-tractor me-1"></i> Maquinas
                     </a>
                 </li>
+                -->
 
-                <!-- MIS ASESORÍAS -->
+                <!-- MIS ASESORÍAS 
                 <li class="nav-item">
                     <a class="nav-link" href="#">
                         <i class="bi bi-journal-check me-1"></i> Mis Asesorías
                     </a>
                 </li>
+                -->
 
                 <!-- PERFIL -->
+                <!-- PERFIL + DROPDOWN -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center"
-                        href="#"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
-
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown"
+                        role="button">
                         <div class="profile-img-wrapper">
                             <img src="https://i.pravatar.cc/40?img=10" class="profile-img" alt="Perfil">
                             <span class="online-dot"></span>
                         </div>
-
                         <span class="user-name">
                             {% if user.is_authenticated %}
-                                {{ user.first_name|default:user.username }}
+                            {{ user.first_name|default:user.username }}
                             {% else %}
-                                Visitante
+                            Visitante
                             {% endif %}
                         </span>
                     </a>
 
-                    <!-- DROPDOWN -->
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-
                         {% if user.is_authenticated %}
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Mi perfil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Configuración</a></li>
 
                         <li>
-                            <a class="dropdown-item" href="#">
-                                <i class="bi bi-person-circle me-2"></i>Mi perfil
-                            </a>
+                            <hr class="dropdown-divider">
                         </li>
-
-                        <li><hr class="dropdown-divider"></li>
-
                         <li>
-                            <form method="post" action="{% url 'logout_view' %}" style="margin:0;">
+                            <form method="post" action="{% url 'logout_view' %}" style="margin: 0;">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item text-danger">
                                     <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
                                 </button>
                             </form>
                         </li>
-
+                        {% else %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'login_view' %}">
+                                <i class="bi bi-person me-2"></i>Iniciar sesión
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-person-plus me-2"></i>Registrarse
+                            </a>
+                        </li>
                         {% endif %}
-
                     </ul>
                 </li>
+
 
             </ul>
         </div>
