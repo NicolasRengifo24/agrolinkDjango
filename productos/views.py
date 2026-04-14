@@ -98,6 +98,32 @@ def inicio(request):
     
     departamentos = Finca.objects.values_list('departamento', flat=True).distinct()
     departamentos = [d for d in departamentos if d]
+    
+    
+    
+    
+    promedios = Calificacion.objects.values(
+    'id_compra__detallescompra__id_producto'
+    ).annotate(
+    promedio=Avg('puntaje_producto')
+    )
+    
+    promedios_dict = {}
+
+    for item in promedios:
+        producto_id = item['id_compra__detallescompra__id_producto']
+        promedios_dict[producto_id] = item['promedio']
+        
+        
+    conteos = Calificacion.objects.values('id_compra__detallescompra__id_producto').annotate(
+    total=Count('id_calificacion')
+    )
+    
+    conteos_dict = {}
+
+    for item in conteos:
+        producto_id = item['id_compra__detallescompra__id_producto']
+        conteos_dict[producto_id] = item['total']   
 
     #  PRODUCTO DESTACADO
     producto_destacado = None
@@ -122,6 +148,10 @@ def inicio(request):
         ).first()
         if pf:
             finca_destacado = pf.id_finca
+            
+    for producto in productos:
+        producto.promedio_estrellas = promedios_dict.get(producto.id_producto, 0)
+        producto.total_calificaciones = conteos_dict.get(producto.id_producto, 0)
 
     return render(request, 'productos/inicio.html', {
         'productos': productos,

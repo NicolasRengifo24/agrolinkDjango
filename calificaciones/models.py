@@ -9,7 +9,13 @@ class Calificacion(models.Model):
     id_calificacion = models.AutoField(primary_key=True)
 
     # RELACIÓN CLAVE
-    id_compra = models.ForeignKey('pedidos.Compra', on_delete=models.CASCADE, null = True, blank=True) 
+    id_compra = models.ForeignKey(
+    'pedidos.Compra',
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True,
+    related_name='calificaciones'
+)
 
     # calificaciones
     puntaje_producto = models.IntegerField(null=True, blank=True)

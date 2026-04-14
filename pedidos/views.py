@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings          
+from django.conf import settings
+from django.db.models import Avg
 from .models import Compra, DetallesCompra
 from calificaciones.models import Calificacion
 from usuarios.models import Cliente, Usuario
@@ -335,11 +336,11 @@ def calcular_distancia(lat1, lng1, lat2, lng2):
 
 #@login_required
 @login_required
+
 def mis_pedidos(request):
 
     usuario = request.user.usuario
 
-    # Validar que sea cliente
     if usuario.rol.upper() != "CLIENTE":
         return redirect('inicio')
 
@@ -348,39 +349,64 @@ def mis_pedidos(request):
     compras = Compra.objects.filter(
         id_cliente=cliente
     ).exclude(estado="carrito").order_by('-fecha_hora_compra')
-    
-    # 🔥 compras que necesitan calificación
-    compras_sin_calificar = compras.filter(
-        envio__estado_envio='ENTREGADO'
-    ).exclude(
-        id_compra__in=Calificacion.objects.values_list('id_compra_id', flat=True)
+
+    # IDs ya calificados
+    compras_calificadas_ids = set(
+        Calificacion.objects.values_list('id_compra_id', flat=True)
     )
 
-    pedidos = []
-    
-    compras_sin_calificar_ids = set(
-        compras_sin_calificar.values_list('id_compra', flat=True)
+    # promedio por compra
+    promedios = Calificacion.objects.values('id_compra_id').annotate(
+        promedio=Avg('puntaje_producto')
     )
-    
-    for pedido in pedidos:
-        pedido.necesita_calificacion = pedido.compra.id_compra in compras_sin_calificar_ids
+
+    promedios_dict = {
+        item['id_compra_id']: item['promedio']
+        for item in promedios
+    }
+
+    pedidos = []
 
     for compra in compras:
         detalles = DetallesCompra.objects.filter(id_compra=compra)
-        envio = Envio.objects.filter(id_compra=compra).first()  # 🔥 AQUÍ
+        envio = Envio.objects.filter(id_compra=compra).first()
+
+        promedio = promedios_dict.get(compra.id_compra, 0)
+
+        necesita_calificacion = (
+            envio and
+            envio.estado_envio.upper() == "ENTREGADO" and
+            compra.id_compra not in compras_calificadas_ids
+        )
 
         pedidos.append({
             "compra": compra,
             "detalles": detalles,
-            "envio": envio
+            "envio": envio,
+            "necesita_calificacion": necesita_calificacion,
+            "promedio": promedio
         })
+        
+            
+@login_required  
+def calificar_pedido(request, compra_id):
+    if request.method == "POST":
+        compra = get_object_or_404(Compra, id_compra=compra_id)
 
-    return render(request, "pedidos/mis_pedidos.html", {
-        "pedidos": pedidos,
-        'compras_sin_calificar' : compras_sin_calificar,
-    })    
+        puntaje = request.POST.get("calificacion")
+        comentario = request.POST.get("comentario")
+
+        Calificacion.objects.create(
+            id_compra=compra,
+            puntaje_producto=int(puntaje),
+            comentario=comentario
+        )
+
+        messages.success(request, "Pedido calificado correctamente")
+        return redirect("mis_pedidos")
     
 
+    
 @login_required
 def seleccionar_destino(request):
     """Vista para que el cliente seleccione su ubicación de entrega en el mapa"""

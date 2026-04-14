@@ -9,7 +9,7 @@
 {% load humanize %}
 
 <div class="mis-pedidos-wrapper">
-     <div class="mis-pedidos-container ">
+    <div class="mis-pedidos-container ">
 
         <h1 class="titulo"> Mis Pedidos</h1>
 
@@ -17,7 +17,54 @@
         <p class="empty">Aún no tienes pedidos</p>
         {% endif %}
 
+
+        
         {% for pedido in pedidos %}
+
+        {% if pedido.necesita_calificacion %}
+        <div class="modal-calificacion">
+            <button class="btn btn-warning" data-bs-toggle="modal"
+                data-bs-target="#modalCalificacion{{ pedido.compra.id_compra }}">
+                ⭐ Calificar pedido
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="modalCalificacion{{ pedido.compra.id_compra }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Calificar pedido #{{ pedido.compra.id_compra }}</h5>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>¿Cómo fue tu experiencia con este pedido?</p>
+
+                        <form method="POST" action="{% url 'calificar_pedido' pedido.compra.id_compra %}">
+                            {% csrf_token %}
+
+                            <select name="calificacion" class="form-select">
+                                <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                                <option value="4">⭐⭐⭐⭐ Bueno</option>
+                                <option value="3">⭐⭐⭐ Regular</option>
+                                <option value="2">⭐⭐ Malo</option>
+                                <option value="1">⭐ Muy malo</option>
+                            </select>
+
+                            <textarea name="comentario" class="form-control mt-2"
+                                placeholder="Comentario..."></textarea>
+
+                            <button type="submit" class="btn btn-success mt-3">
+                                Enviar calificación
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <div class="pedido-card">
 
@@ -141,51 +188,51 @@
 
 <style>
     .mis-pedidos-wrapper .timeline {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 20px 0;
-}
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 20px 0;
+    }
 
-.mis-pedidos-wrapper .step {
-    text-align: center;
-    color: #bbb;
-    transition: 0.3s;
-    width: 80px;
-}
+    .mis-pedidos-wrapper .step {
+        text-align: center;
+        color: #bbb;
+        transition: 0.3s;
+        width: 80px;
+    }
 
-.mis-pedidos-wrapper .step span {
-    font-size: 22px;
-}
+    .mis-pedidos-wrapper .step span {
+        font-size: 22px;
+    }
 
-.mis-pedidos-wrapper .step.active {
-    color: #2e7d32;
-    font-weight: bold;
-}
+    .mis-pedidos-wrapper .step.active {
+        color: #2e7d32;
+        font-weight: bold;
+    }
 
-.mis-pedidos-wrapper .line {
-    flex: 1;
-    height: 3px;
-    background: #ddd;
-}
+    .mis-pedidos-wrapper .line {
+        flex: 1;
+        height: 3px;
+        background: #ddd;
+    }
 
-.mis-pedidos-wrapper .active-line {
-    background: #4caf50;
-}
+    .mis-pedidos-wrapper .active-line {
+        background: #4caf50;
+    }
 
-.mis-pedidos-wrapper .envio-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-    margin-bottom: 15px;
-}
+    .mis-pedidos-wrapper .envio-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin-bottom: 15px;
+    }
 
-.mis-pedidos-wrapper .bloque {
-    background: #f1f8e9;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
-}
+    .mis-pedidos-wrapper .bloque {
+        background: #f1f8e9;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 13px;
+    }
 </style>
 
 {% endblock %}

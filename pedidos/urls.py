@@ -12,6 +12,7 @@ urlpatterns = [
     
     path('mis-pedidos/', views.mis_pedidos, name='mis_pedidos'),
     path('seleccionar-destino/', views.seleccionar_destino, name='seleccionar_destino'),
+    path('calificar-pedido/<int:compra_id>/', views.calificar_pedido, name='calificar_pedido'),
     
 
     
