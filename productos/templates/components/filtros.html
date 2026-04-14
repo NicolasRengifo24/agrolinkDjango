@@ -9,9 +9,10 @@
             <input type="hidden" name="busqueda" />
             <div class="row">
                 <!-- FILTRO POR CATEGORÍAS -->
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="filter-item">
-                        <button type="button" class="filter-toggle" data-bs-toggle="collapse" data-bs-target="#categoriaFilter">
+                        <button type="button" class="filter-toggle" data-bs-toggle="collapse"
+                            data-bs-target="#categoriaFilter">
                             <i class="bi bi-tag"></i>
                             Categorías
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -20,7 +21,7 @@
                             <select name="categoria" class="form-select form-select-sm">
                                 <option value="">Todas las categorías</option>
                                 {% for cat in categorias %}
-                                <option>
+                                <option value="{{cat.id_categoria}}">
                                     {{cat.nombre_categoria}}
                                 </option>
                                 {% endfor %}
@@ -30,25 +31,33 @@
                 </div>
 
                 <!-- FILTRO POR UBICACIÓN -->
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="filter-item">
-                        <button type="button" class="filter-toggle" data-bs-toggle="collapse" data-bs-target="#ubicacionFilter">
+                        <button type="button" class="filter-toggle" data-bs-toggle="collapse"
+                            data-bs-target="#ubicacionFilter">
                             <i class="bi bi-geo-alt"></i>
                             Ubicación
                             <i class="bi bi-chevron-down ms-auto"></i>
                         </button>
                         <div class="collapse mt-3" id="ubicacionFilter">
-                            <input type="text" name="ubicacion" class="form-control form-control-sm"
-                                   placeholder="Ciudad o región...">
-                            <small class="text-muted">Ej: Boyacá, Cundinamarca</small>
+                            <select name="ubicacion" class="form-select form-select-sm">
+                                <option value="">Todas las ubicaciones</option>
+                                {% for u in ubicaciones %}
+                                <option value="{{u}}" {% if request.GET.ubicacion == u %}selected{% endif %}>
+                                     {{u}}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            
                         </div>
                     </div>
                 </div>
 
                 <!-- FILTRO POR PRECIO -->
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="filter-item">
-                        <button type="button" class="filter-toggle" data-bs-toggle="collapse" data-bs-target="#precioFilter">
+                        <button type="button" class="filter-toggle" data-bs-toggle="collapse"
+                            data-bs-target="#precioFilter">
                             <i class="bi bi-currency-dollar"></i>
                             Precio
                             <i class="bi bi-chevron-down ms-auto"></i>
@@ -56,9 +65,9 @@
                         <div class="collapse mt-3" id="precioFilter">
                             <div class="d-flex gap-2">
                                 <input type="number" name="precioMin" class="form-control form-control-sm"
-                                       placeholder="Min" min="0">
+                                    placeholder="Min" min="0">
                                 <input type="number" name="precioMax" class="form-control form-control-sm"
-                                       placeholder="Max" min="0">
+                                    placeholder="Max" min="0">
                             </div>
                             <div class="range-values mt-2">
                                 <small>$1.000 - $50.000</small>
@@ -67,32 +76,7 @@
                     </div>
                 </div>
 
-                <!-- FILTRO POR DISPONIBILIDAD -->
-                <div class="col-md-3">
-                    <div class="filter-item">
-                        <button type="button" class="filter-toggle" data-bs-toggle="collapse" data-bs-target="#disponibilidadFilter">
-                            <i class="bi bi-check-circle"></i>
-                            Disponibilidad
-                            <i class="bi bi-chevron-down ms-auto"></i>
-                        </button>
-                        <div class="collapse mt-3" id="disponibilidadFilter">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="soloDisponibles"
-                                       id="soloDisponibles">
-                                <label class="form-check-label small" for="soloDisponibles">
-                                    Solo productos disponibles
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="organicosBPA"
-                                       id="organicosBPA">
-                                <label class="form-check-label small" for="organicosBPA">
-                                    Certificación BPA
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
 
             <!-- BOTONES DE ACCIÓN -->

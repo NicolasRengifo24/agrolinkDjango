@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from django.http import JsonResponse
-from envios.models import Envio
+from envios.models import Envio 
+from servicios.models import Servicio
 from .models import Producto, ProductoFinca, CategoriaProducto 
 from pedidos.models import DetallesCompra 
 from django.shortcuts import render, redirect,get_object_or_404 
@@ -25,39 +26,82 @@ from django.utils.timezone import now
 
 
 
+from django.db.models import Avg, Count, Sum, Q
+
 def inicio(request):
+    
+    # busqueda del navbar 
+    busqueda = request.GET.get('busqueda')
 
-    # 👥 usuarios
     total_usuarios = Usuario.objects.count()
-
-    # 📦 total productos
     total_productos = Producto.objects.count()
-
-    # 📂 categorías
     categorias = CategoriaProducto.objects.all()
-    categoria = request.GET.get('categoria')
 
-    #  PRODUCTOS (CON ESTRELLAS)
+    # 🔎 OBTENER PARÁMETROS DEL FORM
+    categoria = request.GET.get('categoria')
+    ubicacion = request.GET.get('ubicacion')
+    precio_min = request.GET.get('precioMin')
+    precio_max = request.GET.get('precioMax')
+    
+
+    # 🧠 QUERY BASE (IMPORTANTE: NO repetirla)
     productos = Producto.objects.prefetch_related('imagenProducto').annotate(
         promedio_estrellas=Avg('calificaciones__puntaje'),
         total_calificaciones=Count('calificaciones')
     )
+    
+    if busqueda:
 
-    #  filtro por categoría 
-    total_usuarios = Usuario.objects.count()
-    categorias = CategoriaProducto.objects.all()
+    #  Buscar en servicios primero
+        servicios_qs = Servicio.objects.filter(
+            estado='ACTIVO'
+        ).filter(
+            Q(categoria__icontains=busqueda) |
+            Q(descripcion__icontains=busqueda)
+        )
 
-    productos = Producto.objects.prefetch_related('imagenProducto')
-    categoria = request.GET.get('categoria')
+        #  SI ENCUENTRA SERVICIOS → REDIRIGE
+        if servicios_qs.exists():
+            return redirect(f"/servicios/?busqueda={busqueda}")
+
+        # 🔍 Si no hay servicios → buscar en productos
+        productos = productos.filter(
+            Q(nombre_producto__icontains=busqueda) |
+            Q(descripcion_producto__icontains=busqueda) |
+            Q(fincas__id_finca__ciudad__icontains=busqueda) |
+            Q(fincas__id_finca__departamento__icontains=busqueda)
+        )
+
+    #  FILTROS MULTICRITERIO
     if categoria:
         productos = productos.filter(id_categoria=categoria)
 
-    # productos por finca
+    if ubicacion:
+        productos = productos.filter(
+            Q(fincas__id_finca__ciudad__icontains=ubicacion) |
+            Q(fincas__id_finca__departamento__icontains=ubicacion)
+        )
+
+    if precio_min:
+        productos = productos.filter(precio__gte=precio_min)
+
+    if precio_max:
+        productos = productos.filter(precio__lte=precio_max)
+
+
+    #  RELACIÓN PRODUCTO - FINCA
     productos_finca = ProductoFinca.objects.select_related(
         'id_finca', 'id_producto', 'id_finca__id_usuario'
     )
+    
+    #  UBICACIONES DISPONIBLES (desde fincas reales)
+    ubicaciones = Finca.objects.values_list('ciudad', flat=True).distinct()
+    ubicaciones = [u for u in ubicaciones if u]  
+    
+    departamentos = Finca.objects.values_list('departamento', flat=True).distinct()
+    departamentos = [d for d in departamentos if d]
 
-    # ⭐ destacado
+    #  PRODUCTO DESTACADO
     producto_destacado = None
     finca_destacado = None
 
@@ -92,7 +136,12 @@ def inicio(request):
         'categorias': categorias,
         'total_usuarios': total_usuarios,
         'total_productos': total_productos,
-    })
+        'ubicaciones': ubicaciones,
+        'departamentos': departamentos,
+        'busqueda' : busqueda,
+    })    
+    
+
 
 
 # 🔁 tu función original (la dejamos por si la usas en rutas)
@@ -112,11 +161,12 @@ def detalle_producto(request, id):
         total_calificaciones=Count('calificaciones')
     ).first()
     
-    relacionados = []
+    
     if producto and producto.id_categoria:
         relacionados = Producto.objects.prefetch_related('imagenProducto').filter(
             id_categoria=producto.id_categoria
         ).exclude(id_producto=producto.id_producto)[:4]
+
 
     # CORREGIDO: usar id_producto en lugar de producto
     comentarios = Calificacion.objects.filter(
@@ -125,29 +175,15 @@ def detalle_producto(request, id):
 
     return render(request, 'productos/detalle_producto.html', {
         'producto': producto,
-        'comentarios': comentarios
-    })
-
-
-# 📋 lista simple (también corregida)
-def lista_productos(request):
-    productos = Producto.objects.all().annotate(
-        promedio_estrellas=Avg('calificaciones__puntaje'),
-        total_calificaciones=Count('calificaciones')
-    )
-    return render(request, "productos/lista.html", {"productos": productos})
-    categorias = CategoriaProducto.objects.all()
-    
-    return render(request, 'productos/detalle_producto.html', {
-        'producto': producto,
+        'comentarios': comentarios,
         'relacionados' : relacionados,
-        'categorias' : categorias,
-        
     })
 
 
 
 
+
+@login_required
 def agregar_al_carrito(request, producto_id):
     # VALIDAR LOGIN
     if not request.user.is_authenticated:

@@ -10,30 +10,53 @@
 
     <div class="row">
         <!-- Columna izquierda: imagen principal + miniaturas -->
-        <div class="col-md-6" data-aos="fade-right">
-            <div class="product-gallery text-center">
-                {% with producto.imagen_principal as img %}
-                {% if img %}
-                <!-- Imagen principal grande -->
-                <img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre_producto }}" class="img-fluid w-100 mb-3"
-                    style="height:100%; object-fit:contain;">
-                {% endif %}
 
-                <!-- Miniaturas debajo -->
-                <div class="row mt-3 thumbs g-2 justify-content-center">
-                    {% for img in producto.imagenProducto.all %}
-                    <div class="col-3">
-                        <img src="{{ img.url_imagen.url }}" class="img-fluid rounded" onclick="changeImg(this)"
-                            alt="Miniatura del producto" style="cursor:pointer; max-height:100px; object-fit:cover;">
+        <!-- Columna izquierda: imagen principal + miniaturas -->
+        <div class="col-md-6" data-aos="fade-right">
+            <div class="product-gallery d-flex flex-column gap-2">
+
+                <!-- Imagen principal: primera imagen con es_principal=1 -->
+                {% with producto.imagenProducto.all as todas_imagenes %}
+
+                {% for img in todas_imagenes %}
+                {% if img.es_principal == 1 %}
+                <div style="
+                width: 100%;
+                height: 380px;
+                background-color: #f8f9fa;
+                border-radius: 12px;
+                border: 1px solid #e9ecef;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;">
+                    <img id="main-product-image" src="{{ img.url_imagen.url }}" alt="{{ producto.nombre_producto }}"
+                        style="width: 100%; height: 100%; object-fit: contain; display: block;">
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Miniaturas: imágenes secundarias -->
+                <div style="display: flex; flex-direction: row; gap: 8px; overflow-x: auto; padding: 4px 0;">
+                    {% for img in todas_imagenes %}
+                    <div style="flex-shrink: 0;">
+                        <img src="{{ img.url_imagen.url }}" class="thumb-item rounded{% if img.es_principal == 1 %} thumb-principal{% endif %}" onclick="changeImg(this)"
+                            alt="Miniatura del producto" style="
+                        width: 80px;
+                        height: 80px;
+                        object-fit: cover;
+                        cursor: pointer;
+                        border-radius: 8px;
+                        transition: border-color 0.2s;
+                        display: block;">
                     </div>
-                    {% empty %}
-                    <p>No hay imágenes disponibles.</p>
                     {% endfor %}
                 </div>
+
                 {% endwith %}
+
             </div>
         </div>
-
         <!-- Columna derecha: información del producto -->
         <div class="col-md-6" data-aos="fade-left">
             <div class="product-info">
@@ -51,29 +74,21 @@
                 <p class="product-price mt-3">{{ producto.precio |floatformat:0 | intcomma }}</p>
 
                 <form action="{% url 'agregar_carrito' producto.id_producto %}" method="post">
-    {% csrf_token %}
+                    {% csrf_token %}
 
-    <div class="mt-4">
-        <label for="cantidad" class="form-label fw-semibold">Selecciona cantidad:</label>
+                    <div class="mt-4">
+                        <label for="cantidad" class="form-label fw-semibold">Selecciona cantidad:</label>
 
-        <div class="d-flex align-items-center gap-3">
-            <input 
-                type="number" 
-                id="cantidad" 
-                name="cantidad" 
-                class="form-control w-25" 
-                min="1"
-                max="{{ producto.stock }}" 
-                value="1"
-                required
-            />
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="number" id="cantidad" name="cantidad" class="form-control w-25" min="1"
+                                max="{{ producto.stock }}" value="1" required />
 
-            <button class="btn-buy" type="submit">
-                <i class="bi bi-cart-plus me-2"></i> Agregar al carrito
-            </button>
-        </div>
-    </div>
-</form>
+                            <button class="btn-buy" type="submit">
+                                <i class="bi bi-cart-plus me-2"></i> Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                </form>
 
                 <form action="{% url 'detalle_producto' producto.id_producto %}" method="get" class="mt-2">
                     <input type="hidden" name="idProducto" value="{{ producto.id_producto }}" />
