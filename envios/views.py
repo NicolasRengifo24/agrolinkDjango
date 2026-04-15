@@ -616,3 +616,60 @@ def cargar_vehiculos_csv(request):
         return redirect('mostrar_vehiculos')
     
     return redirect('mostrar_vehiculos')
+
+
+def perfil_transportista(request):
+    usuario = request.user.usuario
+    transportista = Transportista.objects.get(id_usuario=usuario)
+
+    # Vehículos
+    vehiculos = Vehiculo.objects.filter(id_transportista=transportista)
+
+    # Envíos
+    envios = Envio.objects.filter(id_transportista=transportista)
+
+    # Estadísticas
+    entregados = envios.filter(estado_envio="ENTREGADO").count()
+    pendientes = envios.exclude(estado_envio="ENTREGADO").count()
+    total_envios = envios.count()
+
+    tasa_exito = (entregados / total_envios * 100) if total_envios > 0 else 0
+
+    context = {
+        'transportista': transportista,
+        'vehiculos': vehiculos,
+        'entregados': entregados,
+        'pendientes': pendientes,
+        'tasa_exito': round(tasa_exito, 1),
+    }
+
+    return render(request, 'components/perfil_transportista.html', context)
+
+def editar_perfil_transportista(request):
+    usuario = request.user.usuario
+    transportista = get_object_or_404(Transportista, id_usuario=usuario)
+
+    if request.method == 'POST':
+
+        #  Usuario
+        usuario.nombre = request.POST.get('nombre', usuario.nombre)
+        usuario.apellido = request.POST.get('apellido', usuario.apellido)
+        usuario.correo = request.POST.get('correo', usuario.correo)
+        usuario.telefono = request.POST.get('telefono', usuario.telefono)
+        usuario.direccion = request.POST.get('direccion', usuario.direccion)
+
+        # Transportista
+        transportista.zonas_entrega = request.POST.get(
+            'zonas_entrega',
+            transportista.zonas_entrega
+        )
+
+        usuario.save()
+        transportista.save()
+
+        messages.success(request, "Perfil actualizado correctamente 🚀")
+
+        # IMPORTANTE: nombre de la URL
+        return redirect('perfil_transportista')
+
+    return redirect('perfil_transportista')

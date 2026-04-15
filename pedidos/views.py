@@ -386,6 +386,7 @@ def mis_pedidos(request):
             "necesita_calificacion": necesita_calificacion,
             "promedio": promedio
         })
+    return render(request, 'pedidos/mis_pedidos.html', {'pedidos': pedidos})    
         
             
 @login_required  
@@ -527,6 +528,49 @@ def seleccionar_destino(request):
         'lng_origen': lng_origen,
         'peso_total': peso_total,
     })
+
+@login_required
+def perfil_cliente(request):
+
+    usuario = request.user.usuario
+    cliente = usuario.cliente
+
+    #  CONTAR PEDIDOS REALES (excluye carrito)
+    pedidos = Compra.objects.filter(
+        id_cliente=cliente
+    ).exclude(
+        estado__iexact="carrito"   # 👈 mejora: ignora mayúsculas/minúsculas
+    ).count()
+
+    return render(request, 'components/perfil_cliente.html', {
+        'cliente': cliente,
+        'pedidos': pedidos,
+        'comentarios': 0,
+        'favoritos': 0,
+    })
+
+@login_required
+def editar_perfil_cliente(request):
+
+    if request.method == "POST":
+        usuario = request.user.usuario
+        cliente = usuario.cliente
+
+        usuario.nombre = request.POST.get('nombre')
+        usuario.apellido = request.POST.get('apellido')
+        usuario.email = request.POST.get('email')
+        usuario.telefono = request.POST.get('telefono')
+        usuario.cedula = request.POST.get('cedula')
+        usuario.direccion = request.POST.get('direccion')
+
+        cliente.preferencias = request.POST.get('preferencias')
+
+        usuario.save()
+        cliente.save()
+
+        messages.success(request, "Perfil actualizado correctamente")
+
+        return redirect('perfil_cliente')    
     
     
     

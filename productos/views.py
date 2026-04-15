@@ -1132,3 +1132,106 @@ def reporte_ventas_pdf(request):
     doc.build(elementos)
 
     return response
+
+#Perfil-Productor
+
+@login_required
+def perfil_productor(request):
+    usuario = request.user.usuario
+    productor = Productor.objects.get(id_usuario=usuario)
+
+    productos_count = Producto.objects.filter(id_usuario=productor).count()
+
+    ventas_count = DetallesCompra.objects.filter(
+        id_producto__id_usuario=productor
+    ).count()
+
+    if usuario.rol == 'PRODUCTOR':
+        url_volver = 'lista_productos'
+    else:
+        url_volver = 'mostrar_productos'
+
+    context = {
+        'productor': productor,
+        'es_dueno': True,
+        'url_volver': url_volver,
+        'productos': productos_count,
+        'ventas': ventas_count,
+    }
+
+    return render(request, 'components/perfil_productor.html', context)
+
+@login_required
+def editar_perfil_productor(request):
+    if request.method == "POST":
+        try:
+            usuario = request.user.usuario
+            productor = Productor.objects.get(id_usuario=usuario)
+
+            correo = request.POST.get("correo")
+            cedula = request.POST.get("cedula")
+
+            # 🔥 VALIDACIÓN UNIQUE
+            if Usuario.objects.filter(
+                Q(correo=correo) | Q(cedula=cedula)
+            ).exclude(id_usuario=usuario.id_usuario).exists():
+
+                messages.error(request, "Correo o cédula ya en uso")
+                return redirect('perfil_productor')
+
+            # Datos
+            usuario.nombre = request.POST.get("nombre")
+            usuario.apellido = request.POST.get("apellido")
+            usuario.correo = correo
+            usuario.telefono = request.POST.get("telefono")
+            usuario.cedula = cedula
+            usuario.direccion = request.POST.get("direccion")
+
+            productor.tipo_cultivo = request.POST.get("tipo_cultivo")
+
+            usuario.save()
+            productor.save()
+
+            messages.success(request, "Perfil actualizado correctamente")
+
+        except Exception as e:
+            print("ERROR:", e)
+            messages.error(request, "Error al actualizar")
+
+    return redirect('perfil_productor')   
+
+
+    #CLIENTE VE EL PERFIL DE PRODUCTOR 
+
+def ver_perfil_productor(request, id):
+
+    productor = get_object_or_404(Productor, id_usuario=id)
+
+    es_dueno = False
+
+    if request.user.is_authenticated:
+        usuario = request.user.usuario
+
+        if hasattr(usuario, 'productor'):
+            if usuario.productor.id_usuario.id_usuario == id:
+                es_dueno = True
+
+
+    productos_count = Producto.objects.filter(id_usuario=productor).count()
+    
+    ventas_count = DetallesCompra.objects.filter(
+        id_producto__id_usuario=productor
+    ).count()
+
+    if request.user.is_authenticated:
+        url_volver = 'mostrar_productos'
+    else:
+        url_volver = 'mostrar_productos'    
+
+    return render(request, 'components/perfil_productor.html', {
+        'productor': productor,
+        'es_dueno': es_dueno,
+        'productos': productos_count,
+        'ventas': ventas_count,
+        'url_volver': url_volver,
+    })

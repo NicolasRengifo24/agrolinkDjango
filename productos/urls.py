@@ -35,6 +35,12 @@ urlpatterns = [
     
     # reporte 
     path('productor/reporte/pdf/', views.reporte_ventas_pdf, name='reporte_pdf'),
+
+     #Perfil-Productor
+    path('perfil-productor/', views.perfil_productor, name='perfil_productor'),
+    path('editar-perfil-productor/', views.editar_perfil_productor, name='editar_perfil_productor'),
+    # cliente ve perfil del productor
+    path('productor/<int:id>/', views.ver_perfil_productor, name='ver_perfil_productor'),
     
     
     

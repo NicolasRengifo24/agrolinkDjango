@@ -1,0 +1,226 @@
+{% load static %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/perfil_cliente.css' %}">
+
+<!-- NAVBAR -->
+
+<div class="ds-navbar">
+
+
+<div class="ds-navbar-left">
+    {% if url_volver %}
+        <a href="{% url url_volver %}" class="ds-btn-back">Volver</a>
+    {% endif %}
+</div>
+
+<div class="ds-navbar-center">
+    <span class="ds-navbar-title">Perfil Asesor</span>
+</div>
+
+<div class="ds-navbar-right">
+    <a href="{% url 'logout_view' %}" class="ds-btn-logout">
+        Salir
+    </a>
+</div>
+
+
+</div>
+
+<div class="ds-container">
+
+
+{% include "includes/toastify_messages.html" %}
+
+<div class="row g-4">
+
+    <!-- PERFIL -->
+    <div class="col-md-4">
+
+        <div class="ds-card profile-header">
+
+            <img src="https://i.pravatar.cc/120?img={{ asesor.id_usuario.id_usuario }}"
+                 class="profile-avatar">
+
+            <div class="profile-name">
+                {{ asesor.id_usuario.nombre }} {{ asesor.id_usuario.apellido }}
+            </div>
+
+            <div class="profile-role">
+                {{ asesor.id_usuario.correo }}
+            </div>
+
+            <div class="profile-role">
+                {{ asesor.tipo_asesoria|default:"General" }}
+            </div>
+
+            {% if es_dueno %}
+            <div class="mt-3">
+                <button class="btn-lumina" onclick="toggleEdit()">
+                    ✏️ Editar perfil
+                </button>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- DETALLE -->
+    <div class="col-md-8">
+
+        <!-- VISTA -->
+        <div id="perfilView">
+
+            <!-- DATOS PERSONALES -->
+            <div class="ds-card">
+
+                <h4>👤 Datos Personales</h4>
+
+                <div class="data-grid mt-3">
+
+                    <div class="data-item">
+                        <span class="data-label">Nombre</span>
+                        <span class="data-value">{{ asesor.id_usuario.nombre }}</span>
+                    </div>
+
+                    <div class="data-item">
+                        <span class="data-label">Apellido</span>
+                        <span class="data-value">{{ asesor.id_usuario.apellido }}</span>
+                    </div>
+
+                    <div class="data-item">
+                        <span class="data-label">Email</span>
+                        <span class="data-value">{{ asesor.id_usuario.correo }}</span>
+                    </div>
+
+                    <div class="data-item">
+                        <span class="data-label">Teléfono</span>
+                        <span class="data-value">{{ asesor.id_usuario.telefono }}</span>
+                    </div>
+
+                    <div class="data-item">
+                        <span class="data-label">Ciudad</span>
+                        <span class="data-value">{{ asesor.id_usuario.ciudad }}</span>
+                    </div>
+
+                    <div class="data-item">
+                        <span class="data-label">Cédula</span>
+                        <span class="data-value">{{ asesor.id_usuario.cedula }}</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PERFIL PROFESIONAL -->
+            <div class="ds-card">
+
+                <h5>🎓 Perfil Profesional</h5>
+
+                <div class="data-grid mt-3">
+
+                    <div class="data-item">
+                        <span class="data-label">Tipo de asesoría</span>
+                        <span class="data-value">
+                            {{ asesor.tipo_asesoria|default:"No definido" }}
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- EDITAR -->
+        {% if es_dueno %}
+        <div id="perfilEdit" class="d-none">
+
+            <div class="ds-card">
+
+                <h4>✏️ Editar Perfil</h4>
+
+                <form method="post" action="{% url 'editar_perfil_asesor' %}">
+                    {% csrf_token %}
+
+                    <div class="data-grid mt-3">
+
+                        <div class="data-item">
+                            <label class="data-label">Nombre</label>
+                            <input class="form-control" type="text" name="nombre"
+                                   value="{{ asesor.id_usuario.nombre }}">
+                        </div>
+
+                        <div class="data-item">
+                            <label class="data-label">Apellido</label>
+                            <input class="form-control" type="text" name="apellido"
+                                   value="{{ asesor.id_usuario.apellido }}">
+                        </div>
+
+                        <div class="data-item">
+                            <label class="data-label">Correo</label>
+                            <input class="form-control" type="email" name="correo"
+                                   value="{{ asesor.id_usuario.correo }}">
+                        </div>
+
+                        <div class="data-item">
+                            <label class="data-label">Teléfono</label>
+                            <input class="form-control" type="text" name="telefono"
+                                   value="{{ asesor.id_usuario.telefono }}">
+                        </div>
+
+                        <div class="data-item">
+                            <label class="data-label">Ciudad</label>
+                            <input class="form-control" type="text" name="ciudad"
+                                   value="{{ asesor.id_usuario.ciudad }}">
+                        </div>
+
+                        <div class="data-item">
+                            <label class="data-label">Cédula</label>
+                            <input class="form-control" type="text" name="cedula"
+                                   value="{{ asesor.id_usuario.cedula }}">
+                        </div>
+
+                        <div class="data-item">
+                            <label class="data-label">Tipo de asesoría</label>
+                            <input class="form-control" type="text" name="tipo_asesoria"
+                                   value="{{ asesor.tipo_asesoria }}">
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn-lumina">Guardar</button>
+                        <button type="button" class="btn-lumina btn-outline" onclick="toggleEdit()">
+                            Cancelar
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+</div>
+
+{% if es_dueno %}
+
+<script>
+function toggleEdit(){
+    let view = document.getElementById('perfilView');
+    let edit = document.getElementById('perfilEdit');
+
+    view.classList.toggle('d-none');
+    edit.classList.toggle('d-none');
+}
+</script>
+
+{% endif %}
