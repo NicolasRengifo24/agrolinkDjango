@@ -140,7 +140,7 @@ def confirmacion_pago(request):
         print("📦 DATA RECIBIDA:", data)
 
         ref = data.get("x_ref_payco")
-        estado = data.get("x_cod_transaction_state")
+        estado = str(data.get("x_cod_transaction_state", "")).strip() 
         factura = data.get("x_id_invoice")
 
         try:
@@ -149,33 +149,36 @@ def confirmacion_pago(request):
             print("✅ Compra encontrada:", compra.id_compra)
         except Exception as e:
             print("❌ ERROR buscando compra:", str(e))
-            return JsonResponse({"status": "error compra no encontrada"})
+            return JsonResponse({"error": "factura invalida"})
 
-        if estado == "1":  # ✅ PAGO APROBADO
+        if estado in ["1", "0"]:  # ✅ PAGO APROBADO
             print("💰 PAGO APROBADO")
+
+            compra.estado = "pagado"
+            compra.metodo_pago = "epayco"
+            compra.save()
 
             # 🔥 EVITAR DUPLICADOS (webhook puede llamarse varias veces)
             if Envio.objects.filter(id_compra=compra).exists():
                 print("⚠️ Envío ya existe para esta compra")
                 return JsonResponse({"status": "ok"})
 
-            compra.estado = "pagado"
-            compra.metodo_pago = "epayco"
-            compra.save()
+            
             
             # ========================================
     # 🔥 RESTAR STOCK DE PRODUCTOS
     # ========================================
-    detalles = compra.detallescompra_set.all()
-    for detalle in detalles:
-        producto = detalle.id_producto
-        if producto.stock is not None:
-            if producto.stock >= detalle.cantidad:
-                producto.stock -= detalle.cantidad
-                producto.save()
-                print(f"📉 Stock actualizado: {producto.nombre_producto} → {producto.stock}")
-            else:
-                print(f"⚠️ Stock insuficiente para {producto.nombre_producto}")
+            detalles = compra.detallescompra_set.all()
+
+            for detalle in detalles:
+                producto = detalle.id_producto
+
+                if producto.stock is not None and producto.stock >= detalle.cantidad:
+                    producto.stock -= detalle.cantidad
+                    producto.save()
+                    print(f"📉 Stock actualizado: {producto.nombre_producto} → {producto.stock}")
+                else:
+                    print(f"⚠️ Stock insuficiente para {producto.nombre_producto}")
 
             # ========================================
             # 🔥 CREAR ENVÍO
@@ -500,8 +503,8 @@ def seleccionar_destino(request):
             detalles = compra.detallescompra_set.all()
 
             for detalle in detalles:
-                 detalle.distancia_km = float(distancia_normalizada)
-                 detalle.save()
+                detalle.distancia_km = float(distancia_normalizada)
+                detalle.save()
 
             print(f"✅ Distancia guardada en detalles: {distancia_normalizada} km")  # ← Guardar distancia en la compra
             compra.save()
