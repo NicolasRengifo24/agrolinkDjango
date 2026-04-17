@@ -1,0 +1,109 @@
+/* ── Wrapper ───────────────────────── */
+.ds-wrapper {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* ── Card ───────────────────────── */
+.ds-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.ds-card:hover {
+  transform: translateY(-5px);
+  border-color: #3b82f6;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Título del servicio ───────────── */
+.ds-title-card {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+/* ── Contenido ─────────────────────── */
+.ds-content {
+  flex-grow: 1;
+}
+
+.ds-content p {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+/* ── Footer ───────────────────────── */
+.ds-footer {
+  margin-top: auto;
+}
+
+/* ── Badges ───────────────────────── */
+.ds-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 50px;
+  display: inline-block;
+}
+
+.ds-badge--success {
+  background: linear-gradient(120deg, #bbf7d0, #16a34a);
+  color: #065f46;
+}
+
+.ds-badge--danger {
+  background: linear-gradient(120deg, #fecaca, #dc2626);
+  color: #7f1d1d;
+}
+
+.ds-badge--secondary {
+  background: linear-gradient(120deg, #e2e8f0, #64748b);
+  color: #1e293b;
+}
+
+/* ── Botón ───────────────────────── */
+.ds-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #3b82f6;
+  border: none;
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.ds-btn-back:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* ── Responsive ───────────────────── */
+@media (max-width: 768px) {
+  .ds-card {
+    padding: 15px;
+  }
+
+  .ds-title-card {
+    font-size: 14px;
+  }
+
+  .ds-content p {
+    font-size: 13px;
+  }
+}

@@ -1,231 +1,252 @@
-<style>/* ── Wrapper principal ───────────────────────────────────── */
+{% load static %}
+<style>
+/* ── Wrapper ───────────────────────── */
 .ds-wrapper {
-  max-width: 1000px;
+  max-width: 1300px; /* 👈 un poco más ancho para que quepan 5 */
   margin: 40px auto;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
-/* ── Card ───────────────────────────────────────────────── */
+/* ── GRID 5 COLUMNAS ───────────────── */
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .ds-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .ds-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .ds-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+/* ── Card ───────────────────────── */
 .ds-card {
-  width: 100%;
+  min-height: 260px;
   background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  padding: 30px;
-  transition: all 0.3s ease;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  transition: all 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .ds-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  border-color: #2f6b31;
+  box-shadow: 0 10px 22px rgba(47, 107, 49, 0.15);
 }
 
-/* ── Título principal ──────────────────────────────────── */
-.ds-title {
-  font-size: 24px;
+.ds-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: #2f6b31;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* ── Texto ───────────────────────── */
+.ds-title-card {
+  font-size: 15px;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 0;
+  color: #1b4332;
+  margin-bottom: 5px;
 }
 
-.ds-title .bi {
-  color: #3b82f6;
-  font-size: 26px;
-}
-
-/* ── Badges ───────────────────────────────────────────── */
-.ds-badge {
+.ds-content p {
   font-size: 13px;
-  font-weight: 600;
-  padding: 7px 16px;
-  border-radius: 50px;
-  display: inline-block;
+  color: #6b7280;
+}
+
+/* ── Badges ───────────────────────── */
+.ds-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .ds-badge--success {
-  background: linear-gradient(120deg, #bbf7d0, #16a34a);
-  color: #065f46;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .ds-badge--danger {
-  background: linear-gradient(120deg, #fecaca, #dc2626);
-  color: #7f1d1d;
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .ds-badge--secondary {
-  background: linear-gradient(120deg, #e2e8f0, #64748b);
-  color: #1e293b;
+  background: #f0fdf4;
+  color: #2f6b31;
 }
 
-/* ── Columnas info principal ───────────────────────────── */
-.ds-row {
-  display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-
-.ds-col {
-  flex: 1;
-  min-width: 260px;
-}
-
-.ds-col p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #374151;
-  margin-bottom: 16px;
-}
-
-.ds-col p strong {
-  display: inline-block;
-  min-width: 120px;
-  color: #111827;
-}
-
-/* ── Títulos de sección ───────────────────────────────── */
-.ds-section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.ds-section-title .bi {
-  color: #3b82f6;
-}
-
-/* ── Tablas ───────────────────────────────────────────── */
-.ds-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.ds-table th,
-.ds-table td {
-  border: 1px solid #e5e7eb;
-  padding: 12px 15px;
-  vertical-align: middle;
-  font-size: 14px;
-}
-
-.ds-table thead th {
-  background: #1f2937;
-  color: #f3f4f6;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.ds-table tbody tr:hover {
-  background: #f1f5f9;
-  transition: background 0.2s ease;
-  cursor: pointer;
-}
-
-/* ── Botón volver ─────────────────────────────────────── */
+/* ── Botón ───────────────────────── */
 .ds-btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #3b82f6;
+  background: #2f6b31;
+  color: #fff !important;
   border: none;
-  color: #ffffff !important;
-  font-weight: 600;
-  padding: 10px 24px;
-  border-radius: 12px;
-  text-decoration: none;
-  transition: all 0.3s ease;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  transition: 0.2s;
 }
 
 .ds-btn-back:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
-  color: #ffffff !important;
+  background: #1f4d23;
 }
 
-/* ── Responsive ───────────────────────────────────────── */
-@media (max-width: 768px) {
-  .ds-card {
-    padding: 20px;
-    border-radius: 16px;
-  }
-
-  .ds-row {
-    flex-direction: column;
-  }
-
-  .ds-col p strong {
-    min-width: unset;
-    display: block;
-    margin-bottom: 4px;
-  }
-
-  .ds-table th, .ds-table td {
-    font-size: 12px;
-    padding: 8px 10px;
-  }
+.ds-img-servicio {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
 }
-</style> 
-<div class="container mt-5">
-    <div class="row">
 
-        {% for servicio in servicios %}
-        
-            {% if servicio.id_servicio %}
 
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="product-card h-100">
+</style>
 
-                    <div class="p-3 d-flex flex-column h-100">
+<div class="container ds-wrapper">
 
-                        <!-- Categoría -->
-                        <span class="badge bg-light text-dark">
-                            {{ servicio.categoria }}
-                        </span>
+  <div class="ds-grid">
 
-                        <!-- Descripción -->
-                        <p class="text-muted">
-                            {{ servicio.descripcion|truncatewords:15 }}
-                        </p>
+    {% for servicio in servicios %}
+    {% if servicio.id_servicio %}
 
-                        <!-- Estado + botón -->
-                        <div class="mt-auto d-flex justify-content-between">
+    <!-- TARJETA -->
+    <div class="ds-card">
 
-                            {% if servicio.estado == "ACTIVO" %}
-                                <span class="badge bg-success">Disponible</span>
-                            {% else %}
-                                <span class="badge bg-secondary">No disponible</span>
-                            {% endif %}
+      <!-- imagen -->
+      <img src="{% static 'imag/img_servicios.png' %}" 
+      class="ds-img-servicio">
 
-                            <a href="{% url 'detalle_servicio' servicio.id_servicio %}"
-                                class="btn btn-outline-success btn-sm">
-                                Ver
-                            </a>
+      <span class="ds-badge ds-badge--secondary mb-2">
+        {{ servicio.categoria }}
+      </span>
 
-                        </div>
+      <h6 class="ds-title-card">
+        {{ servicio.titulo|default:"Servicio agrícola" }}
+      </h6>
 
-                    </div>
+      <div class="ds-content">
+        <p>{{ servicio.descripcion|truncatewords:12 }}</p>
+      </div>
 
-                </div>
-            </div>
+      <div class="mt-auto d-flex justify-content-between align-items-center">
 
+        {% if servicio.estado == "ACTIVO" %}
+          <span class="ds-badge ds-badge--success">Disponible</span>
+        {% else %}
+          <span class="ds-badge ds-badge--danger">No disponible</span>
+        {% endif %}
+
+        <button 
+          class="ds-btn-back"
+          data-bs-toggle="modal"
+          data-bs-target="#modalServicio{{ servicio.id_servicio }}">
+          Ver
+        </button>
+
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal fade" id="modalServicio{{ servicio.id_servicio }}" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content ds-modal">
+
+          <div class="modal-header">
+            <h5 class="modal-title">
+              🌿 Servicio #{{ servicio.id_servicio }}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+
+            {% if servicio.estado == "ACTIVO" %}
+              <span class="ds-badge ds-badge--success">Disponible</span>
+            {% else %}
+              <span class="ds-badge ds-badge--danger">No disponible</span>
             {% endif %}
 
-        {% empty %}
-            <div class="col-12 text-center">
-                <p>No hay servicios disponibles</p>
-            </div>
-        {% endfor %}
+            <hr>
 
+            <div class="row">
+
+              <div class="col-md-6 mb-3">
+                <strong>Categoría:</strong>
+                <p>{{ servicio.categoria }}</p>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <strong>Asesor:</strong>
+                <p>
+                  {{ servicio.id_asesor.id_usuario.nombre }}
+                  {{ servicio.id_asesor.id_usuario.apellido }}
+                </p>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <strong>Correo:</strong>
+                <p>
+                  {{ servicio.id_asesor.id_usuario.correo }}
+                </p>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <strong>Teléfono:</strong>
+                <p>
+                  {{ servicio.id_asesor.id_usuario.telefono|default:"No disponible" }}
+                </p>
+              </div>
+
+            </div>
+
+            <div class="mt-3">
+              <strong>Descripción:</strong>
+              <p class="text-muted">
+                {{ servicio.descripcion }}
+              </p>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Cerrar
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
+
+    {% endif %}
+    {% empty %}
+      <p>No hay servicios disponibles</p>
+    {% endfor %}
+
+  </div>
+
 </div>

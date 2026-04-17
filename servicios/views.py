@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q 
 
 from .models import Servicio, Maquinas
 from usuarios.models import Asesor
@@ -110,10 +111,10 @@ def maquinas_asesor(request):
     
 
 
-def detalle_servicio(request, id):
+def detalles_servicios(request, id):
     servicio = get_object_or_404(Servicio, id_servicio=id)
 
-    return render(request, 'servicios/servicios_publicados/detalle_servicio.html', {
+    return render(request, 'servicios/servicios_publicados/servicio_publicado.html', {
         'servicio': servicio
     })
 
@@ -160,7 +161,7 @@ def editar_perfil_asesor(request):
             cedula = request.POST.get("cedula")
 
             # 🔥 VALIDACIÓN UNIQUE
-            if Usuario.objects.filter(
+            if usuario.objects.filter(
                 Q(correo=correo) | Q(cedula=cedula)
             ).exclude(id_usuario=usuario.id_usuario).exists():
 

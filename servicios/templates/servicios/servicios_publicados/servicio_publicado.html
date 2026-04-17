@@ -1,96 +1,61 @@
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/detalles_servicios.css' %}">
+<!-- MODAL -->
+<div class="modal fade" id="modalServicio{{ servicio.id_servicio }}" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content ds-modal">
 
-<div class="container mt-5">
-    <div class="ds-wrapper">
-        <div class="ds-card">
+      <!-- HEADER -->
+      <div class="modal-header">
+        <h5 class="modal-title">
+          🌿 Servicio #{{ servicio.id_servicio }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
 
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="ds-title"><i class="bi bi-briefcase"></i> Servicio #{{ servicio.id_servicio }}</h4>
-                {% if servicio.estado %}
-                    <span class="ds-badge ds-badge--success">Activo</span>
-                {% else %}
-                    <span class="ds-badge ds-badge--danger">Inactivo</span>
-                {% endif %}
-            </div>
+      <!-- BODY -->
+      <div class="modal-body">
 
-            <hr>
-
-            <!-- Información principal -->
-            <div class="ds-row">
-                <div class="ds-col">
-                    <p><strong>Categoría:</strong> {{ servicio.categoria|default:"No definida" }}</p>
-                    <p><strong>Descripción:</strong><br>{{ servicio.descripcion|default:"Sin descripción" }}</p>
-                </div>
-                <div class="ds-col">
-                    <p><strong>Asesor:</strong> {{ servicio.id_asesor.id_usuario.nombre }} {{ servicio.id_asesor.id_usuario.apellido }}</p>
-                    <p><strong>Email:</strong> {{ servicio.id_asesor.id_usuario.email|default:"No disponible" }}</p>
-                </div>
-            </div>
-
-            <hr>
-
-            <!-- Máquinas -->
-            <h5 class="ds-section-title mt-3"><i class="bi bi-gear"></i> Máquinas del Asesor</h5>
-            <div class="table-responsive">
-                <table class="ds-table mt-2">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Modelo</th>
-                            <th>Documento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for maquina in maquinas %}
-                        <tr>
-                            <td>{{ maquina.tipo_maquina }}</td>
-                            <td>{{ maquina.modelo|default:"-" }}</td>
-                            <td>{{ maquina.documento_propiedad }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">Sin máquinas registradas</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Certificados -->
-            <h5 class="ds-section-title mt-4"><i class="bi bi-award"></i> Certificados</h5>
-            <div class="table-responsive">
-                <table class="ds-table mt-2">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Descripción</th>
-                            <th>Fecha</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for cert in certificados %}
-                        <tr>
-                            <td>{{ cert.tipo_certificado }}</td>
-                            <td>{{ cert.descripcion_cert }}</td>
-                            <td>{{ cert.fecha_expedicion }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">Sin certificados</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Botón volver -->
-            <div class="text-end mt-3">
-                <a href="{% url 'ver_lista_servicios_admin' %}" class="ds-btn-back">
-                    <i class="bi bi-arrow-left"></i> Volver
-                </a>
-            </div>
+        <!-- Estado -->
+        <div class="mb-3">
+          {% if servicio.estado == "ACTIVO" %}
+            <span class="ds-badge ds-badge--success">Disponible</span>
+          {% else %}
+            <span class="ds-badge ds-badge--danger">No disponible</span>
+          {% endif %}
         </div>
+
+        <hr>
+
+        <!-- INFO -->
+        <div class="row">
+          
+          <div class="col-md-6 mb-3">
+            <p><strong>Categoría:</strong></p>
+            <p class="text-muted">{{ servicio.categoria }}</p>
+          </div>
+
+            
+
+           
+
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="mt-3">
+          <p><strong>Descripción:</strong></p>
+          <p class="text-muted">
+            {{ servicio.descripcion }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cerrar
+        </button>
+      </div>
+
     </div>
+  </div>
 </div>

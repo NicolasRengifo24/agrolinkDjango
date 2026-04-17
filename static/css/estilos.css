@@ -79,9 +79,14 @@ a {
 }
 
 /* -------- PRODUCT CARDS -------- */
+
+.row {
+  --bs-gutter-x: 0.8rem; /* reduce espacio entre columnas */
+}
+
 .product-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 12px;
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     overflow: hidden;
@@ -98,9 +103,9 @@ a {
 
 .product-img {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
-    border-radius: 16px 16px 0 0;
+    border-radius: 12px 12px 0 0;
 }
 
 .product-card .btn {
@@ -118,6 +123,7 @@ a {
     flex-direction: column !important;
     height: 100% !important;
     min-height: 220px !important;
+    padding: 12px !important;
 }
 
 /* Estilos para el contenedor del precio y botón - FORZADO */
@@ -295,7 +301,7 @@ a {
     object-fit: cover;
 }
 
-.hero {
+.carousel-item.hero  {
     height: 70vh;
     background: center/cover no-repeat;
     border-bottom-left-radius: 50px;
@@ -303,8 +309,8 @@ a {
     position: relative;
 }
 
-.hero-overlay {
-    background: rgba(0, 0, 0, 0.45);
+.carousel-item.hero .hero-overlay {
+    background: rgba(0, 0, 0, 0.10)!important;
     height: 100%;
     width: 100%;
     display: flex;
@@ -315,7 +321,7 @@ a {
 
 .hero-text {
     color: white;
-    max-width: 600px;
+    max-width: 400px;
     margin-left: 60px;
 }
 
@@ -474,3 +480,4 @@ a {
     margin: 8px 16px;
     border-color: #e9ecef;
 }
+

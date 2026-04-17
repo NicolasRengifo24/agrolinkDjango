@@ -596,6 +596,7 @@ def editar_producto_form(request, producto_id):
             'categorias': categorias
         })
         
+        messages.success(request, 'Producto editado exitosamente')
         return JsonResponse({
             'success': True,
             'form_html': form_html

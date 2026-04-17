@@ -93,10 +93,13 @@
 
 <body>
     {% include 'components/navbar_transportista.html' %}
+    
+    
 
     <!-- Incluir el sidebar de Django -->
 
     <main class="main-content">
+        {% include "includes/toastify_messages.html" %}
 
         {%block content %}
         {% endblock %}

@@ -24,44 +24,31 @@
     <!-- AOS Animations -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
-   <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
-
+    
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tarjetas_servicios.css' %}">
+    <link rel="stylesheet" href="{% static 'css/servicio_publicado.css' %}">
 
 </head>
 
     <!-- NAVBAR -->
 
-
-{% include 'includes/toastify_messages.html' %}
-
 {% include 'components/navbar.html' %}
-
+{% include "includes/toastify_messages.html" %}
 <!-- Carrousel-->
-{% include 'components/carrousel.html' %}
+{% include 'servicios/servicios_publicados/carrusel_servicios.html' %}
 
 {% include 'servicios/servicios_publicados/mis_servicios.html' %}
 
+{% include 'servicios/servicios_publicados/hero_servicios.html' %}
+
 <!-- HERO -->
-
-{% include 'components/hero.html' %}
-
-<!-- Contenido dinamico , las tarjetas-->
-
-
 {% block content %}
 {% endblock %}
 
-
-
-
-
-<!-- PRODUCTO DESTACADO -->
-
-
-
 <!--Filtros-->
 
-{% include 'components/filtros.html' %}
+
 
 <!-- ESTADÍSTICAS -->
 {% include 'components/estadisticas.html' %}
@@ -76,14 +63,14 @@
 <script>
     // Inicialización AOS
     AOS.init({
-        duration: 800,
+        duration: 600,
         easing: 'ease-in-out',
         once: true
     });
 
     // Carrusel automático
     const carousel = new bootstrap.Carousel(document.querySelector('#productCarousel'), {
-        interval: 5000,
+        interval: 3000,
         wrap: true
     });
 
