@@ -36,19 +36,16 @@ SECRET_KEY = 'django-insecure-n&+=0l%guuaa8p##42pv#_s+lcm3&^!r^+j&5r_k(h-4z)=y2p
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'uncaricatured-pronunciatory-waldo.ngrok-free.dev', 
-    'localhost', 
-    '127.0.0.1'
+    'localhost',
+    '127.0.0.1',
+    'tova-soullike-gita.ngrok-free.dev'
 ]
-
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://uncaricatured-pronunciatory-waldo.ngrok-free.dev',
-    
+    'https://tova-soullike-gita.ngrok-free.dev',
+    'https://*.epayco.co',
+    'https://*.epayco.com',
 ]
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
 
 # configuracion proxy (necesaria para ngrok)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -65,7 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'calificaciones',
+    'calificaciones.apps.CalificacionesConfig',
     'envios',
     'productos',
     'servicios',
@@ -112,9 +109,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_agrolink',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '3307',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }
@@ -167,21 +164,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Ngrok expone tu servidor local de forma rapida y segura
-NGROK_URL = "https://uncaricatured-pronunciatory-waldo.ngrok-free.dev"
+NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
 
 
 # ePayco - MODO PRUEBA
 
-EPAYCO_P_CUST_ID_CLIENT = "1578302"
-EPAYCO_PUBLIC_KEY       = "4a8276127cf46bf07c05c5125fd9237f"           # ← esta va en el botón
-EPAYCO_PRIVATE_KEY      = "d7a699bae786d86c29a1a388072a1582"
+EPAYCO_P_CUST_ID_CLIENT = "1578391"
+EPAYCO_PUBLIC_KEY       = "85dea90f2f9698288308dbf8becc999f"
+EPAYCO_PRIVATE_KEY      = "491b7dc662d7f46758985453db0a6d50"
 EPAYCO_TEST             = True

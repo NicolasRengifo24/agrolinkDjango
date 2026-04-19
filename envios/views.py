@@ -126,38 +126,36 @@ def mostrar_vehiculos(request):
 @login_required
 def agregar_vehiculo(request):
     if request.method == 'POST':
-        # Obtener el transportista actual
         try:
             usuario_obj = Usuario.objects.get(user=request.user)
             transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
         except (Usuario.DoesNotExist, Transportista.DoesNotExist):
             messages.error(request, "No tienes permisos de transportista")
             return redirect('mostrar_vehiculos')
-        
-        # Obtener datos del formulario
+
         tipo_vehiculo = request.POST.get('tipo_vehiculo')
         placa_vehiculo = request.POST.get('placa_vehiculo')
         capacidad_carga = request.POST.get('capacidad_carga')
-        
-        # Validar datos
+        archivo = request.FILES.get('documento_propiedad')  # 👈 aquí
+
         if not tipo_vehiculo or not placa_vehiculo:
             messages.error(request, "Por favor completa los campos obligatorios")
             return redirect('mostrar_vehiculos')
-        
-        # Crear el vehículo
+
         try:
             vehiculo = Vehiculo.objects.create(
                 id_transportista=transportista_obj,
                 tipo_vehiculo=tipo_vehiculo,
-                placa_vehiculo=placa_vehiculo.upper(),  # Convertir a mayúsculas
-                capacidad_carga=capacidad_carga if capacidad_carga else 0
+                placa_vehiculo=placa_vehiculo.upper(),
+                capacidad_carga=capacidad_carga if capacidad_carga else 0,
+                documento_propiedad=archivo  # 👈 Django guarda el archivo automáticamente
             )
             messages.success(request, f"Vehículo {placa_vehiculo} registrado exitosamente")
         except Exception as e:
             messages.error(request, f"Error al registrar vehículo: {str(e)}")
-        
+
         return redirect('mostrar_vehiculos')
-    
+
     return redirect('mostrar_vehiculos')
     
     
@@ -505,6 +503,7 @@ def cargar_vehiculos_csv(request):
                     capacidad_carga = row.get('capacidad_carga', 0)
                     placa_vehiculo = row.get('placa_vehiculo', '').strip().upper()
                     estado = row.get('estado', 'ACTIVO').strip().upper()
+                    documento_propiedad = row.get('documento_propiedad', '').strip()
                     
                     print(f"Tipo: '{tipo_vehiculo}'")
                     print(f"Capacidad: '{capacidad_carga}'")
@@ -578,7 +577,8 @@ def cargar_vehiculos_csv(request):
                         tipo_vehiculo=tipo_vehiculo,
                         capacidad_carga=capacidad_float,
                         placa_vehiculo=placa_vehiculo,
-                        estado=estado
+                        estado=estado,
+                        documento_propiedad=documento_propiedad if documento_propiedad else None
                     )
                     
                     vehiculos_creados += 1

@@ -17,7 +17,7 @@ class Vehiculo(models.Model):
     id_transportista = models.ForeignKey('usuarios.Transportista', models.DO_NOTHING, db_column='id_transportista')
     tipo_vehiculo = models.CharField(max_length=50, blank=True, null=True)
     capacidad_carga = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    documento_propiedad = models.CharField(max_length=250, blank=True, null=True)
+    documento_propiedad = models.FileField(upload_to="documentos_vehiculos/", blank=True, null=True)
     placa_vehiculo = models.CharField(max_length=15, blank=True, null=True)
     
     # Campo con choices - más simple sin subclase
