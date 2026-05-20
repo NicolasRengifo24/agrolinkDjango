@@ -2,8 +2,8 @@
 
   <h5 class="mb-3">Gestión de Envíos</h5>
 
-  <div class="table-responsive">
-    <table class="table table-hover">
+  <div class="tabla-envios-container">
+    <table class="table table-hover table-envios">
 
       <thead class="table-dark">
         <tr>
@@ -15,7 +15,7 @@
           <th>Seguimiento</th>
           <th>Distancia</th>
           <th>Costo</th>
-          <th>Acciones</th>
+          <th class="col-acciones">Acciones</th>
         </tr>
       </thead>
 
@@ -88,7 +88,7 @@
           </td>
 
           <!-- ACCIONES -->
-          <td>
+          <td class="col-acciones">
             <button class="btn btn-sm btn-primary" onclick="verEnvio({{ e.id_envio }})">
               <i class="bi bi-eye"></i>
             </button>

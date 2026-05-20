@@ -15,7 +15,9 @@ urlpatterns = [
     path('registro/', views.mostrar_registro_usuarios, name='mostrar_registro_usuarios'),
     path('registrar/', views.registrar_usuario, name='registrar_usuario'),
     
-    path('reset-password/', views.reset_password, name='reset_password'),
+    path('reset-password/', views.solicitar_codigo_recuperacion, name='solicitar_codigo_recuperacion'),
+    path('verificar-codigo/', views.verificar_codigo_recuperacion, name='verificar_codigo_recuperacion'),
+    path('nueva-contrasena/', views.establecer_nueva_contrasena, name='establecer_nueva_contrasena'),
 
     # Admin
     path('index_admin/', views.dashboard_admin, name='usuarios_admin'),

@@ -18,6 +18,9 @@ from django.contrib.auth.hashers import make_password
 
 from django.contrib.auth import authenticate, login , logout
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.conf import settings
+import random
 
 from .forms import LoginForm
 
@@ -219,62 +222,99 @@ def ver_lista_productos_admin(request):
     
     return render(request, 'admin_productos/index.html', context )
     
+@login_required
 def crear_producto_admin(request):
+
     producto_form = ProductoForm()
     imagen_form   = ImagenPrincipalForm()
     finca_form    = ProductoFincaForm()
     productores   = Productor.objects.all()
 
     if request.method == 'POST':
+
         producto_form = ProductoForm(request.POST)
         imagen_form   = ImagenPrincipalForm(request.POST, request.FILES)
 
+        # Obtener productor seleccionado
         productor_id = request.POST.get('id_usuario')
-        productor    = None
+        productor = None
+
         if productor_id:
             try:
                 productor = Productor.objects.get(pk=productor_id)
             except Productor.DoesNotExist:
-                pass
+                productor = None
 
-        finca_form = ProductoFincaForm(request.POST, productor=productor, validate_finca=True)
+        # Formulario finca
+        finca_form = ProductoFincaForm(
+            request.POST,
+            productor=productor,
+            validate_finca=True
+        )
 
-        # Debug temporal — quitar después de resolver
+        # Debug temporal
         print("Producto errors:", producto_form.errors)
-        print("Imagen errors:  ", imagen_form.errors)
-        print("Finca errors:   ", finca_form.errors)
+        print("Imagen errors:", imagen_form.errors)
+        print("Finca errors:", finca_form.errors)
 
-        if producto_form.is_valid() and imagen_form.is_valid() and finca_form.is_valid():
+        # Validaciones
+        if (
+            producto_form.is_valid() and
+            imagen_form.is_valid() and
+            finca_form.is_valid()
+        ):
 
+            # =========================
             # 1. Guardar producto
-            producto_editado = producto_form.save()
+            # =========================
+            producto_creado = producto_form.save()
 
-            # 2. Guardar imagen solo si se subió una
+            # =========================
+            # 2. Guardar imagen
+            # =========================
             if request.FILES.get('url_imagen'):
-                imagen             = imagen_form.save(commit=False)
-                imagen.id_producto = producto_editado
+
+                imagen = imagen_form.save(commit=False)
+                imagen.id_producto = producto_creado
                 imagen.es_principal = 1
                 imagen.save()
 
-            # 3. Guardar relación producto ↔ finca
-            producto_finca             = finca_form.save(commit=False)
-            producto_finca.id_producto = producto_editado
+            # =========================
+            # 3. Guardar relación finca
+            # =========================
+            producto_finca = finca_form.save(commit=False)
+            producto_finca.id_producto = producto_creado
             producto_finca.save()
 
-            messages.success(request, f'Producto_editado "{Producto.nombre_producto}" creado exitosamente.')
+            # =========================
+            # Mensaje éxito
+            # =========================
+            messages.success(
+                request,
+                f'Producto "{producto_creado.nombre_producto}" creado exitosamente.'
+            )
+
             return redirect('ver_lista_productos_admin')
 
         else:
-            messages.error(request, 'Por favor corrige los errores del formulario.')
+            messages.error(
+                request,
+                'Por favor corrige los errores del formulario.'
+            )
 
     context = {
-        'form'       : producto_form,
+        'form': producto_form,
         'imagen_form': imagen_form,
-        'finca_form' : finca_form,
+        'finca_form': finca_form,
         'productores': productores,
         'fincas_json': _fincas_por_productor(),
     }
-    return render(request, 'admin_productos/crear_producto.html', context)
+
+    return render(
+        request,
+        'admin_productos/crear_producto.html',
+        context
+    )
 
 
 
@@ -541,7 +581,7 @@ def ver_lista_servicios_admin(request):
         'id_asesor__id_usuario'
     ).all()
 
-    # 🔹 KPIs
+    #  KPIs
     total_servicios = Servicio.objects.count()
 
     servicios_activos = Servicio.objects.filter(
@@ -777,5 +817,121 @@ def logout_view(request):
     return redirect('inicio_usuarios')
 
 
-def reset_password(request):
-    return render(request, 'usuarios/reset_password.html')
+def solicitar_codigo_recuperacion(request):
+    if request.method == 'POST':
+        correo = request.POST.get('correo', '').strip()
+        if not correo:
+            messages.error(request, "Por favor ingresa tu correo electrónico")
+            return render(request, 'usuarios/Recuperar_password.html', {'paso': 'email'})
+
+        try:
+            usuario = Usuario.objects.get(correo=correo)
+        except Usuario.DoesNotExist:
+            messages.error(request, "No se encontró una cuenta con ese correo")
+            return render(request, 'usuarios/Recuperar_password.html', {'paso': 'email'})
+
+        codigo = str(random.randint(100000, 999999))
+        request.session['codigo_recuperacion'] = codigo
+        request.session['correo_recuperacion'] = correo
+        request.session['usuario_id'] = usuario.id_usuario
+
+        try:
+            send_mail(
+                'Código de recuperación - AgroLink',
+                f'Tu código de verificación es: {codigo}\n\nEste código expira en 10 minutos.',
+                settings.EMAIL_HOST_USER,
+                [correo],
+                fail_silently=False,
+            )
+            messages.success(request, "Se ha enviado un código de verificación a tu correo")
+        except Exception as e:
+            messages.error(request, f"Error al enviar el correo: {str(e)}")
+            return render(request, 'usuarios/Recuperar_password.html', {'paso': 'email'})
+
+        return render(request, 'usuarios/Recuperar_password.html', {'paso': 'codigo', 'correo': correo})
+
+    return render(request, 'usuarios/Recuperar_password.html', {'paso': 'email'})
+
+
+def verificar_codigo_recuperacion(request):
+    if request.method == 'POST':
+        codigo_ingresado = request.POST.get('codigo', '').strip()
+        codigo_session = request.session.get('codigo_recuperacion')
+
+        if not codigo_ingresado:
+            messages.error(request, "Por favor ingresa el código de verificación")
+            return render(request, 'usuarios/Recuperar_password.html', {
+                'paso': 'codigo',
+                'correo': request.session.get('correo_recuperacion', '')
+            })
+
+        if codigo_ingresado == codigo_session:
+            return render(request, 'usuarios/Recuperar_password.html', {
+                'paso': 'nueva_contrasena',
+                'correo': request.session.get('correo_recuperacion', '')
+            })
+        else:
+            messages.error(request, "El código ingresado es incorrecto")
+            return render(request, 'usuarios/Recuperar_password.html', {
+                'paso': 'codigo',
+                'correo': request.session.get('correo_recuperacion', '')
+            })
+
+    return redirect('solicitar_codigo_recuperacion')
+
+
+def establecer_nueva_contrasena(request):
+    if request.method == 'POST':
+        nueva_contrasena = request.POST.get('nueva_contrasena', '').strip()
+        confirmar_contrasena = request.POST.get('confirmar_contrasena', '').strip()
+
+        if not nueva_contrasena or not confirmar_contrasena:
+            messages.error(request, "Por favor completa todos los campos")
+            return render(request, 'usuarios/Recuperar_password.html', {
+                'paso': 'nueva_contrasena',
+                'correo': request.session.get('correo_recuperacion', '')
+            })
+
+        if nueva_contrasena != confirmar_contrasena:
+            messages.error(request, "Las contraseñas no coinciden")
+            return render(request, 'usuarios/Recuperar_password.html', {
+                'paso': 'nueva_contrasena',
+                'correo': request.session.get('correo_recuperacion', '')
+            })
+
+        if len(nueva_contrasena) < 8:
+            messages.error(request, "La contraseña debe tener al menos 8 caracteres")
+            return render(request, 'usuarios/Recuperar_password.html', {
+                'paso': 'nueva_contrasena',
+                'correo': request.session.get('correo_recuperacion', '')
+            })
+
+        usuario_id = request.session.get('usuario_id')
+        if not usuario_id:
+            messages.error(request, "Sesión expirada, solicita un nuevo código")
+            return redirect('solicitar_codigo_recuperacion')
+
+        try:
+            usuario = Usuario.objects.get(id_usuario=usuario_id)
+            user = usuario.user
+            if user:
+                user.set_password(nueva_contrasena)
+                user.save()
+                messages.success(request, "Contraseña actualizada correctamente. Ya puedes iniciar sesión")
+
+                del request.session['codigo_recuperacion']
+                del request.session['correo_recuperacion']
+                del request.session['usuario_id']
+
+                return redirect('login_view')
+            else:
+                messages.error(request, "Error al actualizar la contraseña")
+                return render(request, 'usuarios/Recuperar_password.html', {
+                    'paso': 'nueva_contrasena',
+                    'correo': request.session.get('correo_recuperacion', '')
+                })
+        except Usuario.DoesNotExist:
+            messages.error(request, "Usuario no encontrado")
+            return redirect('solicitar_codigo_recuperacion')
+
+    return redirect('solicitar_codigo_recuperacion')

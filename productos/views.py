@@ -396,7 +396,7 @@ def editar_finca(request, finca_id):
 def lista_fincas(request):
     """Lista de fincas del productor"""
     
-    fincas = Finca.objects.filter(id_usuario=request.user.usuario.productor)
+    fincas = Finca.objects.filter(id_usuario=request.user.Usuario.productor)
     
     return render(request, 'finca/lista_fincas.html', {'fincas': fincas})
 
@@ -452,7 +452,7 @@ def lista_productos(request):
 
 
 
-@login_required
+
 @login_required
 def crear_producto(request):
     try:
@@ -732,7 +732,7 @@ def eliminar_producto(request, producto_id):
     
     return redirect('lista_productos')
 
- 
+
 
 
 
@@ -772,7 +772,7 @@ def mis_ventas(request):
         .order_by('-ingresos')[:5]
     )
 
-    # 🔹 PEDIDOS POR ALISTAR
+    #  PEDIDOS POR ALISTAR
     pedidos_alistar = (
         Compra.objects
         .filter(detallescompra__id_producto__id_usuario_id=usuario_id)
@@ -787,7 +787,7 @@ def mis_ventas(request):
         .order_by('-fecha_hora_compra')
     )
 
-    # 🔹 ENVÍOS
+    # ENVÍOS
     envios = Envio.objects.filter(
         id_compra__in=pedidos_alistar.values_list('id_compra', flat=True)
     )
@@ -804,7 +804,7 @@ def mis_ventas(request):
         id_transportista__isnull=True
     ).distinct().count()
 
-    # 🔥 TOTAL REAL
+    #  TOTAL REAL
     pendientes_logistica = pedidos_sin_envio + envios_sin_transportista
 
     envios_dict = {
@@ -814,7 +814,7 @@ def mis_ventas(request):
     for p in pedidos_alistar:
         p.envio = envios_dict.get(p.id_compra)
 
-    # 🔹 GRÁFICA GENERAL
+    #  GRÁFICA GENERAL
     ventas_chart = (
         DetallesCompra.objects
         .filter(id_producto__id_usuario_id=usuario_id)
@@ -822,7 +822,7 @@ def mis_ventas(request):
         .annotate(total_ingresos=Sum('subtotal'))
     )
 
-    # 🔹 ÚLTIMOS 7 DÍAS
+    #  ÚLTIMOS 7 DÍAS
     hoy = now().date()
     hace_7_dias = hoy - timedelta(days=7)
 
@@ -845,7 +845,7 @@ def mis_ventas(request):
         for x in ultimos_7_dias_qs
     ]
 
-    # 🔹 KPIs
+    #  KPIs
     base = DetallesCompra.objects.filter(
         id_producto__id_usuario_id=usuario_id
     )
@@ -880,7 +880,7 @@ def mis_ventas(request):
 
 def detalle_ventas_producto(request, producto_id):
     try:
-        # 🔹 1. Traer detalles del producto
+        #  1. Traer detalles del producto
         detalles = (
             DetallesCompra.objects
             .filter(id_producto__id_producto=producto_id)
@@ -888,14 +888,14 @@ def detalle_ventas_producto(request, producto_id):
             .order_by('-id_compra__fecha_hora_compra')
         )
 
-        # 🔹 2. Renderizar HTML del modal
+        #  2. Renderizar HTML del modal
         html = render_to_string(
             'productos/detalle_ventas.html',
             {'detalles': detalles},
             request=request
         )
 
-        # 🔹 3. Datos para gráfica (ventas por día)
+        #  3. Datos para gráfica (ventas por día)
         ventas_por_dia = (
     DetallesCompra.objects
     .filter(id_producto__id_producto=producto_id)
@@ -905,10 +905,10 @@ def detalle_ventas_producto(request, producto_id):
     .order_by('fecha')
 )
 
-        # 🔹 4. Convertir a lista para JSON
+        #  4. Convertir a lista para JSON
         data_grafica = [
             {
-               'fecha': v['fecha'].strftime('%Y-%m-%d'),
+                'fecha': v['fecha'].strftime('%Y-%m-%d'),
                 'total': float(v['total'])
             }
             for v in ventas_por_dia
@@ -953,12 +953,12 @@ def reporte_ventas_pdf(request):
     elementos = []
 
     # =========================
-    # 🔥 HEADER
+    #  HEADER
     # =========================
     elementos.append(Paragraph("📊 REPORTE PROFESIONAL - AGROLINK", styles['Title']))
     elementos.append(Spacer(1, 12))
 
-    # 👤 PRODUCTOR
+    #  PRODUCTOR
     elementos.append(Paragraph("👤 Información del Productor", styles['Heading2']))
     elementos.append(Spacer(1, 8))
 
@@ -969,7 +969,7 @@ def reporte_ventas_pdf(request):
     elementos.append(Spacer(1, 20))
 
     # =========================
-    # 🌱 FINCAS
+    #  FINCAS
     # =========================
     fincas = Finca.objects.filter(id_usuario_id=usuario_id)
 
@@ -1000,7 +1000,7 @@ def reporte_ventas_pdf(request):
     elementos.append(Spacer(1, 20))
 
     # =========================
-    # 📦 PRODUCTOS
+    #  PRODUCTOS
     # =========================
     productos = Producto.objects.filter(
         id_usuario_id=usuario_id
@@ -1033,7 +1033,7 @@ def reporte_ventas_pdf(request):
     elementos.append(Spacer(1, 20))
 
     # =========================
-    # 💰 VENTAS
+    #  VENTAS
     # =========================
     ventas = (
         DetallesCompra.objects
@@ -1054,7 +1054,7 @@ def reporte_ventas_pdf(request):
 
     data_ventas = [["Producto", "Unidades", "Kg/Unidad", "Total Kg", "Ingresos", "Finca"]]
 
-    # 🔥 MAPA DE PRODUCTOS (optimización)
+    #  MAPA DE PRODUCTOS (optimización)
     productos_map = {
         p.id_producto: p for p in productos
     }
@@ -1086,7 +1086,7 @@ def reporte_ventas_pdf(request):
     elementos.append(Spacer(1, 20))
 
     # =========================
-    # 🏆 TOP PRODUCTO
+    #  TOP PRODUCTO
     # =========================
     top = ventas.first()
 
@@ -1105,7 +1105,7 @@ def reporte_ventas_pdf(request):
     elementos.append(Spacer(1, 20))
 
     # =========================
-    # 📊 TOTALES
+    #  TOTALES
     # =========================
     totales = DetallesCompra.objects.filter(
         id_producto__id_usuario_id=usuario_id
@@ -1128,7 +1128,7 @@ def reporte_ventas_pdf(request):
     ))
 
     # =========================
-    # 🚀 GENERAR PDF
+    #  GENERAR PDF
     # =========================
     doc.build(elementos)
 
@@ -1172,7 +1172,7 @@ def editar_perfil_productor(request):
             correo = request.POST.get("correo")
             cedula = request.POST.get("cedula")
 
-            # 🔥 VALIDACIÓN UNIQUE
+            # VALIDACIÓN UNIQUE
             if Usuario.objects.filter(
                 Q(correo=correo) | Q(cedula=cedula)
             ).exclude(id_usuario=usuario.id_usuario).exists():
