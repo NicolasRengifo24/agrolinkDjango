@@ -337,7 +337,7 @@ def calcular_distancia(lat1, lng1, lat2, lng2):
 
 #pedidos del usuario
 
-#@login_required
+
 @login_required
 
 def mis_pedidos(request):

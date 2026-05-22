@@ -44,7 +44,7 @@ def inicio(request):
     precio_max = request.GET.get('precioMax')
     
 
-    # 🧠 QUERY BASE (IMPORTANTE: NO repetirla)
+
     productos = Producto.objects.prefetch_related('imagenProducto')
         
 
@@ -169,7 +169,7 @@ def inicio(request):
 
 
 
-# 🔁 tu función original (la dejamos por si la usas en rutas)
+
 def mostrar_productos(request):
     productos = Producto.objects.prefetch_related('imagenProducto').annotate(
         promedio_estrellas=Avg('calificaciones__puntaje'),
@@ -248,7 +248,11 @@ def agregar_al_carrito(request, producto_id):
     producto = get_object_or_404(Producto, id_producto=producto_id)
 
     # CANTIDAD
-    cantidad = int(request.POST.get('cantidad', 1))
+    try:
+        cantidad = int(request.POST.get('cantidad', 1))
+    except (ValueError, TypeError):
+        messages.error(request, "Cantidad inválida")
+        return redirect('carrito')  
 
     # CARRITO (Compra en estado carrito)
     compra, created = Compra.objects.get_or_create(
@@ -392,11 +396,11 @@ def editar_finca(request, finca_id):
     
     return render(request, 'finca/formulario_finca.html', {'finca': finca})
 
-#@login_required
+@login_required
 def lista_fincas(request):
     """Lista de fincas del productor"""
     
-    fincas = Finca.objects.filter(id_usuario=request.user.Usuario.productor)
+    fincas = Finca.objects.filter(id_usuario=request.user.usuario.productor)
     
     return render(request, 'finca/lista_fincas.html', {'fincas': fincas})
 
@@ -448,8 +452,6 @@ def lista_productos(request):
     }
     
     return render(request, 'productos/lista_productos.html', context)
-
-
 
 
 
@@ -509,12 +511,18 @@ def crear_producto(request):
     }
     return render(request, 'productos/crear_producto.html', context)
 
+
+
+
+
 @login_required
 def buscar_productos(request):
     """Vista para buscar productos del productor"""
     ubicacion = request.GET.get('ubicacion', '')
     categoria_id = request.GET.get('categoriaId', 0)
     return redirect(f"{reverse('lista_productos')}?ubicacion={ubicacion}&categoriaId={categoria_id}")
+
+
 
 
 @login_required
@@ -541,6 +549,9 @@ def ver_producto(request, producto_id):
         'imagen_principal': imagenes.filter(es_principal=1).first(),
     }
     return render(request, 'productos/detalle_producto.html', context)
+
+
+
 
 
 def ver_producto_detalles(request, producto_id):
@@ -903,7 +914,7 @@ def detalle_ventas_producto(request, producto_id):
     .values('fecha')
     .annotate(total=Sum('subtotal'))
     .order_by('fecha')
-)
+    )
 
         #  4. Convertir a lista para JSON
         data_grafica = [
