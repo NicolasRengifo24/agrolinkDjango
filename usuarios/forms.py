@@ -1,12 +1,107 @@
 from django import forms
 from productos.models import Producto, ImagenesProducto, ProductoFinca, CategoriaProducto, Finca
 from usuarios.models import Productor
+from django.core.validators import RegexValidator
 
 
 class LoginForm(forms.Form):
     username = forms.CharField(label="Usuario")
     password = forms.CharField(widget=forms.PasswordInput, label="password")
     
+    
+    
+    
+    
+class RegistroUsuarioForm(forms.Form):
+    
+    
+    txt_nombre = forms.CharField(
+        max_length=50,
+        min_length=3,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$',
+                message="El nombre solo puede contener letras y espacios."
+            )
+        ]
+    )
+    
+    txt_apellido = forms.CharField(
+        max_length=50,
+        min_length=3,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$',
+                message="El apellido solo puede contener letras y espacios."
+            )
+        ]
+    )
+    
+    
+    
+    
+    txt_nombreUsuario = forms.CharField(
+        max_length=100, 
+        required=True,
+        validators=[RegexValidator(
+            regex=r'^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$',
+            message="el Nombre de usuario solo permite letras sin numeros ni caracteres especiales "
+        )])
+    
+
+    txt_correo = forms.EmailField(required=True)
+    
+    def clean_txt_correo(self):
+        correo = self.cleaned_data['txt_correo']
+        dominio = correo.split('@')[-1]
+        dominios_permitidos = ['gmail.com', 'hotmail.com', 'empresa.com']
+
+        if dominio not in dominios_permitidos:
+            raise forms.ValidationError("El dominio del correo no está permitido , solo permitimos : gmail.com', 'hotmail.com', 'empresa.com.")
+        return correo
+    
+    
+    txt_contrasena = forms.CharField(
+        widget=forms.PasswordInput,
+        min_length=6,
+        required=True
+    )
+    txt_telefono = forms.CharField(
+        required=False,
+        validators=[RegexValidator(regex=r'^\+?\d{10}$', message="Teléfono inválido")]
+    )
+    txt_documento = forms.CharField(
+        validators=[RegexValidator(regex=r'^\d{6,12}$', message="Cédula inválida")]
+    )
+    txt_ciudad = forms.CharField(max_length=50, required=True)
+    txt_departamento = forms.CharField(max_length=50, required=True)
+    
+    
+    txt_direccion = forms.CharField(
+        max_length=200,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^(Calle|cll|cra|Carrera|Cra|Avenida|Av|av|Transversal|Diagonal)\s+\d+[A-Za-z]?\s*#\s*\d+-\d+$',
+                message="Formato inválido. Ejemplo: Cra 7 # 12-34"
+            )
+        ]
+    )
+    
+    role = forms.ChoiceField(
+        choices=[
+            ('CLIENTE', 'Cliente'),
+            ('PRODUCTOR', 'Productor'),
+            ('TRANSPORTISTA', 'Transportista'),
+            ('ASESOR', 'Asesor'),
+            ('ADMINISTRADOR', 'Administrador'),
+        ],
+        required=True
+    )
+
+""""
 class ProductoForm(forms.ModelForm):
     class Meta:
         model =Producto
@@ -67,10 +162,10 @@ class ProductoForm(forms.ModelForm):
 
 
 class ImagenPrincipalForm(forms.ModelForm):
-    """
-    Subida de la imagen principal del producto.
-    Se guarda en ImagenesProducto con es_principal=1.
-    """
+    
+    "Subida de la imagen principal del producto."
+    "Se guarda en ImagenesProducto con es_principal=1."
+    
     class Meta:
         model  = ImagenesProducto
         fields = ['url_imagen']
@@ -91,10 +186,10 @@ class ImagenPrincipalForm(forms.ModelForm):
 
 
 class ProductoFincaForm(forms.ModelForm):
-    """
+    
     Relaciona el producto con una finca y guarda
     cantidad de producción y fecha de cosecha.
-    """
+    
 
     class Meta:
         model  = ProductoFinca
@@ -143,3 +238,4 @@ class ProductoEditarForm(forms.ModelForm):
     
         
         
+"""

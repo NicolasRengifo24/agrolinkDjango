@@ -22,11 +22,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 import random
 
-from .forms import LoginForm
+from .forms import LoginForm, RegistroUsuarioForm
 
 from productos.models import Producto, ImagenesProducto, ProductoFinca,Finca
-from . forms import ProductoForm, ImagenPrincipalForm, ProductoFincaForm, ProductoEditarForm
-
 
 
 
@@ -90,68 +88,67 @@ from usuarios.models import Usuario, Cliente, Productor, Transportista, Asesor, 
 
 def registrar_usuario(request):
     if request.method == 'POST':
-        nombre = request.POST.get('txt_nombre')
-        apellido = request.POST.get('txt_apellido')
-        username = request.POST.get('txt_nombreUsuario')
-        correo = request.POST.get('txt_correo')
-        password = request.POST.get('txt_contrasena')
-        telefono = request.POST.get('txt_telefono')
-        documento = request.POST.get('txt_documento')
-        ciudad = request.POST.get('txt_ciudad')
-        departamento = request.POST.get('txt_departamento')
-        direccion = request.POST.get('txt_direccion')
-        rol = request.POST.get('role').upper()
+        form = RegistroUsuarioForm(request.POST)
+        if form.is_valid():
+            # Acceder a los datos validados
+            nombre = form.cleaned_data['txt_nombre']
+            apellido = form.cleaned_data['txt_apellido']
+            username = form.cleaned_data['txt_nombreUsuario']
+            correo = form.cleaned_data['txt_correo']
+            password = form.cleaned_data['txt_contrasena']
+            telefono = form.cleaned_data['txt_telefono']
+            documento = form.cleaned_data['txt_documento']
+            ciudad = form.cleaned_data['txt_ciudad']
+            departamento = form.cleaned_data['txt_departamento']
+            direccion = form.cleaned_data['txt_direccion']
+            rol = form.cleaned_data['role']
 
-        # Validar usuario existente
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "El usuario ya existe")
-            return redirect('mostrar_registro_usuarios')
+            # Crear usuario base de Django
+            user = User.objects.create_user(
+                username=username,
+                email=correo,
+                password=password,
+                first_name=nombre,
+                last_name=apellido
+            )
 
-        # 🔐 Crear usuario de Django
-        user = User.objects.create_user(
-            username=username,
-            email=correo,
-            password=password,
-            first_name=nombre,
-            last_name=apellido
-        )
+            # Crear usuario extendido
+            usuario = Usuario.objects.create(
+                user=user,
+                nombre=nombre,
+                apellido=apellido,
+                nombre_usuario=username,
+                correo=correo,
+                cedula=documento,
+                ciudad=ciudad,
+                departamento=departamento,
+                direccion=direccion,
+                telefono=telefono,
+                rol=rol,
+                estado=True
+            )
 
-        # 👤 Crear usuario extendido
-        usuario = Usuario.objects.create(
-            user=user,
-            nombre=nombre,
-            apellido=apellido,
-            nombre_usuario=username,
-            correo=correo,
-            cedula=documento,
-            ciudad=ciudad,
-            departamento=departamento,
-            direccion=direccion,
-            telefono=telefono,
-            rol=rol,
-            estado=True
-        )
+            # Crear según el rol
+            if rol == "CLIENTE":
+                Cliente.objects.create(id_usuario=usuario)
+            elif rol == "PRODUCTOR":
+                Productor.objects.create(id_usuario=usuario)
+            elif rol == "TRANSPORTISTA":
+                Transportista.objects.create(id_usuario=usuario)
+            elif rol == "ASESOR":
+                Asesor.objects.create(id_usuario=usuario)
+            elif rol == "ADMINISTRADOR":
+                Administrador.objects.create(id_usuario=usuario)
 
-        # 🎯 CREAR SEGÚN EL ROL
-        if rol == "CLIENTE":
-            Cliente.objects.create(id_usuario=usuario)
+            messages.success(request, "Usuario registrado correctamente. Ya puedes iniciar sesión.")
+            return redirect('login_view')
+        else:
+            
+            return render(request, 'usuarios/register.html', {'form': form})
+    else:
+        form = RegistroUsuarioForm()
 
-        elif rol == "PRODUCTOR":
-            Productor.objects.create(id_usuario=usuario)
-
-        elif rol == "TRANSPORTISTA":
-            Transportista.objects.create(id_usuario=usuario)
-
-        elif rol == "ASESOR":
-            Asesor.objects.create(id_usuario=usuario)
-
-        elif rol == "ADMINISTRADOR":
-            Administrador.objects.create(id_usuario=usuario)
-
-        messages.success(request, "Usuario registrado correctamente. Ya puedes iniciar sesión.")
-        return redirect('login_view')
-
-    return render(request, 'usuarios/registro.html')
+    return render(request, 'usuarios/register.html', {'form': form})
 
 
 # Navegacion vistas admin
