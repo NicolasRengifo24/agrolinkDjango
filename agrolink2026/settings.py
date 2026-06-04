@@ -36,13 +36,17 @@ SECRET_KEY = 'django-insecure-n&+=0l%guuaa8p##42pv#_s+lcm3&^!r^+j&5r_k(h-4z)=y2p
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'agrolink.brazilsouth.cloudapp.azure.com',
+    '4.228.58.230',
     'localhost',
     '127.0.0.1',
-    'tova-soullike-gita.ngrok-free.dev'
 ]
+    
+    
+
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://tova-soullike-gita.ngrok-free.dev',
+    'http://agrolink.brazilsouth.cloudapp.azure.com:8000',
     'https://*.epayco.co',
     'https://*.epayco.com',
 ]
@@ -109,9 +113,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_agrolink',
         'USER': 'root',
-        'PASSWORD': '1234',
+        'PASSWORD': '12345',
         'HOST': 'localhost',
-        'PORT': '3307',
+        'PORT': '3306',
         'OPTIONS':{
             'charset': 'utf8mb4', # 'Options' para parametros adicionales especificos.
         }
@@ -164,14 +168,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Ngrok expone tu servidor local de forma rapida y segura
-NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
+#se cambia por el dominio de Azure para producción
+BASE_URL = "http://agrolink.brazilsouth.cloudapp.azure.com:8000"
 
 
 # ePayco - MODO PRUEBA

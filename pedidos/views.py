@@ -61,8 +61,8 @@ def carrito(request):
     'total_epayco': f"{compra.total:.2f}" if compra else '0.00',
 
     
-    'url_respuesta': f"{settings.NGROK_URL}/respuesta-pago/",
-    'url_confirmacion': f"{settings.NGROK_URL}/confirmacion-pago/",
+    'url_respuesta': f"{settings.BASE_URL}/respuesta-pago/",
+    'url_confirmacion': f"{settings.BASE_URL}/confirmacion-pago/",
     'cart_count': cart_count,
 })
     
