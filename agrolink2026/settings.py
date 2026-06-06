@@ -40,6 +40,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'agrolink.canadacentral.cloudapp.azure.com',
+    'uncaricatured-pronunciatory-waldo.ngrok-free.dev',
 ]
 # Importantes para debug en desarrollo
 if DEBUG:
@@ -50,13 +51,18 @@ if dominios_extra:
     ALLOWED_HOSTS += [d.strip() for d in dominios_extra.split(',') if d.strip()]
 
 
+
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'https://agrolink.canadacentral.cloudapp.azure.com',
     'https://*.epayco.co',
     'https://*.epayco.com',
+    'https://uncaricatured-pronunciatory-waldo.ngrok-free.dev',
 ]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
 # configuracion proxy (necesaria para ngrok)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
@@ -121,15 +127,19 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'db_agrolink'),
         'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', '1234'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '12345'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3307'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS':{
             'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
+        'TEST': {
+            'NAME': 'test_Agrolink'
+        }
         }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -188,16 +198,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Ngrok expone tu servidor local de forma rapida y segura
-#NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
 BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+NGROK_URL = "https://uncaricatured-pronunciatory-waldo.ngrok-free.dev"
 
 # ePayco - MODO PRUEBA
 
-EPAYCO_P_CUST_ID_CLIENT = "1578391"
-EPAYCO_PUBLIC_KEY       = "85dea90f2f9698288308dbf8becc999f"
-EPAYCO_PRIVATE_KEY      = "491b7dc662d7f46758985453db0a6d50"
+EPAYCO_P_CUST_ID_CLIENT = "1578302"
+EPAYCO_PUBLIC_KEY       = "4a8276127cf46bf07c05c5125fd9237f"
+EPAYCO_PRIVATE_KEY      = "d7a699bae786d86c29a1a388072a1582"
 EPAYCO_TEST             = True
-
 
 # ============================================================
 # GOOGLE OAUTH2
@@ -211,14 +220,12 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
-# Campos extra que pedimos a Google
 SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = [
     'first_name',
     'last_name',
     'picture',
 ]
 
-# Pipeline personalizado — aquí manejamos rol y datos extra
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
@@ -229,16 +236,22 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
-    'usuarios.pipeline.guardar_datos_google',  # ← nuestra función personalizada
+    'usuarios.pipeline.guardar_datos_google',
 )
 
-# Redirecciones
 LOGIN_URL          = '/login/'
 LOGIN_ERROR_URL    = '/login/'
 SOCIAL_AUTH_LOGIN_ERROR_URL      = '/login/'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL   = '/google/completar-registro/'
 SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/google/completar-registro/'
 
-# HTTPS para producción (Azure)
 if not DEBUG:
     SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')

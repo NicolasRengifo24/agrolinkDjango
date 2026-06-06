@@ -400,7 +400,7 @@ def editar_finca(request, finca_id):
 def lista_fincas(request):
     """Lista de fincas del productor"""
     
-    fincas = Finca.objects.filter(id_usuario=request.user.usuario.productor)
+    fincas = Finca.objects.filter(id_usuario=request.user.Usuario.productor)
     
     return render(request, 'finca/lista_fincas.html', {'fincas': fincas})
 
@@ -452,6 +452,7 @@ def lista_productos(request):
     }
     
     return render(request, 'productos/lista_productos.html', context)
+
 
 
 
