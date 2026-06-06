@@ -10,6 +10,10 @@ urlpatterns = [
     path('', views.inicio_usuarios, name='inicio_usuarios'),
     
     path('logout/', views.logout_view, name='logout_view'),
+    
+    # Google OAuth2
+    path('google/completar-registro/', views.completar_registro_google, name='completar_registro_google'),
+    path('google/guardar-registro/',   views.guardar_registro_google,   name='guardar_registro_google'),
 
     
     path('registro/', views.mostrar_registro_usuarios, name='mostrar_registro_usuarios'),

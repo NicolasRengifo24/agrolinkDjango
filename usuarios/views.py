@@ -158,6 +158,180 @@ def registrar_usuario(request):
     return render(request, 'usuarios/register.html', {'form': form})
 
 
+#google auth2
+
+def completar_registro_google(request):
+    """
+    Vista que muestra el formulario para completar
+    los datos faltantes después del login con Google.
+    Si el usuario ya tiene perfil, redirige directo.
+    """
+
+    # Verificar que venga de Google
+    google_correo = request.session.get('google_correo')
+    if not google_correo:
+        messages.error(request, "Acceso no válido")
+        return redirect('login_view')
+
+    # Si ya tiene perfil de Usuario extendido, redirigir según rol
+    try:
+        usuario = request.user.usuario
+        rol = usuario.rol.upper()
+
+        if rol == 'CLIENTE':
+            return redirect('mostrar_productos')
+        elif rol == 'ADMINISTRADOR':
+            return redirect('ver_listas_usuarios_admin')
+        elif rol == 'TRANSPORTISTA':
+            return redirect('inicio_transportista')
+        elif rol == 'PRODUCTOR':
+            return redirect('lista_productos')
+        elif rol == 'ASESOR':
+            return redirect('asesor_servicios')
+
+    except Exception:
+        # No tiene perfil todavía → mostrar formulario
+        pass
+
+    # Pasar datos de Google y datos previos del formulario al template
+    form_data = request.session.pop('google_form_data', {})
+    context = {
+        'google_nombre'  : request.session.get('google_nombre', ''),
+        'google_apellido': request.session.get('google_apellido', ''),
+        'google_correo'  : request.session.get('google_correo', ''),
+        'google_foto'    : request.session.get('google_foto', ''),
+        'form_data'      : form_data,
+    }
+
+    return render(request, 'usuarios/completar_registro_google.html', context)
+
+
+def guardar_registro_google(request):
+    """
+    Procesa el formulario de completar registro con Google.
+    Crea el Usuario extendido y el perfil según el rol elegido.
+    """
+
+    if request.method != 'POST':
+        return redirect('completar_registro_google')
+
+    # Verificar sesión de Google
+    google_correo = request.session.get('google_correo')
+    if not google_correo:
+        messages.error(request, "Sesión expirada, intenta de nuevo")
+        return redirect('login_view')
+
+    # Recoger datos del formulario
+    nombre      = request.POST.get('nombre', '').strip()
+    apellido    = request.POST.get('apellido', '').strip()
+    username    = request.POST.get('username', '').strip()
+    cedula      = request.POST.get('cedula', '').strip()
+    telefono    = request.POST.get('telefono', '').strip()
+    ciudad      = request.POST.get('ciudad', '').strip()
+    departamento = request.POST.get('departamento', 'Cundinamarca').strip()
+    tipo_dir    = request.POST.get('direccion_tipo', '').strip()
+    n1          = request.POST.get('direccion_numero1', '').strip()
+    letra       = request.POST.get('direccion_letra', '').strip()
+    n2          = request.POST.get('direccion_numero2', '').strip()
+    n3          = request.POST.get('direccion_numero3', '').strip()
+    direccion   = f"{tipo_dir} {n1}{letra} # {n2}-{n3}" if all([tipo_dir, n1, n2, n3]) else ''
+    rol         = request.POST.get('rol', '').strip().upper()
+
+    # Guardar datos para preservar en el formulario en caso de error
+    request.session['google_form_data'] = {
+        'nombre': nombre, 'apellido': apellido, 'username': username,
+        'cedula': cedula, 'telefono': telefono, 'ciudad': ciudad,
+        'departamento': departamento, 'tipo_dir': tipo_dir,
+        'n1': n1, 'letra': letra, 'n2': n2, 'n3': n3, 'rol': rol,
+    }
+
+    # Validaciones básicas
+    if not all([nombre, apellido, username, cedula, ciudad, tipo_dir, n1, n2, n3, rol]):
+        messages.error(request, "Por favor completa todos los campos obligatorios")
+        return redirect('completar_registro_google')
+
+    # Verificar que el username no exista
+    if User.objects.filter(username=username).exists():
+        messages.error(request, "Ese nombre de usuario ya está en uso")
+        return redirect('completar_registro_google')
+
+    # Verificar que la cédula no exista
+    if Usuario.objects.filter(cedula=cedula).exists():
+        messages.error(request, "Esa cédula ya está registrada")
+        return redirect('completar_registro_google')
+
+    try:
+        # Actualizar el User de Django con el username
+        user = request.user
+        user.username   = username
+        user.first_name = nombre
+        user.last_name  = apellido
+        user.email      = google_correo
+        user.save()
+
+        # Crear Usuario extendido
+        usuario = Usuario.objects.create(
+            user         = user,
+            nombre       = nombre,
+            apellido     = apellido,
+            nombre_usuario = username,
+            correo       = google_correo,
+            cedula       = cedula,
+            ciudad       = ciudad,
+            departamento = departamento,
+            direccion    = direccion,
+            telefono     = telefono,
+            rol          = rol,
+            estado       = True
+        )
+
+        # Crear perfil según rol
+        if rol == 'CLIENTE':
+            Cliente.objects.create(
+                id_usuario   = usuario,
+                preferencias = request.POST.get('preferencias', 'Sin preferencias')
+            )
+        elif rol == 'PRODUCTOR':
+            Productor.objects.create(
+                id_usuario   = usuario,
+                tipo_cultivo = request.POST.get('tipo_cultivo', '')
+            )
+        elif rol == 'TRANSPORTISTA':
+            Transportista.objects.create(
+                id_usuario    = usuario,
+                zonas_entrega = request.POST.get('zonas_entrega', '')
+            )
+        elif rol == 'ASESOR':
+            Asesor.objects.create(
+                id_usuario    = usuario,
+                tipo_asesoria = request.POST.get('tipo_asesoria', '')
+            )
+
+        # Limpiar sesión de Google
+        for key in ['google_nombre', 'google_apellido', 'google_correo',
+                    'google_foto', 'google_user_id', 'google_form_data']:
+            request.session.pop(key, None)
+
+        messages.success(request, f"¡Bienvenido a Agrolink, {nombre}!")
+
+        # Redirigir según rol
+        if rol == 'CLIENTE':
+            return redirect('mostrar_productos')
+        elif rol == 'ADMINISTRADOR':
+            return redirect('ver_listas_usuarios_admin')
+        elif rol == 'TRANSPORTISTA':
+            return redirect('inicio_transportista')
+        elif rol == 'PRODUCTOR':
+            return redirect('lista_productos')
+        elif rol == 'ASESOR':
+            return redirect('asesor_servicios')
+        else:
+            return redirect('mostrar_productos')
+
+    except Exception as e:
+        messages.error(request, f"Error al guardar el registro: {str(e)}")
+        return redirect('completar_registro_google')
+
 # Navegacion vistas admin
 #@admin_required
 def dashboard_admin(request):

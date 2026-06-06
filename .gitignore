@@ -13,3 +13,4 @@ __pycache__/
 
 staticfiles/
 documentacion/
+settings.py/

@@ -22,8 +22,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('usuarios.urls')),  # 👈 login, register
-    path('productos/', include('productos.urls')),  # 👈 productos
+     path('auth/', include('social_django.urls', namespace='social')), # google
+    path('', include('usuarios.urls')),  # login, register
+    path('productos/', include('productos.urls')),  #  productos
     path('calificaciones/', include('calificaciones.urls')), 
     path('', include('productos.urls')),        # raíz para productos
     path('', include('usuarios.urls')), # prefijo para usuarios

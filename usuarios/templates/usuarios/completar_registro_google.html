@@ -1,0 +1,790 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Completa tu perfil | AgroLink</title>
+  <link rel="icon" type="image/png" href="{% static 'logo/logoAgrolink.jpeg' %}">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --agro-dark:   #1a3d1f;
+      --agro-mid:    #2d6a30;
+      --agro-base:   #3a8a3e;
+      --agro-light:  #5db562;
+      --agro-pale:   #e8f5e9;
+      --agro-accent: #a5d6a7;
+      --agro-earth:  #795548;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      background-color: #f0f4f0;
+      background-image:
+        radial-gradient(circle at 15% 50%, rgba(93,181,98,0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 30%, rgba(42,106,48,0.10) 0%, transparent 45%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ── CARD PRINCIPAL ── */
+    .registro-card {
+      width: 100%;
+      max-width: 680px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(26,61,31,0.15), 0 4px 16px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    /* ── HEADER VERDE ── */
+    .card-header-google {
+      background: linear-gradient(135deg, var(--agro-mid) 0%, var(--agro-dark) 100%);
+      padding: 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header-google::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .card-header-google::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -30px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* ── FOTO DE PERFIL GOOGLE ── */
+    .google-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.4);
+      object-fit: cover;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .google-avatar-placeholder {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #fff;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-text {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-text h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+
+    .header-text p {
+      font-size: 0.82rem;
+      color: var(--agro-accent);
+      margin: 0;
+    }
+
+    /* ── BADGE GOOGLE ── */
+    .google-badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 50px;
+      padding: 0.4rem 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #fff;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    .google-badge img {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ── CUERPO DEL FORMULARIO ── */
+    .card-body-form {
+      padding: 2rem 2.5rem;
+    }
+
+    /* ── PROGRESO ── */
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 2px solid #e0e0e0;
+      background: #fff;
+      color: #999;
+      transition: all 0.3s;
+    }
+
+    .step.active .step-circle {
+      border-color: var(--agro-base);
+      background: var(--agro-base);
+      color: #fff;
+    }
+
+    .step.done .step-circle {
+      border-color: var(--agro-base);
+      background: var(--agro-pale);
+      color: var(--agro-base);
+    }
+
+    .step-label {
+      font-size: 0.7rem;
+      color: #999;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .step.active .step-label {
+      color: var(--agro-base);
+      font-weight: 600;
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #e0e0e0;
+      margin-bottom: 18px;
+    }
+
+    /* ── SECCIONES DEL FORM ── */
+    .form-section {
+      margin-bottom: 1.8rem;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--agro-mid);
+      border-bottom: 1px solid #e8f5e9;
+      padding-bottom: 6px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── INPUTS ── */
+    .form-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 5px;
+    }
+
+    .form-label .req {
+      color: var(--agro-base);
+      margin-left: 2px;
+    }
+
+    .form-control, .form-select {
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.88rem;
+      font-family: 'DM Sans', sans-serif;
+      color: #333;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--agro-base);
+      box-shadow: 0 0 0 3px rgba(58,138,62,0.12);
+      outline: none;
+    }
+
+    /* Campo prellenado de Google */
+    .form-control.google-prefilled {
+      background: #f9fdf9;
+      border-color: #c8e6c9;
+      color: #555;
+    }
+
+    .prefilled-badge {
+      font-size: 0.7rem;
+      color: var(--agro-base);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    /* ── SELECTOR DE ROL ── */
+    .rol-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .rol-card {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .rol-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .rol-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .rol-label:hover {
+      border-color: var(--agro-base);
+      background: var(--agro-pale);
+    }
+
+    .rol-card input[type="radio"]:checked + .rol-label {
+      border-color: var(--agro-base);
+      background: var(--agro-pale);
+      box-shadow: 0 0 0 3px rgba(58,138,62,0.10);
+    }
+
+    .rol-icon {
+      font-size: 1.4rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(58,138,62,0.1);
+      flex-shrink: 0;
+    }
+
+    .rol-info strong {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .rol-info span {
+      font-size: 0.72rem;
+      color: #888;
+    }
+
+    /* ── CAMPOS EXTRA POR ROL ── */
+    .rol-extra {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--agro-pale);
+      border-radius: 10px;
+      border: 1px solid #c8e6c9;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .rol-extra.visible {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── BOTÓN SUBMIT ── */
+    .btn-submit {
+      width: 100%;
+      padding: 0.7rem;
+      background: var(--agro-base);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover  { background: var(--agro-mid); }
+    .btn-submit:active { transform: scale(0.98); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 580px) {
+      .card-header-google { padding: 1.5rem; }
+      .card-body-form     { padding: 1.5rem; }
+      .google-badge       { display: none; }
+      .rol-grid           { grid-template-columns: 1fr; }
+      .header-text h1     { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  {% include 'includes/toastify_messages.html' %}
+
+  <div class="registro-card">
+
+    <!-- HEADER -->
+    <div class="card-header-google">
+
+      {% if google_foto %}
+        <img src="{{ google_foto }}" alt="Foto de Google" class="google-avatar">
+      {% else %}
+        <div class="google-avatar-placeholder">
+          <i class="bi bi-person"></i>
+        </div>
+      {% endif %}
+
+      <div class="header-text">
+        <h1>¡Hola, {{ google_nombre }}! 👋</h1>
+        <p>Completa tu perfil para continuar en Agrolink</p>
+      </div>
+
+      <div class="google-badge">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+        Verificado con Google
+      </div>
+
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="card-body-form">
+
+      <!-- PASOS -->
+      <div class="progress-steps">
+        <div class="step done">
+          <div class="step-circle"><i class="bi bi-check"></i></div>
+          <span class="step-label">Google</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+          <div class="step-circle">2</div>
+          <span class="step-label">Tu perfil</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <span class="step-label">¡Listo!</span>
+        </div>
+      </div>
+
+      <form method="POST" action="{% url 'guardar_registro_google' %}">
+        {% csrf_token %}
+
+        <!-- SECCIÓN 1: DATOS PERSONALES -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="bi bi-person-circle"></i>
+            Datos Personales
+          </div>
+
+          <div class="row g-3">
+
+            <!-- Nombre (de Google) -->
+            <div class="col-md-6">
+              <label class="form-label">
+                Nombre <span class="req">*</span>
+              </label>
+              <input type="text"
+                     name="nombre"
+                     class="form-control google-prefilled"
+                     value="{% firstof form_data.nombre google_nombre %}"
+                     required>
+              <div class="prefilled-badge">
+                <i class="bi bi-google"></i> Obtenido de Google
+              </div>
+            </div>
+
+            <!-- Apellido (de Google) -->
+            <div class="col-md-6">
+              <label class="form-label">
+                Apellido <span class="req">*</span>
+              </label>
+              <input type="text"
+                     name="apellido"
+                     class="form-control google-prefilled"
+                     value="{% firstof form_data.apellido google_apellido %}"
+                     required>
+              <div class="prefilled-badge">
+                <i class="bi bi-google"></i> Obtenido de Google
+              </div>
+            </div>
+
+            <!-- Correo (de Google, solo lectura) -->
+            <div class="col-12">
+              <label class="form-label">Correo electrónico</label>
+              <input type="email"
+                     class="form-control google-prefilled"
+                     value="{{ google_correo }}"
+                     disabled>
+              <div class="prefilled-badge">
+                <i class="bi bi-shield-check"></i> Verificado por Google
+              </div>
+            </div>
+
+            <!-- Username -->
+            <div class="col-md-6">
+              <label class="form-label">
+                Nombre de usuario <span class="req">*</span>
+              </label>
+              <input type="text"
+                     name="username"
+                     class="form-control"
+                     placeholder="Ej: juanperez"
+                     value="{{ form_data.username }}"
+                     required>
+            </div>
+
+            <!-- Cédula -->
+            <div class="col-md-6">
+              <label class="form-label">
+                Cédula <span class="req">*</span>
+              </label>
+              <input type="text"
+                     name="cedula"
+                     class="form-control"
+                     placeholder="Número de identificación"
+                     value="{{ form_data.cedula }}"
+                     required>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="col-md-6">
+              <label class="form-label">Teléfono</label>
+              <input type="text"
+                     name="telefono"
+                     class="form-control"
+                     placeholder="Ej: 3001234567"
+                     value="{{ form_data.telefono }}">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: UBICACIÓN -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="bi bi-geo-alt"></i>
+            Ubicación
+          </div>
+
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="form-label">
+                Ciudad <span class="req">*</span>
+              </label>
+              <select id="ciudad" name="ciudad" class="form-select" required data-selected="{{ form_data.ciudad }}">
+                <option value="">Selecciona una ciudad</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Departamento</label>
+              <input type="text"
+                     name="departamento"
+                     class="form-control google-prefilled"
+                     value="Cundinamarca"
+                     readonly>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">
+                Dirección <span class="req">*</span>
+              </label>
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <select name="direccion_tipo"
+                  class="form-select" style="width:130px" required>
+                  <option value="Cra" {% if form_data.tipo_dir == "Cra" %}selected{% endif %}>Cra</option>
+                  <option value="Calle" {% if form_data.tipo_dir == "Calle" %}selected{% endif %}>Calle</option>
+                  <option value="Avenida" {% if form_data.tipo_dir == "Avenida" %}selected{% endif %}>Avenida</option>
+                  <option value="Transversal" {% if form_data.tipo_dir == "Transversal" %}selected{% endif %}>Transversal</option>
+                  <option value="Diagonal" {% if form_data.tipo_dir == "Diagonal" %}selected{% endif %}>Diagonal</option>
+                  <option value="Via" {% if form_data.tipo_dir == "Via" %}selected{% endif %}>Vía</option>
+                </select>
+                <input type="text" name="direccion_numero1"
+                  class="form-control" style="width:70px" required
+                  placeholder="7" value="{{ form_data.n1 }}">
+                <input type="text" name="direccion_letra"
+                  class="form-control" style="width:50px" placeholder="A"
+                  value="{{ form_data.letra }}">
+                <span class="fw-bold fs-5">#</span>
+                <input type="text" name="direccion_numero2"
+                  class="form-control" style="width:70px" required
+                  placeholder="12" value="{{ form_data.n2 }}">
+                <span class="fw-bold fs-5">-</span>
+                <input type="text" name="direccion_numero3"
+                  class="form-control" style="width:70px" required
+                  placeholder="34" value="{{ form_data.n3 }}">
+              </div>
+              <div class="form-text" style="font-size:0.75rem; color:#888;">
+                Ej: Cra 7 # 12-34
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: ROL -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="bi bi-shield-check"></i>
+            ¿Cómo usarás Agrolink?
+          </div>
+
+          <div class="rol-grid">
+
+            <!-- CLIENTE -->
+            <div class="rol-card">
+              <input type="radio" name="rol" value="CLIENTE"
+                     id="rol_cliente" required
+                     onchange="mostrarExtra('cliente')"
+                     {% if form_data.rol == "CLIENTE" %}checked{% endif %}>
+              <label class="rol-label" for="rol_cliente">
+                <div class="rol-icon">🛒</div>
+                <div class="rol-info">
+                  <strong>Cliente</strong>
+                  <span>Compro productos</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- PRODUCTOR -->
+            <div class="rol-card">
+              <input type="radio" name="rol" value="PRODUCTOR"
+                     id="rol_productor"
+                     onchange="mostrarExtra('productor')"
+                     {% if form_data.rol == "PRODUCTOR" %}checked{% endif %}>
+              <label class="rol-label" for="rol_productor">
+                <div class="rol-icon">🌱</div>
+                <div class="rol-info">
+                  <strong>Productor</strong>
+                  <span>Vendo mis cosechas</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- TRANSPORTISTA -->
+            <div class="rol-card">
+              <input type="radio" name="rol" value="TRANSPORTISTA"
+                     id="rol_transportista"
+                     onchange="mostrarExtra('transportista')"
+                     {% if form_data.rol == "TRANSPORTISTA" %}checked{% endif %}>
+              <label class="rol-label" for="rol_transportista">
+                <div class="rol-icon">🚚</div>
+                <div class="rol-info">
+                  <strong>Transportista</strong>
+                  <span>Ofrezco envíos</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- ASESOR -->
+            <div class="rol-card">
+              <input type="radio" name="rol" value="ASESOR"
+                     id="rol_asesor"
+                     onchange="mostrarExtra('asesor')"
+                     {% if form_data.rol == "ASESOR" %}checked{% endif %}>
+              <label class="rol-label" for="rol_asesor">
+                <div class="rol-icon">👨‍🌾</div>
+                <div class="rol-info">
+                  <strong>Asesor</strong>
+                  <span>Ofrezco asesorías</span>
+                </div>
+              </label>
+            </div>
+
+          </div>
+
+          <!-- EXTRA CLIENTE -->
+          <div class="rol-extra" id="extra_cliente">
+            <label class="form-label">Preferencias de compra</label>
+            <textarea name="preferencias"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Ej: Prefiero productos orgánicos...">Sin preferencias</textarea>
+          </div>
+
+          <!-- EXTRA PRODUCTOR -->
+          <div class="rol-extra" id="extra_productor">
+            <label class="form-label">Tipo de cultivo principal</label>
+            <select name="tipo_cultivo" class="form-select">
+              <option value="">Selecciona</option>
+              <option value="Policultivo">Policultivo</option>
+              <option value="Monocultivo">Monocultivo</option>
+              <option value="Huerta">Huerta</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+
+          <!-- EXTRA TRANSPORTISTA -->
+          <div class="rol-extra" id="extra_transportista">
+            <label class="form-label">Zonas de entrega</label>
+            <textarea name="zonas_entrega"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Ej: Bogotá, Cundinamarca..."></textarea>
+          </div>
+
+          <!-- EXTRA ASESOR -->
+          <div class="rol-extra" id="extra_asesor">
+            <label class="form-label">Tipo de asesoría</label>
+            <select name="tipo_asesoria" class="form-select">
+              <option value="">Selecciona</option>
+              <option value="Tecnica_Agricola">Técnica Agrícola</option>
+              <option value="Control_Plagas">Control de Plagas</option>
+              <option value="Fertilizacion">Fertilización y Suelos</option>
+              <option value="Riego">Sistemas de Riego</option>
+              <option value="Organica">Agricultura Orgánica</option>
+              <option value="Otra">Otra especialidad</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- BOTÓN SUBMIT -->
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-check-circle"></i>
+          Completar registro y entrar a Agrolink
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ── Mostrar campos extra según rol ──
+    function mostrarExtra(rol) {
+      const extras = ['cliente', 'productor', 'transportista', 'asesor'];
+      extras.forEach(function(r) {
+        const el = document.getElementById('extra_' + r);
+        if (el) {
+          el.classList.toggle('visible', r === rol);
+        }
+      });
+    }
+
+    // Inicializar campos extra según rol preseleccionado
+    document.addEventListener('DOMContentLoaded', function() {
+      const checked = document.querySelector('input[name="rol"]:checked');
+      if (checked) {
+        const id = checked.id.replace('rol_', '');
+        mostrarExtra(id);
+      }
+    });
+
+    // ── Cargar ciudades desde API ──
+    async function cargarCiudades() {
+      try {
+        const res    = await fetch("/api/cundinamarca/ciudades/");
+        const result = await res.json();
+        const select = document.getElementById("ciudad");
+        const selected = select.getAttribute('data-selected') || '';
+
+        result.data.forEach(function(c) {
+          const sel = c.name === selected ? ' selected' : '';
+          select.innerHTML += `<option value="${c.name}"${sel}>${c.name}</option>`;
+        });
+
+        // Bogotá manual
+        const bog = 'Bogotá';
+        const selBog = bog === selected ? ' selected' : '';
+        select.innerHTML += `<option value="${bog}"${selBog}>${bog}</option>`;
+
+      } catch(e) {
+        console.warn("No se pudieron cargar las ciudades:", e);
+      }
+    }
+
+    cargarCiudades();
+  </script>
+
+</body>
+</html>
