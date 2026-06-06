@@ -1,6 +1,7 @@
 from django import forms
+from django.contrib.auth.models import User
 from productos.models import Producto, ImagenesProducto, ProductoFinca, CategoriaProducto, Finca
-from usuarios.models import Productor
+from usuarios.models import Usuario, Productor
 from django.core.validators import RegexValidator
 
 
@@ -50,6 +51,11 @@ class RegistroUsuarioForm(forms.Form):
             message="el Nombre de usuario solo permite letras sin numeros ni caracteres especiales "
         )])
     
+    def clean_txt_nombreUsuario(self):
+        username = self.cleaned_data['txt_nombreUsuario']
+        if User.objects.filter(username=username).exists() or Usuario.objects.filter(nombre_usuario=username).exists():
+            raise forms.ValidationError("Este nombre de usuario ya está registrado.")
+        return username
 
     txt_correo = forms.EmailField(required=True)
     
@@ -60,34 +66,65 @@ class RegistroUsuarioForm(forms.Form):
 
         if dominio not in dominios_permitidos:
             raise forms.ValidationError("El dominio del correo no está permitido , solo permitimos : gmail.com', 'hotmail.com', 'empresa.com.")
+        if User.objects.filter(email=correo).exists() or Usuario.objects.filter(correo=correo).exists():
+            raise forms.ValidationError("Este correo ya está registrado.")
         return correo
     
     
     txt_contrasena = forms.CharField(
         widget=forms.PasswordInput,
         min_length=6,
+        max_length=25,
         required=True
     )
     txt_telefono = forms.CharField(
         required=False,
-        validators=[RegexValidator(regex=r'^\+?\d{10}$', message="Teléfono inválido")]
+        validators=[RegexValidator(regex=r'^\+?\d{10}$', message="Teléfono inválido debe tener 10 digitos")]
     )
     txt_documento = forms.CharField(
         validators=[RegexValidator(regex=r'^\d{6,12}$', message="Cédula inválida")]
     )
+    def clean_txt_documento(self):
+        cedula = self.cleaned_data['txt_documento']
+        if Usuario.objects.filter(cedula=cedula).exists():
+            raise forms.ValidationError("Este número de cédula ya está registrado.")
+        return cedula
+
     txt_ciudad = forms.CharField(max_length=50, required=True)
     txt_departamento = forms.CharField(max_length=50, required=True)
     
     
-    txt_direccion = forms.CharField(
-        max_length=200,
+    txt_direccion_tipo = forms.ChoiceField(
+        choices=[
+            ('Cra', 'Cra'),
+            ('Calle', 'Calle'),
+            ('Avenida', 'Avenida'),
+            ('Transversal', 'Transversal'),
+            ('Diagonal', 'Diagonal'),
+            ('Via', 'Vía'),
+        ],
         required=True,
-        validators=[
-            RegexValidator(
-                regex=r'^(Calle|cll|cra|Carrera|Cra|Avenida|Av|av|Transversal|Diagonal)\s+\d+[A-Za-z]?\s*#\s*\d+-\d+$',
-                message="Formato inválido. Ejemplo: Cra 7 # 12-34"
-            )
-        ]
+        label="Tipo de vía"
+    )
+    txt_direccion_numero1 = forms.CharField(
+        max_length=5, required=True,
+        validators=[RegexValidator(regex=r'^\d+$', message="Solo números")],
+        label="Número principal"
+    )
+    txt_direccion_letra = forms.CharField(
+        max_length=2, required=False,
+        validators=[RegexValidator(regex=r'^[A-Za-z]?$', message="Solo una letra")],
+        label="Letra (opcional)"
+    )
+    txt_direccion_numero2 = forms.CharField(
+        max_length=5, required=True,
+        validators=[RegexValidator(regex=r'^\d+$', message="Solo números")],
+        label="Segundo número"
+    )
+    txt_direccion_numero3 = forms.CharField(
+        max_length=5, required=True,
+        validators=[RegexValidator(regex=r'^\d+$', message="Solo números")],
+        label="Tercer número"
     )
     
     role = forms.ChoiceField(

@@ -35,10 +35,13 @@ SECRET_KEY = 'django-insecure-n&+=0l%guuaa8p##42pv#_s+lcm3&^!r^+j&5r_k(h-4z)=y2p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'tova-soullike-gita.ngrok-free.dev'
+    '20.151.96.142',
+    'agrolink.canadacentral.cloudapp.azure.com',
+    'www.shadowserver.org',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -171,8 +174,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Ngrok expone tu servidor local de forma rapida y segura
-NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
-
+#NGROK_URL = "https://tova-soullike-gita.ngrok-free.dev"
+BASE_URL = "agrolink.canadacentral.cloudapp.azure.com"
 
 # ePayco - MODO PRUEBA
 

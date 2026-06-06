@@ -22,10 +22,7 @@
           Crear cuenta
           <span id="roleBadge" class="role-badge cliente">Cliente</span>
         </h3>
-        <a class="btn btn-outline-primary">
-          <i class="bi bi-box-arrow-in-right me-1"></i>
-          Iniciar sesión
-        </a>
+       
       </div>
 
 
@@ -66,7 +63,7 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label fw-semibold">Usuario *</label>
+            <label class="form-label fw-semibold"> Nombre De Usuario *</label>
             <input type="text" name="txt_nombreUsuario"
               class="form-control {% if form.txt_nombreUsuario.errors %}is-invalid{% endif %}" required
               placeholder="Ej: juanperez" value="{{ form.data.txt_nombreUsuario }}" />
@@ -113,8 +110,14 @@
 
           <div class="col-md-6">
             <label class="form-label fw-semibold">Teléfono</label>
-            <input type="text" name="txt_telefono" class="form-control" placeholder="Ej: 3001234567"
+            <input type="text" name="txt_telefono" class="form-control {% if form.txt_telefono.errors %}is-invalid{% endif %}"
+              placeholder="Ej: 3001234567"
               value="{{ form.data.txt_telefono }}" />
+              {% if form.txt_telefono.errors %}
+            <div class="invalid-feedback">
+              {{ form.txt_telefono.errors.0 }}
+            </div>
+            {% endif %}
           </div>
 
           <div class="col-md-6">
@@ -141,14 +144,53 @@
             <input type="text" name="txt_departamento" class="form-control" value="Cundinamarca" readonly />
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-12">
             <label class="form-label fw-semibold">Dirección *</label>
-            <input type="text" name="txt_direccion" class="form-control {% if form.txt_direccion.errors %}is-invalid{% endif %}"" required placeholder="Ej: Calle 10 #20-30"
-              pattern="^[A-Za-z0-9\s\-\.,#]+$" value="{{ form.data.txt_direccion }}" />
-            {% if form.txt_direccion.errors %}
-            <div class="invalid-feedback">
-            {{ form.txt_direccion.errors.0 }}
+            <div class="d-flex align-items-center gap-1 flex-wrap">
+              <select name="txt_direccion_tipo"
+                class="form-select {% if form.txt_direccion_tipo.errors %}is-invalid{% endif %}"
+                style="width:130px" required>
+                <option value="Cra" {% if form.data.txt_direccion_tipo == "Cra" %}selected{% endif %}>Cra</option>
+                <option value="Calle" {% if form.data.txt_direccion_tipo == "Calle" %}selected{% endif %}>Calle</option>
+                <option value="Avenida" {% if form.data.txt_direccion_tipo == "Avenida" %}selected{% endif %}>Avenida</option>
+                <option value="Transversal" {% if form.data.txt_direccion_tipo == "Transversal" %}selected{% endif %}>Transversal</option>
+                <option value="Diagonal" {% if form.data.txt_direccion_tipo == "Diagonal" %}selected{% endif %}>Diagonal</option>
+                <option value="Via" {% if form.data.txt_direccion_tipo == "Via" %}selected{% endif %}>Vía</option>
+              </select>
+              <input type="text" name="txt_direccion_numero1"
+                class="form-control {% if form.txt_direccion_numero1.errors %}is-invalid{% endif %}"
+                style="width:70px" required placeholder="7"
+                value="{{ form.data.txt_direccion_numero1 }}" />
+              <input type="text" name="txt_direccion_letra"
+                class="form-control {% if form.txt_direccion_letra.errors %}is-invalid{% endif %}"
+                style="width:50px" placeholder="A"
+                value="{{ form.data.txt_direccion_letra }}" />
+              <span class="fw-bold fs-5">#</span>
+              <input type="text" name="txt_direccion_numero2"
+                class="form-control {% if form.txt_direccion_numero2.errors %}is-invalid{% endif %}"
+                style="width:70px" required placeholder="12"
+                value="{{ form.data.txt_direccion_numero2 }}" />
+              <span class="fw-bold fs-5">-</span>
+              <input type="text" name="txt_direccion_numero3"
+                class="form-control {% if form.txt_direccion_numero3.errors %}is-invalid{% endif %}"
+                style="width:70px" required placeholder="34"
+                value="{{ form.data.txt_direccion_numero3 }}" />
             </div>
+            <div class="form-text">Ej: Cra 7 # 12-34</div>
+            {% if form.txt_direccion_tipo.errors %}
+            <div class="invalid-feedback d-block">{{ form.txt_direccion_tipo.errors.0 }}</div>
+            {% endif %}
+            {% if form.txt_direccion_numero1.errors %}
+            <div class="invalid-feedback d-block">{{ form.txt_direccion_numero1.errors.0 }}</div>
+            {% endif %}
+            {% if form.txt_direccion_letra.errors %}
+            <div class="invalid-feedback d-block">{{ form.txt_direccion_letra.errors.0 }}</div>
+            {% endif %}
+            {% if form.txt_direccion_numero2.errors %}
+            <div class="invalid-feedback d-block">{{ form.txt_direccion_numero2.errors.0 }}</div>
+            {% endif %}
+            {% if form.txt_direccion_numero3.errors %}
+            <div class="invalid-feedback d-block">{{ form.txt_direccion_numero3.errors.0 }}</div>
             {% endif %}
           </div>
 

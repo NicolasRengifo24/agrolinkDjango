@@ -74,7 +74,8 @@ def inicio_usuarios(request):
 
 
 def mostrar_registro_usuarios(request):
-    return render(request,'usuarios/register.html')
+    form = RegistroUsuarioForm()
+    return render(request,'usuarios/register.html', {'form': form})
 
 
 
@@ -100,7 +101,12 @@ def registrar_usuario(request):
             documento = form.cleaned_data['txt_documento']
             ciudad = form.cleaned_data['txt_ciudad']
             departamento = form.cleaned_data['txt_departamento']
-            direccion = form.cleaned_data['txt_direccion']
+            tipo = form.cleaned_data['txt_direccion_tipo']
+            n1 = form.cleaned_data['txt_direccion_numero1']
+            letra = form.cleaned_data.get('txt_direccion_letra', '') or ''
+            n2 = form.cleaned_data['txt_direccion_numero2']
+            n3 = form.cleaned_data['txt_direccion_numero3']
+            direccion = f"{tipo} {n1}{letra} # {n2}-{n3}"
             rol = form.cleaned_data['role']
 
             # Crear usuario base de Django
