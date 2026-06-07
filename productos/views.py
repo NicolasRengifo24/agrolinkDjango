@@ -400,7 +400,7 @@ def editar_finca(request, finca_id):
 def lista_fincas(request):
     """Lista de fincas del productor"""
     
-    fincas = Finca.objects.filter(id_usuario=request.user.Usuario.productor)
+    fincas = Finca.objects.filter(id_usuario=request.user.usuario.productor)
     
     return render(request, 'finca/lista_fincas.html', {'fincas': fincas})
 
@@ -452,7 +452,6 @@ def lista_productos(request):
     }
     
     return render(request, 'productos/lista_productos.html', context)
-
 
 
 
@@ -940,8 +939,8 @@ def detalle_ventas_producto(request, producto_id):
         })
 
 
- # esto es Para el reporte 
- 
+# esto es Para el reporte 
+
 from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors

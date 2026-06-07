@@ -26,6 +26,7 @@ from .forms import LoginForm, RegistroUsuarioForm
 
 
 from productos.models import Producto, ImagenesProducto, ProductoFinca,Finca
+from. forms import ProductoForm, ImagenesProducto, ImagenPrincipalForm, ProductoFincaForm, ProductoEditarForm
 
 
 

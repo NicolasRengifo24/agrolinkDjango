@@ -8,6 +8,8 @@
   --agro-earth:  #795548;
 }
 
+.text-agro { color: var(--agro-dark); }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -219,7 +221,8 @@ body {
 }
 .input-group .btn-eye:hover { color: var(--agro-base); }
 
-.btn-submit {
+.btn-submit,
+.btn-agro {
   width: 100%;
   padding: 0.65rem;
   background: var(--agro-base);
@@ -233,8 +236,18 @@ body {
   transition: background 0.2s, transform 0.1s;
   margin-top: 0.4rem;
 }
-.btn-submit:hover  { background: var(--agro-mid); }
-.btn-submit:active { transform: scale(0.98); }
+.btn-submit:hover,
+.btn-agro:hover  { background: var(--agro-mid); }
+.btn-submit:active,
+.btn-agro:active { transform: scale(0.98); }
+
+/* Variante de una sola columna (Recuperar password, etc.) */
+.login-card.column {
+  flex-direction: column;
+  max-width: 480px;
+  min-height: auto;
+  padding: 2rem;
+}
 
 .forgot-link {
   display: block;
@@ -249,6 +262,7 @@ body {
 /* ── RESPONSIVE ── */
 @media (max-width: 620px) {
   .login-card { flex-direction: column; max-width: 400px; }
+  .login-card.column { max-width: 400px; padding: 1.5rem; }
   .panel-left  { width: 100%; min-height: 200px; padding: 2rem 1.5rem; }
   .panel-left p { display: none; }
   .panel-right { padding: 2rem 1.5rem; }

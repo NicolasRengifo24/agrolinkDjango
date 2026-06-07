@@ -54,3 +54,51 @@
     justify-content: space-between;
     font-weight: bold;
 }
+
+/* TIMELINE */
+.mis-pedidos-wrapper .timeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+.mis-pedidos-wrapper .step {
+    text-align: center;
+    color: #bbb;
+    transition: 0.3s;
+    width: 80px;
+}
+
+.mis-pedidos-wrapper .step span {
+    font-size: 22px;
+}
+
+.mis-pedidos-wrapper .step.active {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.mis-pedidos-wrapper .line {
+    flex: 1;
+    height: 3px;
+    background: #ddd;
+}
+
+.mis-pedidos-wrapper .active-line {
+    background: #4caf50;
+}
+
+.mis-pedidos-wrapper .envio-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.mis-pedidos-wrapper .bloque {
+    background: #f1f8e9;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+}
