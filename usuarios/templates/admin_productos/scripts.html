@@ -1,22 +1,23 @@
-¿<script>
+<script>
 
-// Filtro por stock
-document.getElementById('stockFilter')?.addEventListener('change', function(){
+function filtrar() {
+    let cat = document.getElementById('categoriaFilter').value;
+    let stock = document.getElementById('stockFilter').value;
 
-    let val = this.value;
-    let rows = document.querySelectorAll('.producto-item');
+    document.querySelectorAll('.producto-item').forEach(function(r) {
+        let pasaCat = !cat || r.dataset.categoria === cat;
 
-    rows.forEach(r => {
+        let s = parseInt(r.dataset.stock);
+        let pasaStock = !stock ||
+            (stock === 'disponible' && s >= 10) ||
+            (stock === 'bajo' && s > 0 && s < 10) ||
+            (stock === 'agotado' && s === 0);
 
-        let stock = parseInt(r.dataset.stock);
-
-        if(val === 'disponible' && stock < 10) r.style.display = 'none';
-        else if(val === 'bajo' && (stock >= 10 || stock == 0)) r.style.display = 'none';
-        else if(val === 'agotado' && stock > 0) r.style.display = 'none';
-        else r.style.display = '';
-
+        r.style.display = (pasaCat && pasaStock) ? '' : 'none';
     });
+}
 
-});
+document.getElementById('categoriaFilter')?.addEventListener('change', filtrar);
+document.getElementById('stockFilter')?.addEventListener('change', filtrar);
 
 </script>

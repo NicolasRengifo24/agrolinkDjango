@@ -297,6 +297,11 @@ body, html {
     color: white;
 }
 
+.estado-asignado {
+    background: linear-gradient(135deg,#6c757d,#495057);
+    color: white;
+}
+
 #mapaEnvio {
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }

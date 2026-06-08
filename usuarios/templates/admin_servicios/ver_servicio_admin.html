@@ -15,7 +15,7 @@
   <!-- Tu CSS personalizado -->
   <link rel="stylesheet" href="{% static 'css/detalle_servicio.css' %}">
 </head>
-<body style="background-color: #f4f6f8;">
+<body>
 
   <div class="ds-wrapper mt-4">
     <div class="ds-card shadow-sm p-4">
@@ -27,7 +27,7 @@
         </h4>
 
         <!-- ESTADO -->
-        {% if servicio.estado == "activo" %}
+        {% if servicio.estado|lower == "activo" %}
           <span class="ds-badge ds-badge--success">Activo</span>
         {% elif servicio.estado == "inactivo" %}
           <span class="ds-badge ds-badge--danger">Inactivo</span>

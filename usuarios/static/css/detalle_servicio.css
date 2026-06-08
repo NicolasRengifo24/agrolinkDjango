@@ -1,7 +1,6 @@
 /* ============================================================
-   detalle_servicio_full.css
-   Vista moderna y centrada de detalle de servicio
-   Compatible con Bootstrap 5
+   detalle_servicio.css
+   Vista de detalle de servicio — colores verdes admin
    ============================================================ */
 
 /* ── Fondo de la página ───────────────────────────────────── */
@@ -9,7 +8,7 @@ body, html {
   height: 100%;
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #e0f2fe, #fef3c7);
+  background: linear-gradient(180deg, #f8faf7, #f1f4ef);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -26,15 +25,15 @@ body, html {
 .ds-card {
   width: 100%;
   background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
   padding: 35px;
   transition: all 0.3s ease;
 }
 
 .ds-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 20px 40px rgba(47, 107, 49, 0.12);
 }
 
 /* ── Título principal ────────────────────────────────────── */
@@ -45,10 +44,11 @@ body, html {
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
+  color: #1d4820;
 }
 
 .ds-title .bi {
-  color: #2563eb;
+  color: #2f6b31;
   font-size: 28px;
 }
 
@@ -62,24 +62,24 @@ body, html {
 }
 
 .ds-badge--success {
-  background: linear-gradient(120deg, #bbf7d0, #16a34a);
-  color: #065f46;
+  background: linear-gradient(135deg, #2f6b31, #3f8a41);
+  color: #ffffff;
 }
 
 .ds-badge--danger {
-  background: linear-gradient(120deg, #fecaca, #dc2626);
-  color: #7f1d1d;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #ffffff;
 }
 
 .ds-badge--secondary {
-  background: linear-gradient(120deg, #e2e8f0, #64748b);
-  color: #1e293b;
+  background: linear-gradient(135deg, #7e8b7e, #6b7a6b);
+  color: #ffffff;
 }
 
 /* ── Separador ─────────────────────────────────────────── */
 hr {
   border: none;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e2e8e2;
   margin: 25px 0;
 }
 
@@ -106,14 +106,14 @@ hr {
 .ds-col p strong {
   display: inline-block;
   min-width: 120px;
-  color: #111827;
+  color: #1d4820;
 }
 
 /* ── Títulos de sección (Máquinas, Certificados) ────────── */
 .ds-section-title {
   font-size: 20px;
   font-weight: 700;
-  color: #1f2937;
+  color: #1d4820;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -121,7 +121,7 @@ hr {
 }
 
 .ds-section-title .bi {
-  color: #2563eb;
+  color: #2f6b31;
 }
 
 /* ── Tablas ─────────────────────────────────────────────── */
@@ -129,20 +129,20 @@ hr {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid #e2e8e2;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .ds-table th,
 .ds-table td {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8e2;
   padding: 14px 16px;
   vertical-align: middle;
 }
 
 .ds-table thead th {
-  background: #1f2937;
+  background: #1d4820;
   color: #f3f4f6;
   font-size: 13px;
   font-weight: 700;
@@ -150,7 +150,7 @@ hr {
 }
 
 .ds-table tbody tr:hover {
-  background: #f1f5f9;
+  background: rgba(47, 107, 49, 0.04);
   transition: background 0.2s ease;
 }
 
@@ -166,20 +166,21 @@ hr {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #2563eb;
+  background: linear-gradient(135deg, #2f6b31, #3f8a41);
   border: none;
   color: #ffffff !important;
   font-weight: 700;
   padding: 12px 26px;
-  border-radius: 14px;
+  border-radius: 12px;
   text-decoration: none;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(47, 107, 49, 0.25);
 }
 
 .ds-btn-back:hover {
-  background: #1e40af;
+  background: linear-gradient(135deg, #1d4820, #2f6b31);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 6px 18px rgba(47, 107, 49, 0.3);
   color: #ffffff !important;
 }
 
@@ -187,7 +188,7 @@ hr {
 @media (max-width: 768px) {
   .ds-card {
     padding: 25px !important;
-    border-radius: 20px;
+    border-radius: 18px;
   }
 
   .ds-row {
