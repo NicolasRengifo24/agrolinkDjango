@@ -168,7 +168,7 @@ def detalles_servicios(request, id):
 def lista_servicios(request):
 
     servicios = Servicio.objects.filter(
-        estado='ACTIVO'
+        estado__iexact='activo'
     )
 
     return render(

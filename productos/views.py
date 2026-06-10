@@ -939,8 +939,8 @@ def detalle_ventas_producto(request, producto_id):
         })
 
 
- # esto es Para el reporte 
- 
+# esto es Para el reporte 
+
 from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors

@@ -62,7 +62,7 @@
 
         <!-- 🔹 FORMULARIO -->
         <div class="card shadow p-4 mb-5">
-            <h4 class="mb-3">📢 Publicar Servicio</h4>
+            <h4 class="mb-3"> Publicar Servicio</h4>
 
             <form method="POST">
                 {% csrf_token %}
@@ -85,8 +85,8 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Estado del servicio</label>
                     <select name="estado" class="form-select" required>
-                        <option value="ACTIVO">Activo</option>
-                        <option value="INACTIVO">Inactivo</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
 
@@ -97,7 +97,7 @@
         </div>
 
         <!-- 🔹 LISTADO -->
-        <h4 class="mb-3">📋 Mis Servicios</h4>
+        <h4 class="mb-3"> Mis Servicios</h4>
 
         <div class="row">
             {% for servicio in servicios %}
@@ -108,7 +108,7 @@
                         <h5>{{ servicio.categoria }}</h5>
                         <p>{{ servicio.descripcion }}</p>
 
-                        {% if servicio.estado == "ACTIVO" %}
+                        {% if servicio.estado|lower == "activo" %}
                             <span class="badge badge-activo">Activo</span>
                         {% else %}
                             <span class="badge badge-inactivo">Inactivo</span>

@@ -154,7 +154,7 @@
 
       <div class="mt-auto d-flex justify-content-between align-items-center">
 
-        {% if servicio.estado == "ACTIVO" %}
+        {% if servicio.estado|lower == "activo" %}
           <span class="ds-badge ds-badge--success">Disponible</span>
         {% else %}
           <span class="ds-badge ds-badge--danger">No disponible</span>
@@ -184,7 +184,7 @@
 
           <div class="modal-body">
 
-            {% if servicio.estado == "ACTIVO" %}
+            {% if servicio.estado|lower == "activo" %}
               <span class="ds-badge ds-badge--success">Disponible</span>
             {% else %}
               <span class="ds-badge ds-badge--danger">No disponible</span>

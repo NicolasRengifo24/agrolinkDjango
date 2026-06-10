@@ -51,8 +51,9 @@ urlpatterns = [
     path('servicios/cambiar_estado/<int:servicio_id>/', views.cambiar_estado_servicio, name='cambiar_estado_servicio'),
     path('servicios/eliminar/<int:servicio_id>/', views.eliminar_servicio_admin, name='eliminar_servicio_admin'),
     path('logout/', views.cerrar_sesion, name='logout'),
-    
-    
 
-    
+    # Reportes PDF
+    path('reporte/inventario/', views.reporte_inventario_admin_pdf, name='reporte_inventario_admin_pdf'),
+    path('reporte/pedidos/', views.reporte_pedidos_admin_pdf, name='reporte_pedidos_admin_pdf'),
+    path('reporte/envios/', views.reporte_envios_admin_pdf, name='reporte_envios_admin_pdf'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

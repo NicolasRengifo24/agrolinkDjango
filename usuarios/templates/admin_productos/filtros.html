@@ -5,9 +5,9 @@
         <div class="col-md-4">
             <select class="form-select" id="categoriaFilter">
                 <option value="">Todas las categorías</option>
-                <option>Frutas</option>
-                <option>Verduras</option>
-                <option>Granos</option>
+                {% for cat in categorias %}
+                <option value="{{ cat.id_categoria }}">{{ cat.nombre_categoria }}</option>
+                {% endfor %}
             </select>
         </div>
 

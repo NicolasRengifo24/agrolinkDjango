@@ -2,6 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Sum
 from datetime import datetime
+from django.http import HttpResponse
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
 
 
 
@@ -10,7 +15,7 @@ from servicios.models import Servicio, Maquinas, Certificados
 
 from pedidos.models import Compra, DetallesCompra
 from django.http import JsonResponse
-from envios.models import Envio
+from envios.models import Envio, Vehiculo
 from servicios.models import Servicio
 from django.contrib.auth.models import User
 
@@ -25,7 +30,8 @@ import random
 from .forms import LoginForm, RegistroUsuarioForm
 
 
-from productos.models import Producto, ImagenesProducto, ProductoFinca,Finca
+from productos.models import Producto, ImagenesProducto, ProductoFinca, Finca, CategoriaProducto
+from. forms import ProductoForm, ImagenesProducto, ImagenPrincipalForm, ProductoFincaForm, ProductoEditarForm
 
 
 
@@ -384,6 +390,7 @@ def ver_listas_usuarios_admin(request):
 #@admin_required
 def ver_lista_productos_admin(request):
     productos = Producto.objects.select_related('id_usuario', 'id_categoria').all()
+    categorias = CategoriaProducto.objects.all()
     
     total_producto = Producto.objects.filter().count()
     stock_alto = Producto.objects.filter(stock__gte=100).count()
@@ -392,6 +399,7 @@ def ver_lista_productos_admin(request):
     
     context = {
         'productos': productos,
+        'categorias': categorias,
         'total_productos': total_producto,
         'stock_alto': stock_alto,
         'stock_bajo': stock_bajo,
@@ -660,15 +668,15 @@ def ver_lista_envio_admin(request):
     total_envios = Envio.objects.count()
 
     envios_activos = Envio.objects.filter(
-        estado_envio="en_camino"
+        estado_envio="En_Transito"
     ).count()
 
     envios_entregados = Envio.objects.filter(
-        estado_envio="entregado"
+        estado_envio="Entregado"
     ).count()
 
     envios_pendientes = Envio.objects.filter(
-        estado_envio="pendiente"
+        estado_envio="Asignado"
     ).count()
 
     costo_total_envios = Envio.objects.aggregate(
@@ -935,9 +943,20 @@ def eliminar_usuario(request, id):
 
 
 def ver_usuario(request, id):
-    usuario =Usuario.objects.get(id_usuario=id)
+    usuario = Usuario.objects.get(id_usuario=id)
     
-    return render(request, 'admin_usuarios/ver_usuario.html', {'usuario': usuario})
+    vehiculos = None
+    if usuario.rol == 'TRANSPORTISTA':
+        try:
+            transportista = Transportista.objects.get(id_usuario=usuario)
+            vehiculos = Vehiculo.objects.filter(id_transportista=transportista)
+        except Transportista.DoesNotExist:
+            pass
+    
+    return render(request, 'admin_usuarios/ver_usuario.html', {
+        'usuario': usuario,
+        'vehiculos': vehiculos,
+    })
 
 # esto es el login , la autenticacion de cada usuario 
 
@@ -1113,3 +1132,218 @@ def establecer_nueva_contrasena(request):
             return redirect('solicitar_codigo_recuperacion')
 
     return redirect('solicitar_codigo_recuperacion')
+
+
+# ============================================================
+#  REPORTES PDF - ADMIN
+# ============================================================
+
+def reporte_inventario_admin_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_inventario_agrolink.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Header
+    elementos.append(Paragraph("AGROLINK - Reporte de Inventario", styles['Title']))
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph(f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+    elementos.append(Spacer(1, 16))
+
+    # Resumen
+    total_productos = Producto.objects.count()
+    stock_alto = Producto.objects.filter(stock__gte=100).count()
+    stock_bajo = Producto.objects.filter(stock__lt=50).count()
+    productores_activos = Producto.objects.values('id_usuario').distinct().count()
+
+    elementos.append(Paragraph("Resumen", styles['Heading2']))
+    data_resumen = [
+        ["Indicador", "Valor"],
+        ["Total Productos", str(total_productos)],
+        ["Stock Alto (≥100)", str(stock_alto)],
+        ["Stock Bajo (<50)", str(stock_bajo)],
+        ["Productores Activos", str(productores_activos)],
+    ]
+    t = Table(data_resumen, colWidths=[250, 150])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8e2')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8faf7')),
+    ]))
+    elementos.append(t)
+    elementos.append(Spacer(1, 20))
+
+    # Productos por categoría
+    elementos.append(Paragraph("Productos por Categoría", styles['Heading2']))
+    elementos.append(Spacer(1, 8))
+
+    productos = Producto.objects.select_related('id_categoria', 'id_usuario__id_usuario').all()
+    data = [["Producto", "Categoría", "Stock", "Precio", "Productor"]]
+    for p in productos:
+        data.append([
+            p.nombre_producto,
+            p.id_categoria.nombre_categoria if p.id_categoria else "-",
+            str(p.stock or 0),
+            f"${int(p.precio or 0):,}",
+            f"{p.id_usuario.id_usuario.nombre} {p.id_usuario.id_usuario.apellido}" if p.id_usuario else "-",
+        ])
+
+    t = Table(data, colWidths=[130, 100, 60, 80, 150])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1d4820')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8e2')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#ffffff'), colors.HexColor('#f8faf7')]),
+        ('ALIGN', (2, 0), (3, -1), 'CENTER'),
+    ]))
+    elementos.append(t)
+
+    doc.build(elementos)
+    return response
+
+
+def reporte_pedidos_admin_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_ventas_agrolink.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Header
+    elementos.append(Paragraph("AGROLINK - Reporte de Ventas", styles['Title']))
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph(f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+    elementos.append(Spacer(1, 16))
+
+    # Resumen
+    hoy = datetime.now()
+    total_pedidos = Compra.objects.count()
+    total_ventas = Compra.objects.aggregate(total=Sum('total'))['total'] or 0
+    pedidos_mes = Compra.objects.filter(
+        fecha_hora_compra__year=hoy.year, fecha_hora_compra__month=hoy.month
+    ).count()
+    ventas_mes = Compra.objects.filter(
+        fecha_hora_compra__year=hoy.year, fecha_hora_compra__month=hoy.month
+    ).aggregate(total=Sum('total'))['total'] or 0
+
+    elementos.append(Paragraph("Resumen", styles['Heading2']))
+    data_resumen = [
+        ["Indicador", "Valor"],
+        ["Total Pedidos", str(total_pedidos)],
+        ["Ingresos Totales", f"${int(total_ventas):,}"],
+        ["Pedidos del Mes", str(pedidos_mes)],
+        ["Ventas del Mes", f"${int(ventas_mes):,}"],
+    ]
+    t = Table(data_resumen, colWidths=[250, 150])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8e2')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8faf7')),
+    ]))
+    elementos.append(t)
+    elementos.append(Spacer(1, 20))
+
+    # Pedidos
+    elementos.append(Paragraph("Listado de Pedidos", styles['Heading2']))
+    elementos.append(Spacer(1, 8))
+
+    compras = Compra.objects.select_related('id_cliente__id_usuario').all()
+    data = [["#", "Cliente", "Fecha", "Subtotal", "Total"]]
+    for c in compras:
+        data.append([
+            str(c.id_compra),
+            f"{c.id_cliente.id_usuario.nombre} {c.id_cliente.id_usuario.apellido}" if c.id_cliente else "-",
+            c.fecha_hora_compra.strftime('%d/%m/%Y') if c.fecha_hora_compra else "-",
+            f"${int(c.subtotal or 0):,}",
+            f"${int(c.total or 0):,}",
+        ])
+
+    t = Table(data, colWidths=[50, 140, 80, 100, 100])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1d4820')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8e2')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#ffffff'), colors.HexColor('#f8faf7')]),
+        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+        ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
+    ]))
+    elementos.append(t)
+
+    doc.build(elementos)
+    return response
+
+
+def reporte_envios_admin_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_envios_agrolink.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Header
+    elementos.append(Paragraph("AGROLINK - Reporte de Envíos", styles['Title']))
+    elementos.append(Spacer(1, 8))
+    elementos.append(Paragraph(f"Generado: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
+    elementos.append(Spacer(1, 16))
+
+    # Resumen
+    total_envios = Envio.objects.count()
+    envios_activos = Envio.objects.filter(estado_envio="En_Transito").count()
+    envios_entregados = Envio.objects.filter(estado_envio="Entregado").count()
+    envios_pendientes = Envio.objects.filter(estado_envio="Asignado").count()
+    costo_total = Envio.objects.aggregate(total=Sum('costo_total'))['total'] or 0
+
+    elementos.append(Paragraph("Resumen", styles['Heading2']))
+    data_resumen = [
+        ["Indicador", "Valor"],
+        ["Total Envíos", str(total_envios)],
+        ["En tránsito", str(envios_activos)],
+        ["Entregados", str(envios_entregados)],
+        ["Pendientes", str(envios_pendientes)],
+        ["Costo Total Acumulado", f"${int(costo_total):,}"],
+    ]
+    t = Table(data_resumen, colWidths=[250, 150])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8e2')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8faf7')),
+    ]))
+    elementos.append(t)
+    elementos.append(Spacer(1, 20))
+
+    # Envíos
+    elementos.append(Paragraph("Listado de Envíos", styles['Heading2']))
+    elementos.append(Spacer(1, 8))
+
+    envios = Envio.objects.select_related(
+        'id_transportista__id_usuario', 'id_compra'
+    ).all()
+    data = [["#Envío", "Transportista", "Estado", "Distancia (km)", "Costo"]]
+    for e in envios:
+        data.append([
+            f"ENV-{e.id_envio}",
+            f"{e.id_transportista.id_usuario.nombre} {e.id_transportista.id_usuario.apellido}" if e.id_transportista else "No asignado",
+            e.estado_envio or "-",
+            str(e.distancia_km or 0),
+            f"${int(e.costo_total or 0):,}",
+        ])
+
+    t = Table(data, colWidths=[80, 150, 90, 90, 90])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1d4820')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e2e8e2')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#ffffff'), colors.HexColor('#f8faf7')]),
+        ('ALIGN', (3, 0), (-1, -1), 'RIGHT'),
+    ]))
+    elementos.append(t)
+
+    doc.build(elementos)
+    return response

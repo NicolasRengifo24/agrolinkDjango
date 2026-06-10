@@ -6,14 +6,14 @@
 
 /* Variables globales */
 :root {
-  --bg: #f5f0e8;
-  --surface: #fffdf7;
-  --border: #d6c9a8;
-  --accent: #3a6b35;
+  --bg: #f8faf7;
+  --surface: #ffffff;
+  --border: #e2e8e2;
+  --accent: #2f6b31;
   --accent-light: #e8f0e7;
-  --accent-dark: #2a4f26;
+  --accent-dark: #1d4820;
   --text: #2a2318;
-  --text-muted: #7a6e5c;
+  --text-muted: #7e8b7e;
   --error: #c0392b;
   --shadow: 0 4px 24px rgba(42, 35, 24, 0.08);
   --radius: 12px;
@@ -30,10 +30,7 @@
 
 body {
   font-family: 'DM Sans', sans-serif;
-  background-color: var(--bg);
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(58, 107, 53, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, rgba(196, 160, 80, 0.07) 0%, transparent 50%);
+  background: linear-gradient(180deg, #f8faf7, #f1f4ef);
   min-height: 100vh;
   display: flex;
   align-items: flex-start;

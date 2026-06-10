@@ -44,16 +44,16 @@
 
 <body>
 
-    <!-- 🔹 NAVBAR -->
+    <!--  NAVBAR -->
     {% include 'servicios/navbar_asesor.html' %}
 
     <div class="container main-container">
 
         <h2 class="mb-4">🚜 Gestión de Máquinas</h2>
 
-        <!-- 🔹 FORMULARIO -->
+        <!--  FORMULARIO -->
         <div class="card shadow p-4 mb-5">
-            <h4 class="mb-3">➕ Registrar Máquina</h4>
+            <h4 class="mb-3"> Registrar Máquina</h4>
 
             <form method="POST">
                 {% csrf_token %}
@@ -101,7 +101,7 @@
         </div>
 
         <!-- 🔹 LISTADO -->
-        <h4 class="mb-3">📋 Mis Máquinas</h4>
+        <h4 class="mb-3"> Mis Máquinas</h4>
 
         <div class="row">
             {% for maquina in maquinas %}

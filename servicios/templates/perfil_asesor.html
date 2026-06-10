@@ -40,7 +40,7 @@
         <div class="ds-card profile-header">
 
             <img src="https://i.pravatar.cc/120?img={{ asesor.id_usuario.id_usuario }}"
-                 class="profile-avatar">
+                class="profile-avatar">
 
             <div class="profile-name">
                 {{ asesor.id_usuario.nombre }} {{ asesor.id_usuario.apellido }}
@@ -57,7 +57,7 @@
             {% if es_dueno %}
             <div class="mt-3">
                 <button class="btn-lumina" onclick="toggleEdit()">
-                    ✏️ Editar perfil
+                    Editar perfil
                 </button>
             </div>
             {% endif %}
@@ -75,7 +75,7 @@
             <!-- DATOS PERSONALES -->
             <div class="ds-card">
 
-                <h4>👤 Datos Personales</h4>
+                <h4> Datos Personales</h4>
 
                 <div class="data-grid mt-3">
 
@@ -116,7 +116,7 @@
             <!-- PERFIL PROFESIONAL -->
             <div class="ds-card">
 
-                <h5>🎓 Perfil Profesional</h5>
+                <h5> Perfil Profesional</h5>
 
                 <div class="data-grid mt-3">
 
@@ -139,7 +139,7 @@
 
             <div class="ds-card">
 
-                <h4>✏️ Editar Perfil</h4>
+                <h4>Editar Perfil</h4>
 
                 <form method="post" action="{% url 'editar_perfil_asesor' %}">
                     {% csrf_token %}

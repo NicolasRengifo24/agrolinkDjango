@@ -138,7 +138,7 @@ class RegistroUsuarioForm(forms.Form):
         required=True
     )
 
-""""
+
 class ProductoForm(forms.ModelForm):
     class Meta:
         model =Producto
@@ -223,11 +223,11 @@ class ImagenPrincipalForm(forms.ModelForm):
 
 
 class ProductoFincaForm(forms.ModelForm):
-    
+    """
     Relaciona el producto con una finca y guarda
     cantidad de producción y fecha de cosecha.
+    """
     
-
     class Meta:
         model  = ProductoFinca
         fields = ['id_finca', 'cantidad_produccion', 'fecha_cosecha']
@@ -259,7 +259,7 @@ class ProductoFincaForm(forms.ModelForm):
             self.fields['id_finca'].queryset = Finca.objects.none()
         self.fields['cantidad_produccion'].required = False
         self.fields['fecha_cosecha'].required       = False    
-        
+
 
 class ProductoEditarForm(forms.ModelForm):
     class Meta:
@@ -275,4 +275,3 @@ class ProductoEditarForm(forms.ModelForm):
     
         
         
-"""

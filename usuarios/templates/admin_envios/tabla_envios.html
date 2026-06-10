@@ -1,6 +1,11 @@
 <div class="card p-4">
 
-  <h5 class="mb-3">Gestión de Envíos</h5>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Gestión de Envíos</h5>
+    <a href="{% url 'reporte_envios_admin_pdf' %}" class="btn btn-success btn-sm">
+      <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
+    </a>
+  </div>
 
   <div class="tabla-envios-container">
     <table class="table table-hover table-envios">
@@ -57,14 +62,14 @@
 
           <!-- ESTADO -->
           <td>
-            {% if e.estado_envio == "pendiente" %}
-              <span class="badge bg-secondary">Pendiente</span>
-            {% elif e.estado_envio == "en_camino" %}
-              <span class="badge bg-warning text-dark">En camino</span>
-            {% elif e.estado_envio == "entregado" %}
-              <span class="badge bg-success">Entregado</span>
+            {% if e.estado_envio == "Asignado" %}
+              <span class="badge-envio estado-asignado">Asignado</span>
+            {% elif e.estado_envio == "En_Transito" %}
+              <span class="badge-envio estado-camino">En tránsito</span>
+            {% elif e.estado_envio == "Entregado" %}
+              <span class="badge-envio estado-entregado">Entregado</span>
             {% else %}
-              <span class="badge bg-dark">Desconocido</span>
+              <span class="badge-envio estado-asignado">{{ e.estado_envio|default:"Desconocido" }}</span>
             {% endif %}
           </td>
 
