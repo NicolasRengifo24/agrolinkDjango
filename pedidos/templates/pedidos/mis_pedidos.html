@@ -81,16 +81,16 @@
             <div class="timeline">
 
                 <!-- Pedido -->
-                <div class="step active">
-                    <span>🛒</span>
+                <div class="step active" data-etapa="pedido">
+                    <div class="step-circle"><i class="bi bi-bag-check"></i></div>
                     <p>Pedido</p>
                 </div>
 
                 <div class="line {% if pedido.envio %}active-line{% endif %}"></div>
 
-                <!-- Preparación -->
-                <div class="step {% if pedido.envio %}active{% endif %}">
-                    <span>🚜</span>
+                <!-- Preparando -->
+                <div class="step {% if pedido.envio %}active{% endif %}" data-etapa="preparando">
+                    <div class="step-circle"><i class="bi bi-gear-wide"></i></div>
                     <p>Preparando</p>
                 </div>
 
@@ -98,10 +98,11 @@
                     class="line {% if pedido.envio and pedido.envio.estado_envio != 'Asignado' %}active-line{% endif %}">
                 </div>
 
-                <!-- En tránsito -->
+                <!-- En camino -->
                 <div
-                    class="step {% if pedido.envio and pedido.envio.estado_envio == 'En_Transito' or pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active{% endif %}">
-                    <span>🚚</span>
+                    class="step {% if pedido.envio and pedido.envio.estado_envio == 'En_Transito' or pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active{% endif %}"
+                    data-etapa="camino">
+                    <div class="step-circle"><i class="bi bi-truck"></i></div>
                     <p>En camino</p>
                 </div>
 
@@ -110,12 +111,21 @@
                 </div>
 
                 <!-- Entregado -->
-                <div class="step {% if pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active{% endif %}">
-                    <span>📦</span>
+                <div
+                    class="step {% if pedido.envio and pedido.envio.estado_envio == 'Entregado' %}active{% endif %}"
+                    data-etapa="entregado">
+                    <div class="step-circle"><i class="bi bi-box-seam"></i></div>
                     <p>Entregado</p>
                 </div>
 
             </div>
+
+            <!-- Tracking -->
+            {% if pedido.envio and pedido.envio.numero_seguimiento %}
+            <div class="tracking-info">
+                🔎 <strong>Número de seguimiento:</strong> {{ pedido.envio.numero_seguimiento }}
+            </div>
+            {% endif %}
 
             <!-- INFO ENVÍO -->
             {% if pedido.envio %}
@@ -136,11 +146,6 @@
                 <div class="bloque">
                     <strong>📦 Entrega estimada</strong>
                     <p>{{ pedido.envio.fecha_entrega|default:"Pendiente" }}</p>
-                </div>
-
-                <div class="bloque">
-                    <strong>🔎 Tracking</strong>
-                    <p>{{ pedido.envio.numero_seguimiento|default:"No disponible" }}</p>
                 </div>
 
             </div>
