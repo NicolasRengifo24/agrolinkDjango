@@ -46,7 +46,25 @@ def carrito(request):
     # contador del carrito 
     cart_count = sum(det.cantidad for det in detalles)
 
-    # 3️ Referencia única para ePayco
+    # 3️ Peso total + coordenadas de origen
+    peso_total = 0
+    lat_origen = None
+    lng_origen = None
+    for det in detalles:
+        peso_producto = float(det.id_producto.peso_kg or 0)
+        peso_total += float(det.cantidad) * peso_producto
+
+    if detalles:
+        from productos.models import ProductoFinca
+        primer_detalle = detalles.first()
+        producto = primer_detalle.id_producto
+        producto_finca = ProductoFinca.objects.filter(id_producto=producto).first()
+        if producto_finca and producto_finca.id_finca:
+            finca = producto_finca.id_finca
+            lat_origen = finca.latitud
+            lng_origen = finca.longitud
+
+    # 4️ Referencia única para ePayco
     referencia_unica = None
     if compra:
         referencia_unica = f"compra_{compra.id_compra}_{int(time.time())}"
@@ -56,6 +74,9 @@ def carrito(request):
     'detalles': detalles,
     'total': compra.total if compra else 0,
     'subtotal': compra.subtotal if compra else 0,
+    'peso_total': peso_total,
+    'lat_origen': lat_origen,
+    'lng_origen': lng_origen,
     'ref_pago': referencia_unica,
     'epayco_key': settings.EPAYCO_PUBLIC_KEY,
     'total_epayco': f"{compra.total:.2f}" if compra else '0.00',
@@ -69,22 +90,29 @@ def carrito(request):
 
 def actualizar_carrito(request, detalle_id):
     detalle = get_object_or_404(DetallesCompra, id_detalle=detalle_id)
-    
-    nueva_cantidad = int(request.POST.get('cantidad', 1))
-    
-    if nueva_cantidad <= 0:
-        messages.error(request, "Cantidad inválida")
+
+    try:
+        nueva_cantidad = int(request.POST.get('cantidad', ''))
+    except (ValueError, TypeError):
+        messages.error(request, "Cantidad inv\u00e1lida. Debe ser un n\u00famero entero.")
         return redirect('carrito')
-    
-    # ✅ ACTUALIZAR CANTIDAD
+
+    if nueva_cantidad < 1:
+        messages.error(request, "La cantidad m\u00ednima es 1")
+        return redirect('carrito')
+
+    stock = detalle.id_producto.stock
+    if stock is not None and nueva_cantidad > stock:
+        messages.error(
+            request,
+            f"Solo hay {stock} unidades disponibles de '{detalle.id_producto.nombre_producto}'"
+        )
+        return redirect('carrito')
+
     detalle.cantidad = nueva_cantidad
-    
-    # ✅ ACTUALIZAR SUBTOTAL (MUY IMPORTANTE)
     detalle.subtotal = nueva_cantidad * detalle.id_producto.precio
-    
     detalle.save()
 
-    # 🔥 RECALCULAR COMPRA COMPLETA
     detalles = DetallesCompra.objects.filter(id_compra=detalle.id_compra)
 
     subtotal = sum(d.subtotal for d in detalles)
@@ -92,6 +120,18 @@ def actualizar_carrito(request, detalle_id):
     total = subtotal + impuestos
 
     compra = detalle.id_compra
+
+    if compra.latitud_destino and compra.longitud_destino:
+        primer_detalle = detalles.filter(distancia_km__isnull=False).first()
+        if primer_detalle and primer_detalle.distancia_km:
+            peso_total = sum(
+                float(d.cantidad) * float(d.id_producto.peso_kg or 0)
+                for d in detalles
+            )
+            costo_envio = primer_detalle.distancia_km * 3000 + peso_total * 200
+            compra.valor_envio = round(costo_envio, 2)
+            total += Decimal(str(round(costo_envio, 2)))
+
     compra.subtotal = subtotal
     compra.impuestos = impuestos
     compra.total = total
@@ -121,11 +161,19 @@ def eliminar_del_carrito(request, detalle_id):
     return redirect('carrito')
 
 
-# el corazon del funcionamiento de epayco ----NoTOCAR----
 def respuesta_pago(request):
-    return render(request, "components/epayco_respuesta.html", {
-        "data": request.GET
-    })
+    estado = request.GET.get('x_cod_transaction_state')
+
+    if estado == "1":
+        messages.success(request, "\u2705 Pago aprobado correctamente. Revisa tus pedidos.")
+    elif estado == "2":
+        messages.error(request, "\u274c El pago fue rechazado. Intenta de nuevo.")
+    elif estado == "3":
+        messages.info(request, "\u23f3 El pago est\u00e1 pendiente de confirmaci\u00f3n.")
+    elif estado == "11":
+        messages.warning(request, "El pago fue cancelado.")
+
+    return redirect('mis_pedidos')
     
     
 
@@ -300,24 +348,6 @@ def confirmacion_pago(request):
     print("⚠️ Método no permitido")
     return JsonResponse({"error": "metodo no permitido"})
 
-# Función auxiliar para calcular distancia (fallback)
-def calcular_distancia(lat1, lng1, lat2, lng2):
-    from math import radians, sin, cos, sqrt, atan2
-    
-    R = 6371  # Radio de la tierra en km
-    
-    lat1_rad = radians(float(lat1))
-    lat2_rad = radians(float(lat2))
-    delta_lat = radians(float(lat2) - float(lat1))
-    delta_lng = radians(float(lng2) - float(lng1))
-    
-    a = sin(delta_lat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lng / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    
-    return R * c
-
-
-
 # Función para calcular distancia usando la fórmula de Haversine
 def calcular_distancia(lat1, lng1, lat2, lng2):
     from math import radians, sin, cos, sqrt, atan2
@@ -472,12 +502,13 @@ def seleccionar_destino(request):
         longitud = request.POST.get('longitud') or compra.longitud_destino
         direccion = request.POST.get('direccion', '')
         distancia = request.POST.get('distancia', '0')
-        
-        print(f"📍 POST - Lat: {latitud}, Lng: {longitud}")
-        print(f"📍 Distancia recibida: {distancia} km")
-        
-        if latitud is None or longitud is None:
-            messages.error(request, 'Debes seleccionar una ubicación en el mapa')
+
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        def json_error(msg, status=400):
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': msg}, status=status)
+            messages.error(request, msg)
             return render(request, 'pedidos/seleccionar_destino.html', {
                 'compra': compra,
                 'latitud_existente': latitud_existente,
@@ -488,38 +519,59 @@ def seleccionar_destino(request):
                 'lng_origen': lng_origen,
                 'peso_total': peso_total,
             })
-        
+
+        print(f"📍 POST - Lat: {latitud}, Lng: {longitud}")
+        print(f"📍 Distancia recibida: {distancia} km")
+
+        if not latitud or not longitud:
+            return json_error('Debes seleccionar una ubicación en el mapa')
+
         try:
-            # Normalizar coordenadas
             latitud_normalizada = str(latitud).replace(',', '.')
             longitud_normalizada = str(longitud).replace(',', '.')
             distancia_normalizada = str(distancia).replace(',', '.') if distancia else '0'
-            
-            # Guardar en la COMPRA (para que el webhook pueda acceder)
+
             compra.latitud_destino = float(latitud_normalizada)
             compra.longitud_destino = float(longitud_normalizada)
             compra.direccion_entrega = direccion
-            # Guardar distancia en los detalles
+
             detalles = compra.detallescompra_set.all()
 
+            tarifa_por_km = 3000
+            tarifa_por_kg = 200
+            distancia_km = float(distancia_normalizada)
+            peso_total = 0
+            for d in detalles:
+                peso_total += float(d.cantidad) * float(d.id_producto.peso_kg or 0)
+            costo_envio = distancia_km * tarifa_por_km + peso_total * tarifa_por_kg
+
+            compra.valor_envio = round(costo_envio, 2)
+            compra.total = compra.subtotal + compra.impuestos + Decimal(str(round(costo_envio, 2)))
+            compra.save()
+
             for detalle in detalles:
-                detalle.distancia_km = float(distancia_normalizada)
+                detalle.distancia_km = distancia_km
                 detalle.save()
 
-            print(f"✅ Distancia guardada en detalles: {distancia_normalizada} km")  # ← Guardar distancia en la compra
-            compra.save()
-            
             print(f"✅ Datos guardados en compra {compra.id_compra}")
-            print(f"Distancia detalle: {detalle.distancia_km} km")
-            print(f"   Latitud: {compra.latitud_destino}")
-            print(f"   Longitud: {compra.longitud_destino}")
-            
+            print(f"💰 Costo env\u00edo: ${costo_envio:,.0f} | Total: ${compra.total:,.0f}")
+
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'latitud': compra.latitud_destino,
+                    'longitud': compra.longitud_destino,
+                    'distancia_km': distancia_km,
+                    'direccion': direccion,
+                    'costo_envio': round(costo_envio, 2),
+                })
+
             messages.success(request, f'📍 Ubicación guardada. Distancia: {distancia_normalizada} km')
             return redirect('carrito')
-            
+
         except Exception as e:
             print("❌ ERROR REAL:", str(e))
-            messages.error(request, f'Error al guardar: {str(e)}')
+            return json_error(f'Error al guardar: {str(e)}', 500)
     
     return render(request, 'pedidos/seleccionar_destino.html', {
         'compra': compra,
