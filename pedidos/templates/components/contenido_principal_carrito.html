@@ -290,7 +290,21 @@
         pesoTotal: dataEl?.dataset?.pesoTotal
     });
 
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        if (map) {
+            map.remove();
+            map = null;
+            marker = null;
+            latSeleccionada = null;
+            lngSeleccionada = null;
+        }
+    });
+
     modalEl.addEventListener('shown.bs.modal', function() {
+        if (map) {
+            setTimeout(function() { map.invalidateSize(); }, 300);
+            return;
+        }
         setTimeout(function() {
             try {
                 if (typeof L === 'undefined') {
@@ -301,7 +315,11 @@
                     return;
                 }
 
-                map = L.map('modal-mapa-contenedor').setView([latInicial, lngInicial], 13);
+                var contenedor = document.getElementById('modal-mapa-contenedor');
+                if (contenedor.offsetHeight === 0) {
+                    contenedor.style.height = '400px';
+                }
+                map = L.map(contenedor).setView([latInicial, lngInicial], 13);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap contributors'
