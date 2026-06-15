@@ -46,16 +46,45 @@
                 {% endwith %}
 
                 <div class="flex-grow-1">
-                    <h5 class="fw-bold">{{ item.id_producto.nombre }}</h5>
-                    <p class="text-muted mb-1">
-                        {{ item.id_producto.descripcion }}
+                    <h5 class="fw-bold">{{ item.id_producto.nombre_producto }}</h5>
+
+                    {% with stock_val=item.id_producto.stock %}
+                    <span class="badge {% if stock_val is None %}bg-secondary{% elif stock_val > 0 %}bg-success{% else %}bg-danger{% endif %} mb-1">
+                        Stock: {{ stock_val|default:"Ilimitado" }} uds
+                    </span>
+                    {% endwith %}
+
+                    <p class="text-muted mb-1 small">
+                        {{ item.id_producto.descripcion_producto }}
                     </p>
 
-                    <!-- INPUT AJAX -->
+                    <div class="text-muted small mb-2">
+                        <i class="bi bi-person-circle"></i>
+                        {{ item.id_producto.id_usuario.id_usuario.nombre }}
+                        {% with pf=item.id_producto.fincas.first %}
+                            {% if pf %}
+                                · <i class="bi bi-house"></i> {{ pf.id_finca.nombre_finca }}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+
                     <form action="{% url 'actualizar_carrito' item.id_detalle %}" method="POST">
                         {% csrf_token %}
-                        <input type="number" name="cantidad" value="{{ item.cantidad }}" min="1">
-                        <button type="submit">Actualizar</button>
+                        <div class="input-group input-group-sm" style="max-width: 155px">
+                            <button class="btn btn-outline-success" type="button"
+                                    onclick="stepper(-1, this)"
+                                    style="border-color:#2f6b31;color:#2f6b31">&minus;</button>
+                            <input type="number" name="cantidad"
+                                   value="{{ item.cantidad }}" min="1"
+                                   max="{{ item.id_producto.stock|default:99 }}"
+                                   class="form-control text-center border-success"
+                                   style="border-color:#2f6b31;background:#f6f8f4">
+                            <button class="btn btn-outline-success" type="button"
+                                    onclick="stepper(1, this)"
+                                    style="border-color:#2f6b31;color:#2f6b31">+</button>
+                            <button type="submit" class="btn btn-success ms-1"
+                                    style="background:#2f6b31;border-color:#2f6b31">&#8635;</button>
+                        </div>
                     </form>
                 </div>
 
@@ -86,8 +115,13 @@
                 </div>
 
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Envío:</span>
+                    <span>IVA (19%):</span>
                     <strong>$ {{ compra.impuestos | floatformat:0 | intcomma }}</strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Costo de envio:</span>
+                    <strong>$ {{ compra.valor_envio|default:0|floatformat:0|intcomma }}</strong>
                 </div>
 
                 <hr>
@@ -99,10 +133,11 @@
                     </h5>
                 </div>
 
-                <!-- Botón para seleccionar destino -->
-                <a href="{% url 'seleccionar_destino' %}" class="btn btn-outline-info w-100 mt-2">
+                <!-- Botón para seleccionar destino → modal -->
+                <button type="button" class="btn btn-outline-info w-100 mt-2" data-bs-toggle="modal" data-bs-target="#mapaModal"
+                        {% if not compra.latitud_destino or not compra.longitud_destino %}id="btn-seleccionar-ubicacion"{% endif %}>
                     <i class="bi bi-geo-alt"></i> Seleccionar ubicación de entrega
-                </a>
+                </button>
 
                 <!-- Botón de pago (solo mostrar si ya tiene ubicación) -->
                 {% if compra.latitud_destino and compra.longitud_destino %}
@@ -121,7 +156,9 @@
 
 
                 <script>
-                    document.getElementById("btn-pagar").addEventListener("click", function () {
+                    var btnPagar = document.getElementById("btn-pagar");
+                    if (btnPagar) {
+                    btnPagar.addEventListener("click", function () {
                         // Versión 2 - con objeto de configuración separado
                         var data = {
                             key: "{{ epayco_key }}",
@@ -148,6 +185,7 @@
                         ePayco.checkout.configure(data);
                         ePayco.checkout.open(data);
                     });
+                    }
                 </script>
             </div>
         </div>
@@ -161,5 +199,275 @@
     {% include 'components/recomendados_carrito.html' %}
 
 </div>
+
+<!-- Modal Mapa -->
+<div class="modal fade" id="mapaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-geo-alt"></i> Seleccionar ubicación de entrega</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3" id="modal-coordenadas-info" style="display:none;">
+                    <i class="bi bi-geo-alt-fill"></i> <span id="modal-coordenadas-texto"></span>
+                </div>
+                <div class="alert alert-success mb-3" id="modal-distancia-info" style="display:none;">
+                    <i class="bi bi-rulers"></i> <span id="modal-distancia-texto"></span>
+                </div>
+                <div id="modal-mapa-contenedor" class="modal-mapa"></div>
+                <div class="mt-3">
+                    <label class="form-label">Dirección (opcional)</label>
+                    <input type="text" class="form-control" id="modal-direccion"
+                           placeholder="Calle, número, barrio, ciudad..."
+                           value="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-success" id="modal-confirmar-ubicacion">
+                    <i class="bi bi-check-circle"></i> Confirmar ubicación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div
+    id="map-data"
+    data-lat-origen="{{ lat_origen|default_if_none:'' }}"
+    data-lng-origen="{{ lng_origen|default_if_none:'' }}"
+    data-peso-total="{{ peso_total|default:'0' }}"
+    data-lat-destino="{{ compra.latitud_destino|default_if_none:'' }}"
+    data-lng-destino="{{ compra.longitud_destino|default_if_none:'' }}"
+></div>
+
+<script>
+(function() {
+    var map = null;
+    var marker = null;
+    var latSeleccionada = null;
+    var lngSeleccionada = null;
+
+    var modalEl = document.getElementById('mapaModal');
+    if (!modalEl) return;
+
+    function safeNumber(v) {
+        if (v === undefined || v === null || v === '') return null;
+        var str = String(v).replace(',', '.');
+        var n = Number(str);
+        return isNaN(n) ? null : n;
+    }
+
+    var dataEl = document.getElementById('map-data');
+    var latOrigen = dataEl ? safeNumber(dataEl.dataset.latOrigen) : null;
+    var lngOrigen = dataEl ? safeNumber(dataEl.dataset.lngOrigen) : null;
+    var pesoTotal = dataEl ? safeNumber(dataEl.dataset.pesoTotal) : 0;
+    if (pesoTotal === null) pesoTotal = 0;
+
+    var latInicial = dataEl ? safeNumber(dataEl.dataset.latDestino) : null;
+    var lngInicial = dataEl ? safeNumber(dataEl.dataset.lngDestino) : null;
+
+    if (latInicial === null || lngInicial === null) {
+        latInicial = (latOrigen !== null) ? latOrigen : 4.7110;
+        lngInicial = (lngOrigen !== null) ? lngOrigen : -74.0721;
+    }
+
+    if (isNaN(latInicial) || isNaN(lngInicial)) {
+        console.warn('[Mapa] Coordenadas inv\u00e1lidas, forzando fallback:', latInicial, lngInicial);
+        latInicial = 4.7110;
+        lngInicial = -74.0721;
+    }
+
+    console.log('[Mapa] Coordenadas usadas:', latInicial, lngInicial);
+    console.log('[Mapa Debug] data-attributes raw:', {
+        latOrigen: dataEl?.dataset?.latOrigen,
+        lngOrigen: dataEl?.dataset?.lngOrigen,
+        latDestino: dataEl?.dataset?.latDestino,
+        lngDestino: dataEl?.dataset?.lngDestino,
+        pesoTotal: dataEl?.dataset?.pesoTotal
+    });
+
+    modalEl.addEventListener('shown.bs.modal', function() {
+        setTimeout(function() {
+            try {
+                if (typeof L === 'undefined') {
+                    document.getElementById('modal-mapa-contenedor').innerHTML =
+                        '<div class="alert alert-danger m-4 text-center">' +
+                        '<i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>' +
+                        'No se pudo cargar el mapa. Verifica tu conexi\u00f3n a internet.</div>';
+                    return;
+                }
+
+                map = L.map('modal-mapa-contenedor').setView([latInicial, lngInicial], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                if (latInicial !== 4.7110 || lngInicial !== -74.0721) {
+                    colocarMarcador(latInicial, lngInicial);
+                }
+
+                if (latOrigen !== null && lngOrigen !== null) {
+                    var iconoFinca = L.divIcon({
+                        className: '',
+                        html: '<div style="background:#2f6b31;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);">\uD83C\uDFE1</div>',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32],
+                        popupAnchor: [0, -32]
+                    });
+                    L.marker([latOrigen, lngOrigen], { icon: iconoFinca })
+                        .addTo(map)
+                        .bindPopup('\uD83C\uDFE1 <b>Finca</b> (origen del env\u00edo)');
+                }
+
+                map.on('click', function(e) {
+                    latSeleccionada = e.latlng.lat;
+                    lngSeleccionada = e.latlng.lng;
+
+                    colocarMarcador(e.latlng.lat, e.latlng.lng);
+                    mostrarInfoCoordenadas(e.latlng.lat, e.latlng.lng);
+
+                    var distancia = calcularDistancia(
+                        [latOrigen || 4.7110, lngOrigen || -74.0721],
+                        [e.latlng.lat, e.latlng.lng]
+                    );
+                    var costo = calcularCostoEnvio(distancia, pesoTotal);
+                    mostrarInfoDistancia(distancia, costo);
+
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+                          e.latlng.lat + '&lon=' + e.latlng.lng + '&accept-language=es')
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.display_name) {
+                                document.getElementById('modal-direccion').value = data.display_name;
+                            }
+                        })
+                        .catch(function() {});
+                });
+
+                [400, 800].forEach(function(ms) {
+                    setTimeout(function() { if (map) map.invalidateSize(); }, ms);
+                });
+
+            } catch (e) {
+                console.error('[Mapa Error]', e);
+                var cont = document.getElementById('modal-mapa-contenedor');
+                if (cont) cont.innerHTML =
+                    '<div class="alert alert-danger m-4 text-center">' +
+                    '<i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>' +
+                    'Error al cargar el mapa.</div>';
+            }
+        }, 300);
+    });
+
+    function colocarMarcador(lat, lng) {
+        if (!map) return;
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng]).addTo(map);
+        }
+        marker.bindPopup('\uD83D\uDCCD Ubicaci\u00f3n de entrega').openPopup();
+    }
+
+    function mostrarInfoCoordenadas(lat, lng) {
+        document.getElementById('modal-coordenadas-info').style.display = 'block';
+        document.getElementById('modal-coordenadas-texto').innerHTML =
+            'Ubicaci\u00f3n: ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
+    }
+
+    function mostrarInfoDistancia(distancia, costo) {
+        document.getElementById('modal-distancia-info').style.display = 'block';
+        document.getElementById('modal-distancia-texto').innerHTML =
+            'Distancia: ' + distancia.toFixed(2) + ' km \u2014 Costo env\u00edo: $' +
+            Math.round(costo.costoTotal).toLocaleString('es-CO');
+    }
+
+    document.getElementById('modal-confirmar-ubicacion').addEventListener('click', function() {
+        if (latSeleccionada === null || lngSeleccionada === null) {
+            alert('Por favor, haz clic en el mapa para seleccionar una ubicaci\u00f3n.');
+            return;
+        }
+
+        var distancia = calcularDistancia(
+            [latOrigen || 4.7110, lngOrigen || -74.0721],
+            [latSeleccionada, lngSeleccionada]
+        );
+        var direccion = document.getElementById('modal-direccion').value;
+        var csrfEl = document.querySelector('form [name=csrfmiddlewaretoken]');
+        if (!csrfEl) {
+            alert('Error de seguridad. Recarga la p\u00e1gina.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('latitud', latSeleccionada);
+        formData.append('longitud', lngSeleccionada);
+        formData.append('distancia', distancia);
+        formData.append('direccion', direccion);
+        formData.append('csrfmiddlewaretoken', csrfEl.value);
+
+        var btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+
+        fetch('{% url "seleccionar_destino" %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Error desconocido'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> Confirmar ubicaci\u00f3n';
+            }
+        })
+        .catch(function() {
+            alert('Error de conexi\u00f3n al guardar la ubicaci\u00f3n.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Confirmar ubicaci\u00f3n';
+        });
+    });
+
+    function calcularDistancia(origen, destino) {
+        var R = 6371;
+        var lat1 = (origen[0] || 0) * Math.PI / 180;
+        var lat2 = (destino[0] || 0) * Math.PI / 180;
+        var dLat = ((destino[0] || 0) - (origen[0] || 0)) * Math.PI / 180;
+        var dLon = ((destino[1] || 0) - (origen[1] || 0)) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function calcularCostoEnvio(distanciaKm, pesoKg) {
+        var tarifaPorKm = 3000;
+        var tarifaPorKg = 200;
+        var costoDistancia = distanciaKm * tarifaPorKm;
+        var costoPeso = pesoKg * tarifaPorKg;
+        return { costoDistancia: costoDistancia, costoPeso: costoPeso, costoTotal: costoDistancia + costoPeso };
+    }
+})();
+</script>
+
+<script>
+function stepper(delta, btn) {
+    var input = btn.closest('.input-group').querySelector('input[name=cantidad]');
+    var min = parseInt(input.min) || 1;
+    var max = parseInt(input.max) || 999;
+    var val = parseInt(input.value) || min;
+    val = Math.min(max, Math.max(min, val + delta));
+    input.value = val;
+}
+</script>
 
 {% endblock %}
