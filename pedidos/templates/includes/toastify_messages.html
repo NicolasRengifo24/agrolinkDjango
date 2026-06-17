@@ -1,25 +1,26 @@
-<!-- Toastify CSS y JS -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   {% if messages %}
     {% for message in messages %}
       Toastify({
-        text: "{{ message }}",
+        text: "{{ message|safe }}",
         duration: 3000,
         gravity: "top",
         position: "right",
         {% if message.tags == "success" %}
-        backgroundColor: "#4fbe87",
+        style: { background: "#4fbe87" },
         {% elif message.tags == "error" %}
-        backgroundColor: "#f44336",
+        style: { background: "#f44336" },
         {% elif message.tags == "warning" %}
-        backgroundColor: "#ff9800",
+        style: { background: "#ff9800" },
         {% else %}
-        backgroundColor: "#333",
+        style: { background: "#333" },
         {% endif %}
       }).showToast();
     {% endfor %}
   {% endif %}
+});
 </script>

@@ -59,6 +59,8 @@ class Envio(models.Model):
     costo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     tarifa_por_km = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     tarifa_por_kg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    foto_carga = models.ImageField(upload_to='fotos_carga/', blank=True, null=True)
+    foto_descarga = models.ImageField(upload_to='fotos_descarga/', blank=True, null=True)
 
     class Meta:
         managed = True

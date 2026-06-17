@@ -1,9 +1,16 @@
 {% load static %}
 
 <div class="topbar">
-    <h2>Mis Envíos</h2>
+    <h2><i class="bi bi-truck me-2"></i>Mis Envíos</h2>
     <p class="text-muted mb-0">Gestiona todos tus envíos asignados y completados</p>
 </div>
+
+{% if fotos_pendientes %}
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span>Tienes <strong>{{ fotos_pendientes }} envío{{ fotos_pendientes|pluralize:'s' }}</strong> con fotos pendientes por adjuntar.</span>
+</div>
+{% endif %}
 
 <div class="container-envios">
     {% if envios %}
@@ -11,11 +18,12 @@
             <table class="table-custom">
                 <thead>
                     <tr>
-                        <th>#ID</th>
+                        <th>#</th>
+                        <th>Producto</th>
                         <th>Cliente</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
+                        <th>Ruta</th>
                         <th>Estado</th>
+                        <th>Fotos</th>
                         <th>Costo</th>
                         <th>Acciones</th>
                     </tr>
@@ -25,7 +33,12 @@
                     <tr>
                         <td><strong>#ENV-{{ envio.id_envio }}</strong></td>
 
-                        <!-- CLIENTE -->
+                        <td>
+                            {% with detalle=envio.id_compra.detallescompra_set.first %}
+                            {{ detalle.id_producto.nombre_producto|default:"—" }}
+                            {% endwith %}
+                        </td>
+
                         <td>
                             {% if envio.id_compra and envio.id_compra.id_cliente %}
                                 {{ envio.id_compra.id_cliente.id_usuario.nombre }}
@@ -34,73 +47,105 @@
                             {% endif %}
                         </td>
 
-                        <!-- ORIGEN -->
-                        <td>
-                            {% if envio.direccion_origen %}
-                                {{ envio.direccion_origen|truncatechars:30 }}
-                            {% else %}
-                                N/A
-                            {% endif %}
+                        <td class="small">
+                            {% with detalle=envio.id_compra.detallescompra_set.first %}
+                            <span class="text-success">{{ detalle.id_producto.finca.ciudad|default:"?" }}</span>
+                            {% endwith %}
+                            <i class="bi bi-arrow-right mx-1"></i>
+                            <span class="text-danger">{{ envio.id_compra.id_cliente.id_usuario.ciudad|default:"?" }}</span>
                         </td>
 
-                        <!-- DESTINO -->
-                        <td>
-                            {% if envio.direccion_destino %}
-                                {{ envio.direccion_destino|truncatechars:30 }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-
-                        <!-- ESTADO -->
                         <td>
                             {% if envio.estado_envio == 'Asignado' %}
                                 <span class="status-badge status-asignado">Asignado</span>
-
                             {% elif envio.estado_envio == 'En_Transito' %}
                                 <span class="status-badge status-transito">En tránsito</span>
-
                             {% elif envio.estado_envio == 'Entregado' %}
                                 <span class="status-badge status-finalizado">Entregado</span>
-
                             {% else %}
-                                <span class="status-badge status-cancelado">
-                                    {{ envio.estado_envio }}
+                                <span class="status-badge status-cancelado">{{ envio.estado_envio }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            {% if envio.estado_envio == 'En_Transito' and not envio.foto_carga %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger" title="Foto de carga pendiente">
+                                    <i class="bi bi-camera"></i>
                                 </span>
-                            {% endif %}
-                        </td>
-
-                        <!-- COSTO -->
-                        <td>
-                            <strong>${{ envio.costo_total|default:"0"|floatformat:0 }}</strong>
-                        </td>
-
-                        <!-- ACCIONES -->
-                        <td>
-
-                            {% if envio.estado_envio == "Asignado" %}
-                                <a href="{% url 'cambiar_estado_envio' envio.id_envio 'En_Transito' %}" 
-                                   class="btn btn-warning btn-sm">
-                                    🚚 Iniciar viaje
-                                </a>
-
-                            {% elif envio.estado_envio == "En_Transito" %}
-                                <a href="{% url 'cambiar_estado_envio' envio.id_envio 'Entregado' %}" 
-                                   class="btn btn-success btn-sm">
-                                    📦 Marcar entregado
-                                </a>
-
-                            {% elif envio.estado_envio == "Entregado" %}
-                                <span class="text-success fw-bold">✔ Completado</span>
-
+                            {% elif envio.estado_envio == 'Entregado' and not envio.foto_carga %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning" title="Foto de carga pendiente">
+                                    <i class="bi bi-camera"></i>
+                                </span>
+                            {% elif envio.estado_envio == 'Entregado' and not envio.foto_descarga %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning" title="Foto de descarga pendiente">
+                                    <i class="bi bi-camera"></i>
+                                </span>
                             {% else %}
-                                <span class="text-muted">Sin acciones</span>
+                                <span class="text-success"><i class="bi bi-check-circle"></i></span>
                             {% endif %}
-
-                
-
                         </td>
 
+                        <td><strong>${{ envio.costo_total|default:"0"|floatformat:0 }}</strong></td>
+
+                        <td style="min-width: 200px; white-space: nowrap;">
+                            <div class="d-flex align-items-center gap-1">
+
+                                <button type="button" class="btn btn-outline-info btn-sm btn-detalle px-2"
+                                        title="Ver detalle del envío"
+                                        data-envio-id="{{ envio.id_envio }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+
+                                {% if envio.estado_envio == "Asignado" %}
+                                <button type="button" class="btn btn-warning btn-sm btn-cambiar-estado px-2"
+                                        title="Iniciar viaje"
+                                        data-envio-id="{{ envio.id_envio }}"
+                                        data-nuevo-estado="En_Transito"
+                                        data-accion="Iniciar Viaje"
+                                        data-tipo-foto="foto_carga">
+                                    <i class="bi bi-truck"></i>
+                                </button>
+
+                                {% elif envio.estado_envio == "En_Transito" %}
+                                <button type="button" class="btn btn-success btn-sm btn-cambiar-estado px-2"
+                                        title="Finalizar viaje"
+                                        data-envio-id="{{ envio.id_envio }}"
+                                        data-nuevo-estado="Entregado"
+                                        data-accion="Finalizar Viaje"
+                                        data-tipo-foto="foto_descarga">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+
+                                {% elif envio.estado_envio == "Entregado" %}
+                                    <span class="text-success fw-bold small px-1"><i class="bi bi-check-circle-fill"></i></span>
+                                {% endif %}
+
+                                {% if envio.estado_envio == "En_Transito" and not envio.foto_carga %}
+                                <button type="button" class="btn btn-outline-warning btn-sm btn-subir-foto px-2"
+                                        title="Subir foto de carga pendiente"
+                                        data-envio-id="{{ envio.id_envio }}" data-tipo="foto_carga">
+                                    <i class="bi bi-camera"></i>
+                                </button>
+                                {% endif %}
+
+                                {% if envio.estado_envio == "Entregado" %}
+                                    {% if not envio.foto_carga %}
+                                    <button type="button" class="btn btn-outline-warning btn-sm btn-subir-foto px-2"
+                                            title="Subir foto de carga pendiente"
+                                            data-envio-id="{{ envio.id_envio }}" data-tipo="foto_carga">
+                                        <i class="bi bi-camera"></i>
+                                    </button>
+                                    {% endif %}
+                                    {% if not envio.foto_descarga %}
+                                    <button type="button" class="btn btn-outline-warning btn-sm btn-subir-foto px-2"
+                                            title="Subir foto de descarga pendiente"
+                                            data-envio-id="{{ envio.id_envio }}" data-tipo="foto_descarga">
+                                        <i class="bi bi-camera"></i>
+                                    </button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -115,3 +160,208 @@
         </div>
     {% endif %}
 </div>
+
+<!-- MODAL DETALLE -->
+<div class="modal fade" id="modalDetalleEnvio" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #2f6b31 0%, #0e2a1c 100%);">
+                <h5 class="modal-title text-white"><i class="bi bi-info-circle me-2"></i>Detalle del Envío</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenidoDetalleEnvio">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-success"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR CAMBIO DE ESTADO + SUBIR FOTO -->
+<div class="modal fade" id="modalConfirmarEstado" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #2f6b31 0%, #0e2a1c 100%);">
+                <h5 class="modal-title text-white"><i class="bi bi-arrow-repeat me-2"></i><span id="modalEstadoTitulo"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data" id="formCambiarEstado">
+                {% csrf_token %}
+                <input type="hidden" name="envio_id" id="modalEstadoEnvioId">
+                <div class="modal-body">
+                    <p id="modalEstadoMensaje" class="mb-3"></p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-camera me-2"></i>Foto de la mercancía
+                        </label>
+                        <input type="file" class="form-control" name="foto" id="modalEstadoFoto"
+                               accept="image/*" capture="environment">
+                        <div class="form-text">Toma una foto de la carga en el camión. Si no tienes internet, puedes saltar este paso y subirla después.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success" id="modalEstadoSubmit">
+                        <i class="bi bi-check-circle me-1"></i>Confirmar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUBIR FOTO DESPUÉS -->
+<div class="modal fade" id="modalSubirFoto" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #2f6b31 0%, #0e2a1c 100%);">
+                <h5 class="modal-title text-white"><i class="bi bi-camera me-2"></i>Subir foto pendiente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formSubirFoto" enctype="multipart/form-data">
+                <input type="hidden" name="tipo" id="subirFotoTipo">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Selecciona la foto</label>
+                        <input type="file" class="form-control" name="foto" id="subirFotoInput"
+                               accept="image/*" required capture="environment">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success" id="subirFotoSubmit">
+                        <i class="bi bi-upload me-1"></i>Subir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+var enviosDetalle = JSON.parse('{{ envios_detalle_json|safe|escapejs }}');
+var csrfToken = '{{ csrf_token }}';
+
+// ── MODAL DETALLE ──
+document.querySelectorAll('.btn-detalle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var id = parseInt(this.dataset.envioId, 10);
+        var detalle = enviosDetalle.find(function(e) { return e.id_envio == id; });
+        if (!detalle) return;
+
+        var body = document.getElementById('contenidoDetalleEnvio');
+        body.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="border-start border-success border-3 ps-3">
+                        <h6 class="text-success small mb-2"><i class="bi bi-shop me-1"></i>Punto de recolección</h6>
+                        <p class="mb-1 fw-semibold">${detalle.finca_nombre}</p>
+                        <p class="mb-1 small text-muted">${detalle.finca_direccion}</p>
+                        <p class="mb-0 small text-muted">${detalle.finca_ciudad}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border-start border-success border-3 ps-3">
+                        <h6 class="text-success small mb-2"><i class="bi bi-person me-1"></i>Productor</h6>
+                        <p class="mb-1 fw-semibold">${detalle.productor_nombre}</p>
+                        <p class="mb-0 small text-muted"><i class="bi bi-telephone me-1"></i>${detalle.productor_telefono}</p>
+                    </div>
+                </div>
+                <div class="col-12"><hr></div>
+                <div class="col-md-6">
+                    <div class="border-start border-info border-3 ps-3">
+                        <h6 class="text-info small mb-2"><i class="bi bi-person-circle me-1"></i>Cliente</h6>
+                        <p class="mb-1 fw-semibold">${detalle.cliente_nombre}</p>
+                        <p class="mb-1 small text-muted"><i class="bi bi-telephone me-1"></i>${detalle.cliente_telefono}</p>
+                        <p class="mb-0 small text-muted"><i class="bi bi-geo-alt me-1"></i>${detalle.cliente_direccion}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border-start border-info border-3 ps-3">
+                        <h6 class="text-info small mb-2"><i class="bi bi-box me-1"></i>Producto</h6>
+                        <p class="mb-0 fw-semibold">${detalle.producto_nombre || '—'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        var modal = new bootstrap.Modal(document.getElementById('modalDetalleEnvio'));
+        modal.show();
+    });
+});
+
+// ── MODAL CONFIRMAR ESTADO ──
+document.querySelectorAll('.btn-cambiar-estado').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var envioId = this.dataset.envioId;
+        var nuevoEstado = this.dataset.nuevoEstado;
+        var accion = this.dataset.accion;
+        var tipoFoto = this.dataset.tipoFoto;
+
+        document.getElementById('modalEstadoTitulo').textContent = accion;
+        document.getElementById('modalEstadoMensaje').textContent =
+            tipoFoto === 'foto_carga'
+                ? 'Al iniciar el viaje, la mercancía sale de la finca. Toma una foto de la carga en el camión como respaldo.'
+                : 'Al finalizar el viaje, la mercancía se entrega al cliente. Toma una foto como respaldo de la entrega.';
+
+        document.getElementById('formCambiarEstado').action =
+            '/cambiar-estado/' + envioId + '/' + nuevoEstado + '/';
+
+        var fotoInput = document.getElementById('modalEstadoFoto');
+        fotoInput.name = tipoFoto;
+        fotoInput.value = '';
+
+        var modal = new bootstrap.Modal(document.getElementById('modalConfirmarEstado'));
+        modal.show();
+    });
+});
+
+// ── SUBIR FOTO DESPUÉS ──
+document.querySelectorAll('.btn-subir-foto').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.getElementById('subirFotoTipo').value = this.dataset.tipo;
+        document.getElementById('subirFotoInput').value = '';
+        document.getElementById('formSubirFoto').dataset.envioId = this.dataset.envioId;
+        var modal = new bootstrap.Modal(document.getElementById('modalSubirFoto'));
+        modal.show();
+    });
+});
+
+document.getElementById('formSubirFoto').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var envioId = this.dataset.envioId;
+    var formData = new FormData(this);
+
+    var btn = document.getElementById('subirFotoSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Subiendo...';
+
+    fetch('/subir-foto-envio/' + envioId + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('modalSubirFoto')).hide();
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(function() {
+        alert('Error de conexión al subir la foto');
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-upload me-1"></i>Subir';
+    });
+});
+</script>

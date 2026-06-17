@@ -31,12 +31,12 @@
 
     <div class="row g-4">
 
-        <!-- 🟢 PERFIL -->
+        <!-- PERFIL -->
         <div class="col-md-4">
 
             <div class="ds-card profile-header">
 
-                <img src="https://i.pravatar.cc/120?img={{ cliente.id_usuario.id_usuario }}"
+                <img src="{% if cliente.id_usuario.foto_perfil %}{{ cliente.id_usuario.foto_perfil.url }}{% else %}https://i.pravatar.cc/120?img={{ cliente.id_usuario.id_usuario }}{% endif %}"
                      class="profile-avatar">
 
                 <div class="profile-name">
@@ -53,16 +53,16 @@
 
                 <div class="mt-3">
                     <button class="btn-lumina" onclick="toggleEdit()">
-                        ✏️ Editar perfil
+                        <i class="bi bi-pencil-fill"></i> Editar perfil
                     </button>
                 </div>
 
             </div>
 
-            <!-- 📊 ACTIVIDAD -->
+            <!-- ACTIVIDAD -->
             <div class="ds-card">
 
-                <h6>📊 Actividad</h6>
+                <h6><i class="bi bi-bar-chart-fill"></i> Actividad</h6>
 
                 <div class="data-grid mt-3">
 
@@ -87,15 +87,15 @@
 
         </div>
 
-        <!-- 🔵 DETALLE -->
+        <!-- DETALLE -->
         <div class="col-md-8">
 
-            <!-- 👁️ VISTA -->
+            <!-- VISTA -->
             <div id="perfilView">
 
                 <div class="ds-card">
 
-                    <h4>👤 Datos Personales</h4>
+                    <h4><i class="bi bi-person-fill"></i> Datos Personales</h4>
 
                     <div class="data-grid mt-3">
 
@@ -135,7 +135,7 @@
 
                 <div class="ds-card">
 
-                    <h5>⭐ Preferencias</h5>
+                    <h5><i class="bi bi-star-fill"></i> Preferencias</h5>
 
                     <div class="badge-group">
                         <span class="badge-lumina">
@@ -147,17 +147,22 @@
 
             </div>
 
-            <!-- ✏️ EDITAR -->
+            <!-- EDITAR -->
             <div id="perfilEdit" class="d-none">
 
                 <div class="ds-card">
 
-                    <h4>✏️ Editar Perfil</h4>
+                    <h4><i class="bi bi-pencil-fill"></i> Editar Perfil</h4>
 
-                    <form method="post" action="{% url 'editar_perfil_cliente' %}">
+                    <form method="post" action="{% url 'editar_perfil_cliente' %}" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <div class="data-grid mt-3">
+
+                            <div class="data-item">
+                                <label class="data-label">Foto de perfil</label>
+                                <input class="form-control" type="file" name="foto_perfil" accept="image/*">
+                            </div>
 
                             <div class="data-item">
                                 <label class="data-label">Nombre</label>

@@ -33,7 +33,7 @@
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h6>💰 Ingresos</h6>
+                    <h6><i class="bi bi-cash-stack"></i> Ingresos</h6>
                     <h3>${{ kpis.ingresos| floatformat:0 | intcomma}}</h3>
                 </div>
             </div>
@@ -42,7 +42,7 @@
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h6>📦 Unidades</h6>
+                    <h6><i class="bi bi-box-seam"></i> Unidades</h6>
                     <h3>{{ kpis.unidades|default:0 }}</h3>
                 </div>
             </div>
@@ -51,7 +51,7 @@
         <div class="col-md-3">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h6>🧾 Órdenes</h6>
+                    <h6><i class="bi bi-receipt"></i> Órdenes</h6>
                     <h3>{{ kpis.ordenes|default:0 }}</h3>
                 </div>
             </div>
@@ -60,7 +60,7 @@
         <div class="col-md-3">
             <div class="card shadow-sm border-warning">
                 <div class="card-body">
-                    <h6>🚚 Pendientes</h6>
+                    <h6><i class="bi bi-truck"></i> Pendientes</h6>
                     <h3 class="text-warning fw-bold">{{ kpis.pendientes }}</h3>
                 </div>
             </div>
@@ -69,13 +69,14 @@
          <br>
          <div class="mt-4">
         <a href="{% url 'reporte_pdf' %}" class="btn btn-danger mb-3">
-        📄 Descargar Reporte PDF
+        <i class="bi bi-filetype-pdf"></i> Descargar Reporte PDF
         </a>
     </div>
 
     </div>
    
 
+   
     <h2 class="mb-4 mt-4">Mis Ventas</h2>
 
     {% if ventas %}
@@ -96,22 +97,22 @@
                     <hr>
 
                     <p>
-                        📦 Vendidos:
+                        <i class="bi bi-box-seam"></i> Vendidos:
                         <strong>{{ v.total_vendido }}</strong>
                     </p>
 
                     <p>
-                        💰 Ganancias:
+                        <i class="bi bi-cash-stack"></i> Ganancias:
                         <strong>${{ v.total_ingresos| floatformat:0 | intcomma }}</strong>
                     </p>
 
                     <p>
-                        🧾 Ventas:
+                        <i class="bi bi-receipt"></i> Ventas:
                         <strong>{{ v.total_ventas | floatformat:0 }}</strong>
                     </p>
 
                     <p>
-                        📅 Última venta:
+                        <i class="bi bi-calendar"></i> Última venta:
                         <strong>{{ v.ultima_venta|date:"d M Y" }}</strong>
                     </p>
 
@@ -132,7 +133,7 @@
     <!-- Pedidos Por Alistar -->
     <div class="mt-4">
 
-        <h3 class="mb-4">📦 Pedidos por alistar</h3>
+        <h3 class="mb-4"><i class="bi bi-boxes"></i> Pedidos por alistar</h3>
 
         <div class="table-responsive">
 
@@ -173,7 +174,7 @@
                             {{ envio.id_transportista.id_usuario.nombre|default:"Esperando transportista" }}
                             {{ envio.id_transportista.id_usuario.apellido }}
                             {% else %}
-                            ⏳ Sin asignar
+                            <i class="bi bi-hourglass-split text-muted"></i> Sin asignar
                             {% endif %}
                         </td>
 
@@ -182,8 +183,8 @@
                             {% if envio %}
                             {{ envio.fecha_salida|default:"Pendiente" }}
                             {% else %}
-                            ⏳ Pendiente
-                            {% endif %}
+                            <i class="bi bi-hourglass-split text-muted"></i> Pendiente
+                            {% endif %}  
                         </td>
 
                         <!-- ESTADO -->
@@ -191,7 +192,7 @@
                             {% if pedido.envio %}
                             {{ pedido.envio.estado_envio }}
                             {% else %}
-                            ⏳ Pendiente
+                            <i class="bi bi-hourglass-split text-muted"></i> Pendiente
                             {% endif %}
                         </td>
                     </tr>
@@ -207,9 +208,48 @@
 
     </div>
 
-    <canvas id="ventasChart" class="mt-4"></canvas>
+    {% endif %}
 
-    <h4 class="mt-4">🔥 Top productos</h4>
+     <!-- FILTRO DE FECHAS PARA EL GRÁFICO -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label small text-muted">Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm"
+                           value="{{ fecha_desde }}">
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small text-muted">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm"
+                           value="{{ fecha_hasta }}">
+                </div>
+                <div class="col-auto d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-funnel"></i> Filtrar
+                    </button>
+                    <a href="{% url 'mis_ventas' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- GRÁFICO DE VENTAS (siempre visible) -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="bi bi-graph-up"></i> Ventas por período
+            </h5>
+            <canvas id="ventasChart" class="w-100" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+
+    {% if ventas %}
+
+    <h4 class="mt-4"><i class="bi bi-fire"></i> Top productos</h4>
 
     <table class="table table-hover shadow-sm">
         <thead class="table-dark">
@@ -234,7 +274,7 @@
     {% else %}
 
     <div class="alert alert-info text-center">
-        🚜 Aún no tienes ventas registradas
+        <i class="bi bi-inbox"></i> Aún no tienes ventas registradas
     </div>
 
     {% endif %}
@@ -270,45 +310,48 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{{ ultimos_7_dias|json_script:"data7" }}
+{{ ventas_grafica|json_script:"dataVentas" }}
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     // ======================================================
-    // 📊 DASHBOARD CHART (ÚLTIMOS 7 DÍAS)
+    // DASHBOARD CHART (VENTAS POR PERÍODO)
     // ======================================================
     function initDashboardChart() {
 
-        const el = document.getElementById('data7');
+        const el = document.getElementById('dataVentas');
         const canvas = document.getElementById('ventasChart');
 
-        if (!el || !canvas) {
-            console.warn("📊 Dashboard: falta data7 o canvas");
-            return;
-        }
+        if (!el || !canvas) return;
 
-        let data7;
+        let dataVentas;
 
         try {
-            data7 = JSON.parse(el.textContent);
+            dataVentas = JSON.parse(el.textContent);
         } catch (e) {
-            console.error("📊 Error JSON dashboard:", e);
             return;
         }
 
-        if (!Array.isArray(data7) || data7.length === 0) {
-            console.warn("📊 Dashboard: data7 vacío o inválido");
+        const noDataMsg = document.createElement('div');
+        noDataMsg.className = 'text-center text-muted py-4';
+        noDataMsg.textContent = 'No hay ventas en este período';
+
+        const isEmpty = !Array.isArray(dataVentas) || dataVentas.length === 0;
+
+        if (isEmpty) {
+            canvas.style.display = 'none';
+            canvas.parentElement.appendChild(noDataMsg);
             return;
         }
 
         new Chart(canvas, {
             type: 'line',
             data: {
-                labels: data7.map(d => d.fecha),
+                labels: dataVentas.map(d => d.fecha),
                 datasets: [{
-                    label: 'Ingresos últimos 7 días',
-                    data: data7.map(d => d.total),
+                    label: 'Ingresos',
+                    data: dataVentas.map(d => d.total),
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true
@@ -328,7 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // ======================================================
-    // 📦 MODAL DETALLE DE VENTAS
+    // MODAL DETALLE DE VENTAS
     // ======================================================
     function initModal() {
 
@@ -345,7 +388,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const body = document.getElementById('contenidoDetalleVentas');
 
-            // 🔄 loader
+            // loader
             body.innerHTML = `
                 <div class="text-center">
                     <div class="spinner-border"></div>
@@ -371,7 +414,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         const canvas = document.getElementById('graficaDetalleProducto');
 
                         if (!canvas) {
-                            console.warn("📦 Modal: canvas no existe");
+                            console.warn("Modal: canvas no existe");
                             return;
                         }
 
@@ -403,7 +446,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 })
                 .catch(error => {
-                    console.error("📦 Error modal:", error);
+                    console.error("Error modal:", error);
                     body.innerHTML = `
                         <div class="alert alert-danger">
                             Error al cargar detalle de ventas
@@ -415,7 +458,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // ======================================================
-    // 🚀 INIT TODO
+    // INIT TODO
     // ======================================================
     initDashboardChart();
     initModal();

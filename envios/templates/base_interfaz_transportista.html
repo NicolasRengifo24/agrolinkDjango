@@ -52,21 +52,9 @@
     {% include 'components/navbar_transportista.html' %}
     {% include "includes/toastify_messages.html" %}
 
-    <!-- Contenido principal -->
+    <!-- Contenido principal (definido en el template hijo) -->
     <div class="main-content">
-        <div class="container mt-4">
-            <div class="row">
-                <!-- Filtros -->
-                <div class="col-lg-3">
-                    {% include 'components/filtros_transportista.html' %}
-                </div>
-
-                <!-- Lista de viajes -->
-                <div class="col">
-                    {% include 'components/lista_viajes.html' %}
-                </div>
-            </div>
-        </div>
+        {% block content %}{% endblock %}
     </div>
 
     <!-- Modal para aceptar viaje -->
@@ -137,7 +125,7 @@
                                     <i class="bi bi-calendar-check me-2"></i>Fecha de Recolección *
                                 </label>
                                 <input type="date" class="form-control" id="fecha_recoleccion" name="fecha_recoleccion"
-                                    required min="{% now 'Y-m-d' %}">
+                                    required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="fecha_entrega_estimada" class="form-label fw-bold">
@@ -209,39 +197,40 @@
     }
 
     // Función global para abrir el modal
-    function abrirModalAceptarViaje(envioId, origen, destino, distancia, peso) {
-        console.log('Función llamada correctamente', envioId);
-        
-        // Guardar el ID del envío
+    window.abrirModalAceptarViaje = function(envioId, origen, destino, distancia, peso) {
         document.getElementById('envio_id').value = envioId;
-        
-        // Mostrar información en el modal
         document.getElementById('modal-origen').textContent = origen || 'No especificado';
         document.getElementById('modal-destino').textContent = destino || 'No especificado';
         document.getElementById('modal-distancia').textContent = distancia ? distancia + ' km' : 'No calculada';
         document.getElementById('modal-peso').textContent = peso ? peso + ' kg' : 'No especificado';
-        
-        // Calcular costo estimado
+
         if (distancia && peso) {
             var costoKm = parseFloat(distancia) * 3000;
             var costoPeso = parseFloat(peso) * 200;
             var costoTotal = costoKm + costoPeso;
             document.getElementById('costo_total_estimado').textContent = '$' + costoTotal.toLocaleString('es-CO');
         }
-        
-        // Limpiar fechas
-        document.getElementById('fecha_recoleccion').value = '';
-        document.getElementById('fecha_entrega_estimada').value = '';
-        
-        // Configurar fecha mínima
+
+        var hoy = new Date();
+        var hoyStr = hoy.toISOString().split('T')[0];
+        var maxRec = new Date(hoy);
+        maxRec.setDate(hoy.getDate() + 3);
+        var maxRecStr = maxRec.toISOString().split('T')[0];
+
         var fechaRecoleccion = document.getElementById('fecha_recoleccion');
         var fechaEntrega = document.getElementById('fecha_entrega_estimada');
-        
+
+        fechaRecoleccion.value = '';
+        fechaRecoleccion.min = hoyStr;
+        fechaRecoleccion.max = maxRecStr;
+        fechaEntrega.value = '';
+        fechaEntrega.min = hoyStr;
+
         fechaRecoleccion.onchange = function() {
             if (this.value) {
                 var fechaRec = new Date(this.value);
                 var fechaMinEntrega = new Date(fechaRec);
-                fechaMinEntrega.setDate(fechaRec.getDate() + 1);
+                fechaMinEntrega.setDate(fechaRec.getDate());
                 var fechaMinStr = fechaMinEntrega.toISOString().split('T')[0];
                 fechaEntrega.min = fechaMinStr;
                 if (fechaEntrega.value && fechaEntrega.value < fechaMinStr) {
@@ -249,12 +238,11 @@
                 }
             }
         };
-        
-        // Abrir el modal
+
         var modalElement = document.getElementById('aceptarViajeModal');
         var modal = new bootstrap.Modal(modalElement);
         modal.show();
-    }
+    };
 
     // Manejar el envío del formulario
     document.addEventListener('DOMContentLoaded', function() {
@@ -278,8 +266,8 @@
                     return;
                 }
                 
-                if (new Date(fechaEntrega) <= new Date(fechaRecoleccion)) {
-                    alert('La fecha de entrega debe ser posterior a la fecha de recolección');
+                if (new Date(fechaEntrega) < new Date(fechaRecoleccion)) {
+                    alert('La fecha de entrega debe ser posterior o igual a la fecha de recolección');
                     return;
                 }
                 
@@ -320,17 +308,6 @@
         }
     });
 
-    // Agregar esto dentro del DOMContentLoaded
-document.querySelectorAll('.btn-aceptar-viaje').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var id = this.getAttribute('data-id');
-        var origen = this.getAttribute('data-origen');
-        var destino = this.getAttribute('data-destino');
-        var distancia = this.getAttribute('data-distancia');
-        var peso = this.getAttribute('data-peso');
-        abrirModalAceptarViaje(id, origen, destino, distancia, peso);
-    });
-});
 </script>
 </body>
 

@@ -20,6 +20,7 @@ class Usuario(models.Model):
     rol = models.CharField(max_length=50)
     latitud = models.FloatField(blank=True, null=True)
     longitud = models.FloatField(blank=True, null=True)
+    foto_perfil = models.ImageField(upload_to='fotos_perfil/', null=True, blank=True)
 
     class Meta:
         managed = True  

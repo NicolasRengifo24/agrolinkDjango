@@ -44,7 +44,7 @@
                     <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown"
                         role="button">
                         <div class="profile-img-wrapper">
-                            <img src="https://i.pravatar.cc/40?img=10" class="profile-img" alt="Perfil">
+                            <img src="{% if user.usuario.foto_perfil %}{{ user.usuario.foto_perfil.url }}{% else %}https://i.pravatar.cc/40?img={{ user.usuario.id_usuario }}{% endif %}" class="profile-img" alt="Perfil">
                             <span class="online-dot"></span>
                         </div>
                         <span class="user-name">

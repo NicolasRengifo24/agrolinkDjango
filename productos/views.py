@@ -27,42 +27,33 @@ from django.utils.timezone import now
 
 
 from django.db.models import Avg, Count, Sum, Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def inicio(request):
-    
-    # busqueda del navbar 
+
     busqueda = request.GET.get('busqueda')
 
     total_usuarios = Usuario.objects.count()
     total_productos = Producto.objects.count()
     categorias = CategoriaProducto.objects.all()
 
-    # 🔎 OBTENER PARÁMETROS DEL FORM
-    categoria = request.GET.get('categoria')
+    categoria_f = request.GET.get('categoria')
     ubicacion = request.GET.get('ubicacion')
     precio_min = request.GET.get('precioMin')
     precio_max = request.GET.get('precioMax')
-    
-
 
     productos = Producto.objects.prefetch_related('imagenProducto')
-        
+
+    servicios_busqueda = None
 
     if busqueda:
-
-    #  Buscar en servicios primero
-        servicios_qs = Servicio.objects.filter(
+        servicios_busqueda = Servicio.objects.filter(
             estado='ACTIVO'
         ).filter(
             Q(categoria__icontains=busqueda) |
             Q(descripcion__icontains=busqueda)
         )
 
-        #  SI ENCUENTRA SERVICIOS → REDIRIGE
-        if servicios_qs.exists():
-            return redirect(f"/servicios/?busqueda={busqueda}")
-
-        # 🔍 Si no hay servicios → buscar en productos
         productos = productos.filter(
             Q(nombre_producto__icontains=busqueda) |
             Q(descripcion_producto__icontains=busqueda) |
@@ -70,9 +61,8 @@ def inicio(request):
             Q(fincas__id_finca__departamento__icontains=busqueda)
         )
 
-    #  FILTROS MULTICRITERIO
-    if categoria:
-        productos = productos.filter(id_categoria=categoria)
+    if categoria_f:
+        productos = productos.filter(id_categoria=categoria_f)
 
     if ubicacion:
         productos = productos.filter(
@@ -86,46 +76,41 @@ def inicio(request):
     if precio_max:
         productos = productos.filter(precio__lte=precio_max)
 
+    productos = productos.distinct()
 
-    #  RELACIÓN PRODUCTO - FINCA
-    productos_finca = ProductoFinca.objects.select_related(
-        'id_finca', 'id_producto', 'id_finca__id_usuario'
-    )
-    
-    #  UBICACIONES DISPONIBLES (desde fincas reales)
-    ubicaciones = Finca.objects.values_list('ciudad', flat=True).distinct()
-    ubicaciones = [u for u in ubicaciones if u]  
-    
-    departamentos = Finca.objects.values_list('departamento', flat=True).distinct()
-    departamentos = [d for d in departamentos if d]
-    
-    
-    
-    
     promedios = Calificacion.objects.values(
-    'id_compra__detallescompra__id_producto'
+        'id_compra__detallescompra__id_producto'
     ).annotate(
-    promedio=Avg('puntaje_producto')
+        promedio=Avg('puntaje_producto')
     )
-    
-    promedios_dict = {}
 
+    promedios_dict = {}
     for item in promedios:
         producto_id = item['id_compra__detallescompra__id_producto']
         promedios_dict[producto_id] = item['promedio']
-        
-        
-    conteos = Calificacion.objects.values('id_compra__detallescompra__id_producto').annotate(
-    total=Count('id_calificacion')
-    )
-    
-    conteos_dict = {}
 
+    conteos = Calificacion.objects.values('id_compra__detallescompra__id_producto').annotate(
+        total=Count('id_calificacion')
+    )
+
+    conteos_dict = {}
     for item in conteos:
         producto_id = item['id_compra__detallescompra__id_producto']
-        conteos_dict[producto_id] = item['total']   
+        conteos_dict[producto_id] = item['total']
 
-    #  PRODUCTO DESTACADO
+    page = request.GET.get('page', 1)
+    paginator = Paginator(productos, 8)
+    try:
+        productos_page = paginator.page(page)
+    except PageNotAnInteger:
+        productos_page = paginator.page(1)
+    except EmptyPage:
+        productos_page = paginator.page(paginator.num_pages)
+
+    for producto in productos_page:
+        producto.promedio_estrellas = promedios_dict.get(producto.id_producto, 0)
+        producto.total_calificaciones = conteos_dict.get(producto.id_producto, 0)
+
     producto_destacado = None
     finca_destacado = None
 
@@ -148,13 +133,25 @@ def inicio(request):
         ).first()
         if pf:
             finca_destacado = pf.id_finca
-            
-    for producto in productos:
-        producto.promedio_estrellas = promedios_dict.get(producto.id_producto, 0)
-        producto.total_calificaciones = conteos_dict.get(producto.id_producto, 0)
+
+    productos_finca = ProductoFinca.objects.select_related(
+        'id_finca', 'id_producto', 'id_finca__id_usuario'
+    )
+
+    ubicaciones = Finca.objects.values_list('ciudad', flat=True).distinct()
+    ubicaciones = [u for u in ubicaciones if u]
+
+    departamentos = Finca.objects.values_list('departamento', flat=True).distinct()
+    departamentos = [d for d in departamentos if d]
+
+    total_entregados = Envio.objects.filter(estado_envio__iexact='entregado').count()
+    total_envios = Envio.objects.count()
+    porcentaje_entregas = round((total_entregados / total_envios) * 100, 1) if total_envios > 0 else 0
+    calificacion_promedio = Calificacion.objects.aggregate(avg=Avg('puntaje_producto'))['avg'] or 0
 
     return render(request, 'productos/inicio.html', {
-        'productos': productos,
+        'productos': productos_page,
+        'page_obj': productos_page,
         'productos_finca': productos_finca,
         'destacado': producto_destacado,
         'finca_destacado': finca_destacado,
@@ -163,19 +160,102 @@ def inicio(request):
         'total_productos': total_productos,
         'ubicaciones': ubicaciones,
         'departamentos': departamentos,
-        'busqueda' : busqueda,
+        'busqueda': busqueda,
+        'servicios_busqueda': servicios_busqueda,
+        'total_entregados': total_entregados,
+        'porcentaje_entregas': porcentaje_entregas,
+        'calificacion_promedio': calificacion_promedio,
     })    
-    
 
 
+def cargar_productos_pagina(request):
+    busqueda = request.GET.get('busqueda', '')
+    categoria_f = request.GET.get('categoria', '')
+    ubicacion = request.GET.get('ubicacion', '')
+    precio_min = request.GET.get('precioMin', '')
+    precio_max = request.GET.get('precioMax', '')
+    page = request.GET.get('page', 1)
+
+    productos = Producto.objects.prefetch_related('imagenProducto')
+
+    if busqueda:
+        productos = productos.filter(
+            Q(nombre_producto__icontains=busqueda) |
+            Q(descripcion_producto__icontains=busqueda) |
+            Q(fincas__id_finca__ciudad__icontains=busqueda) |
+            Q(fincas__id_finca__departamento__icontains=busqueda)
+        )
+
+    if categoria_f:
+        productos = productos.filter(id_categoria=categoria_f)
+
+    if ubicacion:
+        productos = productos.filter(
+            Q(fincas__id_finca__ciudad__icontains=ubicacion) |
+            Q(fincas__id_finca__departamento__icontains=ubicacion)
+        )
+
+    if precio_min:
+        productos = productos.filter(precio__gte=precio_min)
+
+    if precio_max:
+        productos = productos.filter(precio__lte=precio_max)
+
+    productos = productos.distinct()
+
+    promedios = Calificacion.objects.values(
+        'id_compra__detallescompra__id_producto'
+    ).annotate(promedio=Avg('puntaje_producto'))
+    promedios_dict = {i['id_compra__detallescompra__id_producto']: i['promedio'] for i in promedios}
+
+    conteos = Calificacion.objects.values(
+        'id_compra__detallescompra__id_producto'
+    ).annotate(total=Count('id_calificacion'))
+    conteos_dict = {i['id_compra__detallescompra__id_producto']: i['total'] for i in conteos}
+
+    paginator = Paginator(productos, 8)
+    try:
+        productos_page = paginator.page(page)
+    except PageNotAnInteger:
+        productos_page = paginator.page(1)
+    except EmptyPage:
+        productos_page = paginator.page(paginator.num_pages)
+
+    for producto in productos_page:
+        producto.promedio_estrellas = promedios_dict.get(producto.id_producto, 0)
+        producto.total_calificaciones = conteos_dict.get(producto.id_producto, 0)
+
+    cards_html = render_to_string(
+        'components/productos_grid.html',
+        {'productos': productos_page},
+        request=request
+    )
+    pagination_html = render_to_string(
+        'components/pagination.html',
+        {'page_obj': productos_page},
+        request=request
+    )
+
+    return JsonResponse({
+        'cards_html': cards_html,
+        'pagination_html': pagination_html,
+    })
 
 
 def mostrar_productos(request):
     productos = Producto.objects.prefetch_related('imagenProducto').annotate(
         promedio_estrellas=Avg('calificaciones__puntaje'),
         total_calificaciones=Count('calificaciones')
-    )
-    return render(request, "productos/inicio.html", {"productos": productos})
+    ).distinct()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(productos, 8)
+    try:
+        productos_page = paginator.page(page)
+    except PageNotAnInteger:
+        productos_page = paginator.page(1)
+    except EmptyPage:
+        productos_page = paginator.page(paginator.num_pages)
+    return render(request, "productos/inicio.html", {"productos": productos_page, "page_obj": productos_page})
 
 
 
@@ -425,8 +505,14 @@ def lista_productos(request):
         productor = request.user.usuario.productor
         productos = Producto.objects.filter(id_usuario=productor)
     except (AttributeError, Productor.DoesNotExist):
-        productos = Producto.objects.none()  # QuerySet vacío en lugar de lista vacía
+        productos = Producto.objects.none()
+        productor = None
         messages.warning(request, 'No tienes un perfil de productor asociado')
+    
+    # Verificar si el productor tiene fincas registradas
+    tiene_fincas = False
+    if productor is not None:
+        tiene_fincas = Finca.objects.filter(id_usuario=productor).exists()
     
     # Obtener todas las categorías para el filtro
     categorias = CategoriaProducto.objects.all()
@@ -448,7 +534,8 @@ def lista_productos(request):
         'productos': productos,
         'categorias': categorias,
         'ubicacion': ubicacion,
-        'categoria_id': categoria_id,  # Ya es un entero
+        'categoria_id': categoria_id,
+        'tiene_fincas': tiene_fincas,
     }
     
     return render(request, 'productos/lista_productos.html', context)
@@ -465,6 +552,11 @@ def crear_producto(request):
     
     if request.method == 'POST':
         print("=== POST RECIBIDO ===")
+
+        finca_id = request.POST.get('fincaId')
+        if not finca_id:
+            messages.error(request, 'Debes seleccionar una finca de producción')
+            return redirect('crear_producto')
         
         # Crear producto
         producto = Producto(
@@ -488,18 +580,14 @@ def crear_producto(request):
             )
         
         # 🔥 IMPORTANTE: Crear la relación con la finca
-        finca_id = request.POST.get('fincaIds')
-        if finca_id:
-            from productos.models import ProductoFinca
-            ProductoFinca.objects.create(
-                id_producto=producto,
-                id_finca_id=finca_id,
-                cantidad_produccion=0,
-                fecha_cosecha=None
-            )
-            print(f"✅ Producto asociado a finca ID: {finca_id}")
-        else:
-            print("⚠️ No se seleccionó ninguna finca")
+        from productos.models import ProductoFinca
+        ProductoFinca.objects.create(
+            id_producto=producto,
+            id_finca_id=finca_id,
+            cantidad_produccion=0,
+            fecha_cosecha=None
+        )
+        print(f"✅ Producto asociado a finca ID: {finca_id}")
         
         messages.success(request, 'Producto creado exitosamente')
         return redirect('lista_productos')
@@ -833,27 +921,37 @@ def mis_ventas(request):
         .annotate(total_ingresos=Sum('subtotal'))
     )
 
-    #  ÚLTIMOS 7 DÍAS
-    hoy = now().date()
-    hace_7_dias = hoy - timedelta(days=7)
+    #  GRÁFICA DE VENTAS POR FECHA (con filtro opcional)
+    fecha_desde = request.GET.get('fecha_desde', '')
+    fecha_hasta = request.GET.get('fecha_hasta', '')
 
-    ultimos_7_dias_qs = (
+    ventas_grafica_qs = (
         DetallesCompra.objects
-        .filter(
-            id_producto__id_usuario_id=usuario_id,
-            id_compra__fecha_hora_compra__date__gte=hace_7_dias
+        .filter(id_producto__id_usuario_id=usuario_id)
+    )
+
+    if fecha_desde:
+        ventas_grafica_qs = ventas_grafica_qs.filter(
+            id_compra__fecha_hora_compra__date__gte=fecha_desde
         )
+    if fecha_hasta:
+        ventas_grafica_qs = ventas_grafica_qs.filter(
+            id_compra__fecha_hora_compra__date__lte=fecha_hasta
+        )
+
+    ventas_grafica_qs = (
+        ventas_grafica_qs
         .values('id_compra__fecha_hora_compra__date')
         .annotate(total=Sum('subtotal'))
         .order_by('id_compra__fecha_hora_compra__date')
     )
 
-    ultimos_7_dias = [
+    ventas_grafica = [
         {
             "fecha": str(x["id_compra__fecha_hora_compra__date"]),
             "total": float(x["total"] or 0)
         }
-        for x in ultimos_7_dias_qs
+        for x in ventas_grafica_qs
     ]
 
     #  KPIs
@@ -882,7 +980,9 @@ def mis_ventas(request):
         'ventas': ventas,
         'ventas_chart': list(ventas_chart),
         'pedidos_alistar': pedidos_alistar,
-        'ultimos_7_dias': ultimos_7_dias,
+        'ventas_grafica': ventas_grafica,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
         'kpis': kpis,
         'top_productos': list(top_productos),
     }
@@ -1158,6 +1258,24 @@ def perfil_productor(request):
         id_producto__id_usuario=productor
     ).count()
 
+    # Comentarios recibidos en sus productos
+    comentarios = Calificacion.objects.filter(
+        id_compra__detallescompra__id_producto__id_usuario=productor
+    ).exclude(
+        comentario__isnull=True
+    ).exclude(
+        comentario__exact=''
+    ).select_related(
+        'id_compra'
+    ).order_by('-fecha')[:10]
+
+    # Calificación promedio del productor
+    promedio = Calificacion.objects.filter(
+        id_compra__detallescompra__id_producto__id_usuario=productor
+    ).aggregate(promedio=Avg('puntaje_producto'))['promedio'] or 0
+
+    total_comentarios = comentarios.count()
+
     if usuario.rol == 'PRODUCTOR':
         url_volver = 'lista_productos'
     else:
@@ -1169,6 +1287,9 @@ def perfil_productor(request):
         'url_volver': url_volver,
         'productos': productos_count,
         'ventas': ventas_count,
+        'comentarios': comentarios,
+        'promedio': round(promedio, 1),
+        'total_comentarios': total_comentarios,
     }
 
     return render(request, 'components/perfil_productor.html', context)
@@ -1196,8 +1317,11 @@ def editar_perfil_productor(request):
             usuario.apellido = request.POST.get("apellido")
             usuario.correo = correo
             usuario.telefono = request.POST.get("telefono")
-            usuario.cedula = cedula
+            usuario.cedula = request.POST.get("cedula")
             usuario.direccion = request.POST.get("direccion")
+
+            if 'foto_perfil' in request.FILES:
+                usuario.foto_perfil = request.FILES['foto_perfil']
 
             productor.tipo_cultivo = request.POST.get("tipo_cultivo")
 

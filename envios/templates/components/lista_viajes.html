@@ -3,93 +3,143 @@
 
 <div class="col-lg-9 mt-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4>Viajes disponibles</h4>
+        <h4><i class="bi bi-truck me-2"></i>Viajes disponibles</h4>
         <div>
-            <span class="badge bg-primary rounded-pill">{{envios.count}} viajes encontrados</span>
+            <span class="badge bg-primary rounded-pill">{{ page_obj.paginator.count }} viajes encontrados</span>
         </div>
     </div>
-    
-    {% for envio in envios %}
-    <div class="card card-viaje">
+
+    {% if page_obj %}
+    {% for envio in page_obj %}
+    {% with detalle=envio.id_compra.detallescompra_set.first %}
+    <div class="card card-viaje mb-3 shadow-sm border-0">
         <div class="card-body">
-            <div class="row">
+            <div class="row g-3">
+
+                <!-- COLUMNA IZQUIERDA: Info principal -->
                 <div class="col-md-8">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex justify-content-between align-items-start pb-2 mb-3 border-bottom border-light">
                         <div>
-                            <span class="badge bg-success badge-estado mb-2">Disponible</span>
-                            <h5>{{ envio.id_compra.detallescompra_set.first.id_producto.nombre_producto }}</h5>
-                             {% with detalle=envio.id_compra.detallescompra_set.first %}
-                            <p class="text-muted">{{ detalle.id_producto.finca.ciudad }}<i class="fas fa-arrow-right mx-2"></i>
-                              {% endwith %}  
-                                {{envio.id_compra.id_cliente.id_usuario.ciudad}}
-                               
-                            </p>
+                            <span class="badge bg-success mb-2">
+                                <i class="bi bi-check-circle-fill me-1"></i>Disponible
+                            </span>
+                            <h5 class="card-title mb-1">{{ detalle.id_producto.nombre_producto }}</h5>
+                            {% if detalle.id_producto.id_categoria %}
+                            <span class="badge bg-light text-muted border">{{ detalle.id_producto.id_categoria.nombre_categoria }}</span>
+                            {% endif %}
                         </div>
-                        <h4 class="text-dark">${{envio.costo_total | floatformat:0 | intcomma}}</h4>
+                        <h4 class="text-success fw-bold mb-0">${{ envio.costo_total|floatformat:0|intcomma }}</h4>
                     </div>
 
-                    <div class="row mt-3">
-                        <div class="col-md-6 info-cliente mb-3">
-                            <h6>Cliente</h6>
-                            <p class="mb-1"><strong>{{envio.id_compra.id_cliente.id_usuario.nombre}}
-                                    {{envio.id_compra.id_cliente.id_usuario.apellido}}</strong></p>
-                            <p class="mb-1 small"><i class="fas fa-phone me-2"></i>{{envio.id_compra.id_cliente.id_usuario.telefono}}</p>
-                            <p class="mb-0 small"><i class="fas fa-map-marker-alt me-2"></i>{{envio.direccion_destino}}</p>
-                        </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success small px-2 py-1">
+                            <i class="bi bi-geo-alt-fill me-1"></i>{{ detalle.id_producto.finca.ciudad|default:"Origen" }}
+                        </span>
+                        <i class="bi bi-arrow-right mx-2 text-muted"></i>
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger small px-2 py-1">
+                            <i class="bi bi-flag-fill me-1"></i>{{ envio.id_compra.id_cliente.id_usuario.ciudad|default:"Destino" }}
+                        </span>
+                    </div>
 
-                        <div class="col-md-6 info-vendedor">
-                            <h6>Vendedor</h6>
-                            {% with detalle=envio.id_compra.detallescompra_set.first %}
-                            {% if detalle %}
-                            <p class="mb-1">
-                                <strong>{{ detalle.id_producto.id_usuario.id_usuario.nombre }}
-                                    {{detalle.id_producto.id_usuario.id_usuario.apellido }}</strong>
-                            </p>
-                            <p class="mb-1 small">
-                                <i class="fas fa-phone me-2"></i>{{ detalle.id_producto.id_usuario.id_usuario.telefono}}
-                            </p>
-                            <p class="mb-0 small">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                 {{detalle.id_producto.finca.nombre_finca }}
-                            </p>
-                            {% endif %}
-                            {% endwith %}
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <div class="border-start border-success border-3 ps-3 h-100">
+                                <h6 class="text-success small mb-2"><i class="bi bi-person-circle me-1"></i>Cliente</h6>
+                                <p class="mb-1 fw-semibold">
+                                    {{ envio.id_compra.id_cliente.id_usuario.nombre }}
+                                    {{ envio.id_compra.id_cliente.id_usuario.apellido }}
+                                </p>
+                                <p class="mb-1 small text-muted">
+                                    <i class="bi bi-telephone me-1"></i>{{ envio.id_compra.id_cliente.id_usuario.telefono }}
+                                </p>
+                                <p class="mb-0 small text-muted">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ envio.direccion_destino }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border-start border-success border-3 ps-3 h-100">
+                                <h6 class="text-success small mb-2"><i class="bi bi-shop me-1"></i>Vendedor</h6>
+                                <p class="mb-1 fw-semibold">
+                                    {{ detalle.id_producto.id_usuario.id_usuario.nombre }}
+                                    {{ detalle.id_producto.id_usuario.id_usuario.apellido }}
+                                </p>
+                                <p class="mb-1 small text-muted">
+                                    <i class="bi bi-telephone me-1"></i>{{ detalle.id_producto.id_usuario.id_usuario.telefono }}
+                                </p>
+                                <p class="mb-0 small text-muted">
+                                    <i class="bi bi-house-door me-1"></i>{{ detalle.id_producto.finca.nombre_finca|default:"Finca no especificada" }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    <!-- ID único para cada mapa -->
-                    <div class="mapa-mini mb-3" id="mapa-mini-{{ envio.id_envio }}" style="height: 200px; width: 100%;"></div>
+                <!-- COLUMNA DERECHA: Mapa + acciones -->
+                <div class="col-md-4 d-flex flex-column">
+                    <div class="mapa-mini mb-2" id="mapa-mini-{{ envio.id_envio }}" style="height: 160px; width: 100%; border-radius: 8px; overflow: hidden;"></div>
 
-                    <button type="button" class="btn btn-primary btn-mapa w-100 mb-2" data-envio-id="{{ envio.id_envio }}">
+                    <button type="button" class="btn btn-outline-primary btn-sm btn-mapa w-100 mb-2" data-envio-id="{{ envio.id_envio }}">
                         <i class="bi bi-map me-1"></i>Ver mapa completo
                     </button>
 
-                    <div class="mb-3">
-                        <p class="mb-1"><strong>Detalles:</strong></p>
-                        <ul class="small ps-3">
-                            <li>Peso: {{envio.peso_total_kg}} Kilos</li>
-                            <li>Fecha recogida: {{envio.fecha_salida |date:"d M y"}}</li>
-                            <li>Fecha entrega: {{envio.fecha_entrega |date:"d M y"}}</li>
-                        </ul>
+                    <div class="d-flex flex-wrap gap-2 small text-muted mb-2">
+                        <span><i class="bi bi-box-seam me-1"></i>{{ envio.peso_total_kg|default:0 }} kg</span>
+                        {% if envio.distancia_km %}
+                        <span><i class="bi bi-signpost-2 me-1"></i>{{ envio.distancia_km|floatformat:1 }} km</span>
+                        {% endif %}
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-success btn-sm btn-aceptar-viaje"
-                            data-envio-id="{{ envio.id_envio }}"
-                            data-origen="{{ envio.direccion_origen|escapejs }}"
-                            data-destino="{{ envio.direccion_destino|escapejs }}"
-                            data-distancia="{{ envio.distancia_km|default:'0' }}"
-                            data-peso="{{ envio.peso_total_kg|default:'0' }}">
-                            <i class="bi bi-check-circle me-1"></i>Aceptar Viaje
-                        </button>
-                    </div>
+                    <button type="button" class="btn btn-success btn-aceptar-viaje mt-auto"
+                        data-envio-id="{{ envio.id_envio }}"
+                        data-origen="{{ envio.direccion_origen|escapejs }}"
+                        data-destino="{{ envio.direccion_destino|escapejs }}"
+                        data-distancia="{{ envio.distancia_km|default:'0' }}"
+                        data-peso="{{ envio.peso_total_kg|default:'0' }}">
+                        <i class="bi bi-check-circle me-1"></i>Aceptar Viaje
+                    </button>
                 </div>
+
             </div>
         </div>
     </div>
+    {% endwith %}
     {% endfor %}
+
+    <!-- PAGINACIÓN -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Paginacion de viajes">
+        <ul class="pagination justify-content-center mt-3">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if filtro_ciudad_origen %}ciudad_origen={{ filtro_ciudad_origen }}&{% endif %}{% if filtro_ciudad_destino %}ciudad_destino={{ filtro_ciudad_destino }}&{% endif %}{% if filtro_categoria %}categoria={{ filtro_categoria }}&{% endif %}{% if filtro_peso_max %}peso_max={{ filtro_peso_max }}&{% endif %}page=1">&laquo;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if filtro_ciudad_origen %}ciudad_origen={{ filtro_ciudad_origen }}&{% endif %}{% if filtro_ciudad_destino %}ciudad_destino={{ filtro_ciudad_destino }}&{% endif %}{% if filtro_categoria %}categoria={{ filtro_categoria }}&{% endif %}{% if filtro_peso_max %}peso_max={{ filtro_peso_max }}&{% endif %}page={{ page_obj.previous_page_number }}">&lsaquo;</a>
+            </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if filtro_ciudad_origen %}ciudad_origen={{ filtro_ciudad_origen }}&{% endif %}{% if filtro_ciudad_destino %}ciudad_destino={{ filtro_ciudad_destino }}&{% endif %}{% if filtro_categoria %}categoria={{ filtro_categoria }}&{% endif %}{% if filtro_peso_max %}peso_max={{ filtro_peso_max }}&{% endif %}page={{ page_obj.next_page_number }}">&rsaquo;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if filtro_ciudad_origen %}ciudad_origen={{ filtro_ciudad_origen }}&{% endif %}{% if filtro_ciudad_destino %}ciudad_destino={{ filtro_ciudad_destino }}&{% endif %}{% if filtro_categoria %}categoria={{ filtro_categoria }}&{% endif %}{% if filtro_peso_max %}peso_max={{ filtro_peso_max }}&{% endif %}page={{ page_obj.paginator.num_pages }}">&raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="bi bi-inbox me-2"></i>No hay viajes disponibles con los filtros seleccionados.
+    </div>
+    {% endif %}
 </div>
 
 <!-- Modal del mapa -->
@@ -97,10 +147,10 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Mapa del Envío</h5>
+                <h5 class="modal-title"><i class="bi bi-map me-2"></i>Mapa del Envío</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-0">
                 <div id="mapModalContainer" style="height: 500px;"></div>
             </div>
         </div>
@@ -110,87 +160,77 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// Datos de envíos desde Django
 var enviosData = JSON.parse('{{ envios_json|escapejs }}');
+var mapModalInstance = null;
 
-// Función para inicializar todos los mapas mini
 function inicializarMapasMini() {
     enviosData.forEach(function(envio) {
         var containerId = 'mapa-mini-' + envio.id;
         var container = document.getElementById(containerId);
-        
         if (container && envio.origen && envio.destino) {
-            // Crear mapa mini
-            var miniMap = L.map(containerId).setView([4.7, -74], 8);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(miniMap);
-            
-            // Marcador origen
-            L.marker([envio.origen[0], envio.origen[1]])
-                .addTo(miniMap)
-                .bindPopup('Origen');
-            
-            // Marcador destino
-            L.marker([envio.destino[0], envio.destino[1]])
-                .addTo(miniMap)
-                .bindPopup('Destino');
-            
-            // Línea de ruta
-            L.polyline([envio.origen, envio.destino], {color: 'blue', weight: 2}).addTo(miniMap);
-            
-            // Ajustar vista para ver toda la ruta
-            miniMap.fitBounds([envio.origen, envio.destino]);
+            var miniMap = L.map(container, { zoomControl: false, attributionControl: false });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMap);
+            L.marker([envio.origen[0], envio.origen[1]]).addTo(miniMap).bindPopup('Origen');
+            L.marker([envio.destino[0], envio.destino[1]]).addTo(miniMap).bindPopup('Destino');
+            L.polyline([envio.origen, envio.destino], {color: '#2f6b31', weight: 2}).addTo(miniMap);
+            setTimeout(function() {
+                miniMap.invalidateSize();
+                miniMap.fitBounds([envio.origen, envio.destino]);
+            }, 200);
         }
     });
 }
 
-// Función para abrir el modal con el mapa completo
 function abrirMapaModal(envioId) {
-    var envio = enviosData.find(e => e.id == envioId);
-    
+    var envio = enviosData.find(function(e) { return e.id == envioId; });
     if (!envio || !envio.origen || !envio.destino) {
         alert('No hay coordenadas disponibles para este envío');
         return;
     }
-    
-    // Mostrar modal
-    var modal = new bootstrap.Modal(document.getElementById('mapModal'));
+
+    var modalEl = document.getElementById('mapModal');
+    var modal = new bootstrap.Modal(modalEl);
     modal.show();
-    
-    setTimeout(function() {
-        // Crear mapa en el modal
-        var mapModal = L.map('mapModalContainer').setView([4.7, -74], 6);
+
+    modalEl.addEventListener('shown.bs.modal', function onShown() {
+        modalEl.removeEventListener('shown.bs.modal', onShown);
+
+        if (mapModalInstance) {
+            mapModalInstance.remove();
+            mapModalInstance = null;
+        }
+
+        mapModalInstance = L.map('mapModalContainer');
+        var mapModal = mapModalInstance;
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(mapModal);
-        
-        // Marcador origen
+
         L.marker([envio.origen[0], envio.origen[1]])
             .addTo(mapModal)
             .bindPopup('Origen: ' + (envio.direccion_origen || 'Origen'));
-        
-        // Marcador destino
+
         L.marker([envio.destino[0], envio.destino[1]])
             .addTo(mapModal)
             .bindPopup('Destino: ' + (envio.direccion_destino || 'Destino'));
-        
-        // Dibujar ruta
-        L.polyline([envio.origen, envio.destino], {color: 'blue', weight: 4}).addTo(mapModal);
-        
-        // Ajustar vista
-        mapModal.fitBounds([envio.origen, envio.destino]);
-        
-        // Calcular distancia
-        var distancia = calcularDistancia(envio.origen, envio.destino);
-        L.popup()
-            .setLatLng(envio.origen)
-            .setContent("Distancia: " + distancia + " km")
-            .openOn(mapModal);
-    }, 100);
+
+        L.polyline([envio.origen, envio.destino], {color: '#2f6b31', weight: 4}).addTo(mapModal);
+
+        setTimeout(function() {
+            mapModal.invalidateSize();
+            mapModal.fitBounds([envio.origen, envio.destino]);
+
+            var distancia = calcularDistancia(envio.origen, envio.destino);
+            if (distancia) {
+                L.popup()
+                    .setLatLng(envio.origen)
+                    .setContent('Distancia: ' + distancia + ' km')
+                    .openOn(mapModal);
+            }
+        }, 300);
+    });
 }
 
-// Función para calcular distancia
 function calcularDistancia(origen, destino) {
     var R = 6371;
     var lat1 = origen[0] * Math.PI / 180;
@@ -204,25 +244,6 @@ function calcularDistancia(origen, destino) {
     return (R * c).toFixed(2);
 }
 
-// Función para abrir modal de aceptar viaje
-function abrirModalAceptarViaje(envioId, origen, destino, distancia, peso) {
-    document.getElementById('envio_id').value = envioId;
-    document.getElementById('modal-origen').textContent = origen || 'No especificado';
-    document.getElementById('modal-destino').textContent = destino || 'No especificado';
-    document.getElementById('modal-distancia').textContent = distancia ? distancia + ' km' : 'No calculada';
-    document.getElementById('modal-peso').textContent = peso ? peso + ' kg' : 'No especificado';
-    
-    if (distancia && peso) {
-        var costoTotal = (distancia * 3000) + (peso * 200);
-        document.getElementById('costo_total_estimado').textContent = 
-            '$' + costoTotal.toLocaleString('es-CO');
-    }
-    
-    var modal = new bootstrap.Modal(document.getElementById('aceptarViajeModal'));
-    modal.show();
-}
-
-// Inicializar mapas cuando la página cargue
 document.addEventListener('DOMContentLoaded', function() {
     inicializarMapasMini();
 
@@ -234,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.btn-aceptar-viaje').forEach(function(button) {
         button.addEventListener('click', function() {
-            abrirModalAceptarViaje(
+            window.abrirModalAceptarViaje(
                 parseInt(this.dataset.envioId, 10),
                 this.dataset.origen,
                 this.dataset.destino,

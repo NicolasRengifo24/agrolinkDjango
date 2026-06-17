@@ -3,8 +3,10 @@ import io
 
 from django.shortcuts import render , redirect, get_object_or_404
 from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
 from .models import Envio , Vehiculo
-from productos.models import Producto,Finca
+from productos.models import Producto, Finca, CategoriaProducto
 from usuarios.models import Usuario , Transportista
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
@@ -37,52 +39,63 @@ def inicio_transportista(request):
         except (Usuario.DoesNotExist, Transportista.DoesNotExist):
             pass
     
+    # ── FILTROS ──
+    ciudad_origen = request.GET.get('ciudad_origen', '').strip()
+    ciudad_destino = request.GET.get('ciudad_destino', '').strip()
+    categoria = request.GET.get('categoria', '').strip()
+    peso_max = request.GET.get('peso_max', '').strip()
+
+    if ciudad_origen:
+        envios = envios.filter(
+            id_compra__detallescompra__id_producto__fincas__id_finca__ciudad__icontains=ciudad_origen
+        )
+    if ciudad_destino:
+        envios = envios.filter(
+            id_compra__id_cliente__id_usuario__ciudad__icontains=ciudad_destino
+        )
+    if categoria:
+        envios = envios.filter(
+            id_compra__detallescompra__id_producto__id_categoria_id=categoria
+        )
+    if peso_max:
+        envios = envios.filter(peso_total_kg__lte=float(peso_max))
+
+    envios = envios.distinct()
+
+    # ── PAGINACIÓN ──
+    pagina = request.GET.get('page', 1)
+    paginator = Paginator(envios, 5)
+    page_obj = paginator.get_page(pagina)
+
+    # ── DATOS JSON PARA MAPAS (solo página actual) ──
     data_envios = []
-    for envio in envios:
-        # Inicializar variables
+    for envio in page_obj:
         lat_origen = None
         lng_origen = None
         direccion_origen = ""
         nombre_finca = ""
-        
-        # Obtener coordenadas de destino de la compra
         lat_destino = None
         lng_destino = None
         direccion_destino = envio.id_compra.direccion_entrega or ""
-        
+
         if envio.id_compra.latitud_destino and envio.id_compra.longitud_destino:
             lat_destino = float(envio.id_compra.latitud_destino)
             lng_destino = float(envio.id_compra.longitud_destino)
-        
-        # Obtener coordenadas de origen (finca del productor)
+
         detalles = envio.id_compra.detallescompra_set.all()
         if detalles.exists():
             primer_detalle = detalles.first()
             producto = primer_detalle.id_producto
-            
-            print(f"DEBUG - Producto: {producto.nombre_producto}")
-            
-            # CORREGIDO: Obtener la finca a través de ProductoFinca
-            # La relación es: Producto -> ProductoFinca (related_name='fincas') -> Finca (id_finca)
-            producto_finca_rel = producto.fincas.first()  # Esto es ProductoFinca
+            producto_finca_rel = producto.fincas.first()
             if producto_finca_rel:
-                finca = producto_finca_rel.id_finca  # Esto es la Finca
-                print(f"DEBUG - Finca encontrada: {finca}")
+                finca = producto_finca_rel.id_finca
                 if finca:
                     nombre_finca = finca.nombre_finca or ""
                     direccion_origen = finca.direccion_finca or nombre_finca
                     if finca.latitud and finca.longitud:
                         lat_origen = float(finca.latitud)
                         lng_origen = float(finca.longitud)
-                        print(f"DEBUG - Coordenadas finca: {lat_origen}, {lng_origen}")
-                    else:
-                        print(f"DEBUG - Finca sin coordenadas")
-                else:
-                    print(f"DEBUG - No hay finca en ProductoFinca")
-            else:
-                print(f"DEBUG - No hay ProductoFinca para este producto")
-        
-        # Solo agregar a data_envios si tenemos coordenadas de origen y destino
+
         if lat_origen and lng_origen and lat_destino and lng_destino:
             data_envios.append({
                 "id": envio.id_envio,
@@ -95,16 +108,32 @@ def inicio_transportista(request):
                 "peso": float(envio.peso_total_kg or 0),
                 "distancia": float(envio.distancia_km or 0)
             })
-        else:
-            print(f"DEBUG - Envío {envio.id_envio} sin coordenadas: origen={lat_origen}, destino={lat_destino}")
 
-    import json
     envios_json = json.dumps(data_envios)
-    
+
+    # ── DATOS PARA DROPDOWNS ──
+    ciudades_origen = (
+        Finca.objects.exclude(ciudad__isnull=True).exclude(ciudad='')
+        .values_list('ciudad', flat=True).distinct().order_by('ciudad')
+    )
+    ciudades_destino = (
+        Usuario.objects.filter(rol='Cliente')
+        .exclude(ciudad__isnull=True).exclude(ciudad='')
+        .values_list('ciudad', flat=True).distinct().order_by('ciudad')
+    )
+    categorias = CategoriaProducto.objects.all().order_by('nombre_categoria')
+
     return render(request, 'envios/envios_dashboard.html', {
-        'envios': envios,
+        'page_obj': page_obj,
         'envios_json': envios_json,
         'vehiculos_activos': vehiculos_activos,
+        'filtro_ciudad_origen': ciudad_origen,
+        'filtro_ciudad_destino': ciudad_destino,
+        'filtro_categoria': categoria,
+        'filtro_peso_max': peso_max,
+        'ciudades_origen': ciudades_origen,
+        'ciudades_destino': ciudades_destino,
+        'categorias': categorias,
     })
    
 
@@ -232,19 +261,15 @@ def eliminar_vehiculo(request, vehiculo_id):
 def mis_envios(request):
 
     try:
-        # Obtener usuario y transportista
         usuario_obj = Usuario.objects.get(user=request.user)
         transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
-
     except Usuario.DoesNotExist:
         messages.error(request, "Usuario no encontrado")
         return redirect('inicio')
-
     except Transportista.DoesNotExist:
         messages.error(request, "No tienes perfil de transportista")
         return redirect('inicio')
 
-    # 🔥 ESTA ES LA CLAVE
     envios = Envio.objects.select_related(
         'id_compra__id_cliente__id_usuario',
         'id_vehiculo'
@@ -252,10 +277,41 @@ def mis_envios(request):
         id_transportista=transportista_obj
     ).order_by('-id_envio')
 
-    print("🚚 Envios encontrados:", envios.count())  # DEBUG
+    # ── Datos para modales de detalle ──
+    envios_detalle = []
+    for envio in envios:
+        detalle = envio.id_compra.detallescompra_set.first() if envio.id_compra else None
+        producto = detalle.id_producto if detalle else None
+        productor = producto.id_usuario if producto else None
+        finca_rel = producto.fincas.first() if producto else None
+        finca = finca_rel.id_finca if finca_rel else None
+
+        envios_detalle.append({
+            'id_envio': envio.id_envio,
+            'finca_nombre': finca.nombre_finca if finca else 'No especificada',
+            'finca_direccion': finca.direccion_finca if finca else '',
+            'finca_ciudad': finca.ciudad if finca else '',
+            'productor_nombre': f"{productor.id_usuario.nombre} {productor.id_usuario.apellido}" if productor else 'No especificado',
+            'productor_telefono': productor.id_usuario.telefono if productor else '',
+            'cliente_nombre': f"{envio.id_compra.id_cliente.id_usuario.nombre} {envio.id_compra.id_cliente.id_usuario.apellido}" if envio.id_compra else 'N/A',
+            'cliente_telefono': envio.id_compra.id_cliente.id_usuario.telefono if envio.id_compra else '',
+            'cliente_direccion': envio.direccion_destino or '',
+            'producto_nombre': producto.nombre_producto if producto else '',
+        })
+
+    envios_detalle_json = json.dumps(envios_detalle)
+
+    # ── Conteo de fotos pendientes ──
+    fotos_pendientes = envios.filter(
+        Q(estado_envio='En_Transito', foto_carga__isnull=True) |
+        Q(estado_envio='Entregado', foto_carga__isnull=True) |
+        Q(estado_envio='Entregado', foto_descarga__isnull=True)
+    ).count()
 
     return render(request, 'envios/mis_envios_dashboard.html', {
-        'envios': envios
+        'envios': envios,
+        'envios_detalle_json': envios_detalle_json,
+        'fotos_pendientes': fotos_pendientes,
     })
     
     
@@ -381,24 +437,27 @@ def cambiar_estado_envio(request, envio_id, nuevo_estado):
 
         envio = get_object_or_404(Envio, id_envio=envio_id)
 
-        # 🔐 Seguridad: solo su propio envío
         if envio.id_transportista != transportista_obj:
             messages.error(request, "No tienes permiso para este envío")
             return redirect('mis_envios')
 
-        # 🔄 Validar transición lógica
         if envio.estado_envio == "Asignado" and nuevo_estado == "En_Transito":
             envio.estado_envio = "En_Transito"
+            foto = request.FILES.get('foto_carga')
+            if foto:
+                envio.foto_carga = foto
 
         elif envio.estado_envio == "En_Transito" and nuevo_estado == "Entregado":
             envio.estado_envio = "Entregado"
+            foto = request.FILES.get('foto_descarga')
+            if foto:
+                envio.foto_descarga = foto
 
         else:
             messages.warning(request, "Cambio de estado no permitido")
             return redirect('mis_envios')
 
         envio.save()
-
         messages.success(request, f"Estado actualizado a {envio.estado_envio}")
 
     except Exception as e:
@@ -407,6 +466,39 @@ def cambiar_estado_envio(request, envio_id, nuevo_estado):
     return redirect('mis_envios')
 
 
+@login_required
+def subir_foto_envio(request, envio_id):
+    """Endpoint para que el transportista suba fotos pendientes después."""
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+        envio = get_object_or_404(Envio, id_envio=envio_id)
+
+        if envio.id_transportista != transportista_obj:
+            return JsonResponse({'success': False, 'message': 'No tienes permiso'}, status=403)
+
+        tipo = request.POST.get('tipo')
+        foto = request.FILES.get('foto')
+
+        if not tipo or not foto:
+            return JsonResponse({'success': False, 'message': 'Faltan tipo o archivo'}, status=400)
+
+        if tipo == 'foto_carga':
+            envio.foto_carga = foto
+        elif tipo == 'foto_descarga':
+            envio.foto_descarga = foto
+        else:
+            return JsonResponse({'success': False, 'message': 'Tipo inválido'}, status=400)
+
+        envio.save()
+        return JsonResponse({'success': True, 'message': 'Foto subida correctamente'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 ######### Esto es para el Api #######
@@ -657,6 +749,9 @@ def editar_perfil_transportista(request):
         usuario.correo = request.POST.get('correo', usuario.correo)
         usuario.telefono = request.POST.get('telefono', usuario.telefono)
         usuario.direccion = request.POST.get('direccion', usuario.direccion)
+
+        if 'foto_perfil' in request.FILES:
+            usuario.foto_perfil = request.FILES['foto_perfil']
 
         # Transportista
         transportista.zonas_entrega = request.POST.get(

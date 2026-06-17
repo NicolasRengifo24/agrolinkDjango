@@ -6,7 +6,7 @@
 <!-- NAVBAR -->
 <div class="ds-navbar">
     <div class="ds-navbar-left">
-        <a href="{% url 'inicio_transportista' %}" class="ds-btn-back">← Volver</a>
+        <a href="{% url 'inicio_transportista' %}" class="ds-btn-back"><i class="bi bi-arrow-left"></i> Volver</a>
     </div>
 
     <div class="ds-navbar-center">
@@ -22,7 +22,7 @@
 
     {% include "includes/toastify_messages.html" %}
 
-    <form method="post" action="{% url 'editar_perfil_transportista' %}">
+    <form method="post" action="{% url 'editar_perfil_transportista' %}" enctype="multipart/form-data">
         {% csrf_token %}
 
         <div class="row g-4">
@@ -32,8 +32,8 @@
 
                 <div class="ds-card profile-header">
 
-                    <img src="https://i.pravatar.cc/120?img={{ transportista.id_usuario.id_usuario }}"
-                         class="profile-avatar">
+                <img src="{% if transportista.id_usuario.foto_perfil %}{{ transportista.id_usuario.foto_perfil.url }}{% else %}https://i.pravatar.cc/120?img={{ transportista.id_usuario.id_usuario }}{% endif %}"
+                     class="profile-avatar">
 
                     <div class="profile-name view-mode">
                         {{ transportista.id_usuario.nombre }} {{ transportista.id_usuario.apellido }}
@@ -51,7 +51,7 @@
 
                         <!-- EDITAR -->
                         <button type="button" class="btn-lumina view-mode" onclick="toggleEdit()">
-                            ✏️ Editar perfil
+                            <i class="bi bi-pencil-fill"></i> Editar perfil
                         </button>
 
                         <!-- GUARDAR -->
@@ -70,7 +70,7 @@
 
                 <!-- ACTIVIDAD -->
                 <div class="ds-card">
-                    <h6>📊 Actividad</h6>
+                    <h6><i class="bi bi-bar-chart-fill"></i> Actividad</h6>
 
                     <div class="data-grid mt-3">
                         <div class="data-item">
@@ -98,9 +98,15 @@
                 <!-- DATOS PERSONALES -->
                 <div class="ds-card">
 
-                    <h4>👤 Datos Personales</h4>
+                    <h4><i class="bi bi-person-fill"></i> Datos Personales</h4>
 
                     <div class="data-grid mt-3">
+
+                        <!-- FOTO -->
+                        <div class="data-item">
+                            <span class="data-label">Foto de perfil</span>
+                            <input class="form-control edit-mode d-none" type="file" name="foto_perfil" accept="image/*">
+                        </div>
 
                         <!-- NOMBRE -->
                         <div class="data-item">
@@ -186,7 +192,7 @@
 
                 <!-- VEHÍCULOS -->
                 <div class="ds-card">
-                    <h4>🚚 Vehículos</h4>
+                    <h4><i class="bi bi-truck"></i> Vehículos</h4>
 
                     {% if vehiculos %}
                         {% for v in vehiculos %}
@@ -212,7 +218,7 @@
 
                 <!-- ENVÍOS -->
                 <div class="ds-card">
-                    <h4>📦 Envíos recientes</h4>
+                    <h4><i class="bi bi-box-seam"></i> Envíos recientes</h4>
 
                     {% for envio in transportista.envio_set.all|slice:":3" %}
                         <div class="data-item mb-2">

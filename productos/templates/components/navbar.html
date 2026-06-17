@@ -111,7 +111,7 @@
                 <!-- PERFIL -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
-                        <img src="https://i.pravatar.cc/40?img=10" class="profile-img me-2" alt="Perfil">
+                        <img src="{% if user.usuario.foto_perfil %}{{ user.usuario.foto_perfil.url }}{% else %}https://i.pravatar.cc/40?img={{ user.usuario.id_usuario }}{% endif %}" class="profile-img me-2" alt="Perfil">
                         {% if user.is_authenticated %}
                         <span>{{ user.first_name }}</span>
                         {% else %}

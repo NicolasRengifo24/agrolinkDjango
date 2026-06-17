@@ -594,7 +594,7 @@ def perfil_cliente(request):
     pedidos = Compra.objects.filter(
         id_cliente=cliente
     ).exclude(
-        estado__iexact="carrito"   # 👈 mejora: ignora mayúsculas/minúsculas
+        estado__iexact="carrito"   # ignora mayúsculas/minúsculas
     ).count()
 
     return render(request, 'components/perfil_cliente.html', {

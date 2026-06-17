@@ -39,7 +39,7 @@
 
         <div class="ds-card profile-header">
 
-            <img src="https://i.pravatar.cc/120?img={{ asesor.id_usuario.id_usuario }}"
+            <img src="{% if asesor.id_usuario.foto_perfil %}{{ asesor.id_usuario.foto_perfil.url }}{% else %}https://i.pravatar.cc/120?img={{ asesor.id_usuario.id_usuario }}{% endif %}"
                 class="profile-avatar">
 
             <div class="profile-name">
@@ -141,10 +141,15 @@
 
                 <h4>Editar Perfil</h4>
 
-                <form method="post" action="{% url 'editar_perfil_asesor' %}">
+                <form method="post" action="{% url 'editar_perfil_asesor' %}" enctype="multipart/form-data">
                     {% csrf_token %}
 
                     <div class="data-grid mt-3">
+
+                        <div class="data-item">
+                            <label class="data-label">Foto de perfil</label>
+                            <input class="form-control" type="file" name="foto_perfil" accept="image/*">
+                        </div>
 
                         <div class="data-item">
                             <label class="data-label">Nombre</label>

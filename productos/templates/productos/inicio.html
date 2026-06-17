@@ -2,25 +2,46 @@
 
 {% block content %}
 
-
-<div class="row g-4">
-
-    {% for producto in productos %}
-
-        {% include "components/productos.html" %}
-
-        
-
-    {% endfor %}
-
+<div class="row g-4" id="productos-container">
+    {% include "components/productos_grid.html" %}
 </div>
+
+{% if servicios_busqueda %}
+<section class="container my-5" data-aos="fade-up">
+    <h3 class="section-title mb-4">
+        <i class="bi bi-briefcase me-2"></i>Servicios relacionados con "{{ busqueda }}"
+    </h3>
+    {% include 'servicios/servicios_publicados/mis_servicios.html' with servicios=servicios_busqueda %}
+</section>
+{% endif %}
+
 <section class="container my-5" data-aos="fade-up">
     {% include "components/producto_destacado.html" %}
 </section>
 
+<div id="pagination-container">
+    {% include "components/pagination.html" %}
+</div>
 
-
-
-
+<script>
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('.pagination-link');
+    if (!link) return;
+    e.preventDefault();
+    var page = link.dataset.page;
+    var params = new URLSearchParams(window.location.search);
+    params.set('page', page);
+    fetch('/cargar-productos/?' + params.toString(), {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('productos-container').innerHTML = data.cards_html;
+        document.getElementById('pagination-container').innerHTML = data.pagination_html;
+        var newUrl = window.location.pathname + '?' + params.toString();
+        window.history.pushState({page: page}, '', newUrl);
+    });
+});
+</script>
 
 {% endblock %}

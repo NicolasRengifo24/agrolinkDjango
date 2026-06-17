@@ -3,8 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 
-from .models import Servicio, Maquinas
+from .models import Servicio, Maquinas, Certificados
 from usuarios.models import Asesor, Usuario
+from envios.models import Envio
+from calificaciones.models import Calificacion
+from django.db.models import Avg, Count
+from productos.models import Producto
 
 
 @login_required
@@ -39,14 +43,14 @@ def asesor_servicios(request):
 
                 messages.success(
                     request,
-                    "✅ Servicio eliminado correctamente"
+                    "Servicio eliminado correctamente"
                 )
 
             except Servicio.DoesNotExist:
 
                 messages.error(
                     request,
-                    "❌ El servicio no existe"
+                    "El servicio no existe"
                 )
 
         # =========================
@@ -68,14 +72,14 @@ def asesor_servicios(request):
 
                 messages.success(
                     request,
-                    "✏️ Servicio actualizado correctamente"
+                    "Servicio actualizado correctamente"
                 )
 
             except Servicio.DoesNotExist:
 
                 messages.error(
                     request,
-                    "❌ No se pudo editar el servicio"
+                    "No se pudo editar el servicio"
                 )
 
         # =========================
@@ -90,17 +94,33 @@ def asesor_servicios(request):
                 estado=request.POST.get('estado')
             )
 
+            # Crear certificados asociados al asesor
+            tipos_cert = request.POST.getlist('tipo_certificado[]')
+            descripciones_cert = request.POST.getlist('descripcion_cert[]')
+            fechas_cert = request.POST.getlist('fecha_expedicion[]')
+
+            for tipo, desc, fecha in zip(tipos_cert, descripciones_cert, fechas_cert):
+                if tipo.strip() and desc.strip() and fecha.strip():
+                    Certificados.objects.create(
+                        id_usuario=asesor,
+                        tipo_certificado=tipo.strip(),
+                        descripcion_cert=desc.strip(),
+                        fecha_expedicion=fecha
+                    )
+
             messages.success(
                 request,
-                "📢 Servicio publicado correctamente"
+                "Servicio publicado correctamente"
             )
 
         return redirect('asesor_servicios')
 
     servicios = Servicio.objects.filter(id_asesor=asesor)
+    certificados = Certificados.objects.filter(id_usuario=asesor)
 
     return render(request, 'servicios/asesor.html', {
-        'servicios': servicios
+        'servicios': servicios,
+        'certificados': certificados,
     })
 
 
@@ -137,7 +157,7 @@ def maquinas_asesor(request):
 
         messages.success(
             request,
-            "🚜 Máquina registrada correctamente"
+            "Máquina registrada correctamente"
         )
 
         return redirect('maquinas_asesor')
@@ -171,11 +191,23 @@ def lista_servicios(request):
         estado__iexact='activo'
     )
 
+    total_usuarios = Usuario.objects.count()
+    total_productos = Producto.objects.count()
+    total_entregados = Envio.objects.filter(estado_envio__iexact='entregado').count()
+    total_envios = Envio.objects.count()
+    porcentaje_entregas = round((total_entregados / total_envios) * 100, 1) if total_envios > 0 else 0
+    calificacion_promedio = Calificacion.objects.aggregate(avg=Avg('puntaje_producto'))['avg'] or 0
+
     return render(
         request,
         'servicios/servicios_publicados/base_servicios.html',
         {
-            'servicios': servicios
+            'servicios': servicios,
+            'total_usuarios': total_usuarios,
+            'total_productos': total_productos,
+            'total_entregados': total_entregados,
+            'porcentaje_entregas': porcentaje_entregas,
+            'calificacion_promedio': calificacion_promedio,
         }
     )
 
@@ -260,6 +292,9 @@ def editar_perfil_asesor(request):
             usuario.telefono = request.POST.get("telefono")
             usuario.ciudad = request.POST.get("ciudad")
             usuario.cedula = cedula
+
+            if 'foto_perfil' in request.FILES:
+                usuario.foto_perfil = request.FILES['foto_perfil']
 
             # =====================================
             # DATOS ASESOR
