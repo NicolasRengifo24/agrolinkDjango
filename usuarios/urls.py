@@ -34,13 +34,13 @@ urlpatterns = [
     
     path('crear_usuario/', views.crear_usuario_admin, name='crear_usuario'),
     path('editar_usuario/<int:id>/', views.editar_usuario_admin, name='editar_usuario'),
-    path('eliminar_usuario/<int:id>/', views.eliminar_usuario, name='eliminar_usuario'),
+    path('toggle_estado_usuario/<int:id>/', views.toggle_estado_usuario, name='toggle_estado_usuario'),
     path('ver_usuario/<int:id>/', views.ver_usuario, name='ver_usuario'),
     
     path('productos_admin/',views.ver_lista_productos_admin, name= 'ver_lista_productos_admin'),
     path('formulario_producto_admin/', views.crear_producto_admin, name= 'crear_producto_admin'),
     path('productos_admin/<int:id>/editar/', views.editar_producto_admin, name='editar_producto_admin'),
-    path('producto/<int:id>/eliminar/', views.eliminar_Producto_admin, name= 'eliminar_producto_admin'),
+    path('producto/<int:id>/toggle-estado/', views.toggle_estado_producto_admin, name='toggle_estado_producto_admin'),
     
     path('pedidos_admin/', views.ver_lista_pedidos_admin, name='ver_lista_pedidos_admin'),
     path('compra/<int:id>/', views.ver_detalle_compra_admin, name= 'ver_detalle_compra'),
@@ -51,6 +51,12 @@ urlpatterns = [
     path('servicios/cambiar_estado/<int:servicio_id>/', views.cambiar_estado_servicio, name='cambiar_estado_servicio'),
     path('servicios/eliminar/<int:servicio_id>/', views.eliminar_servicio_admin, name='eliminar_servicio_admin'),
     path('logout/', views.cerrar_sesion, name='logout'),
+
+    # Notificaciones
+    path('notificaciones/', views.listar_notificaciones, name='listar_notificaciones'),
+    path('notificaciones/marcar/<int:notif_id>/', views.marcar_notificacion_leida, name='marcar_notificacion_leida'),
+    path('vehiculos/aprobar/<int:vehiculo_id>/', views.aprobar_vehiculo, name='aprobar_vehiculo'),
+    path('vehiculos/rechazar/<int:vehiculo_id>/', views.rechazar_vehiculo, name='rechazar_vehiculo'),
 
     # Reportes PDF
     path('reporte/inventario/', views.reporte_inventario_admin_pdf, name='reporte_inventario_admin_pdf'),

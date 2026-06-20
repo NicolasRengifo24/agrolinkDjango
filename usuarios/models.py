@@ -87,3 +87,34 @@ class Administrador(models.Model):
     class Meta:
         managed = True
         db_table = 'tb_administradores'
+
+
+class Notificacion(models.Model):
+    TIPOS = [
+        ('SOLICITUD_VEHICULO', 'Solicitud de vehículo'),
+        ('APROBACION_VEHICULO', 'Vehículo aprobado'),
+        ('RECHAZO_VEHICULO', 'Vehículo rechazado'),
+    ]
+
+    id_notificacion = models.AutoField(primary_key=True)
+    tipo = models.CharField(max_length=50, choices=TIPOS)
+    mensaje = models.TextField()
+    destino = models.ForeignKey(
+        Usuario, models.CASCADE,
+        db_column='destino',
+        related_name='notificaciones'
+    )
+    id_vehiculo = models.ForeignKey(
+        'envios.Vehiculo', models.SET_NULL,
+        db_column='id_vehiculo',
+        null=True, blank=True
+    )
+    leido = models.BooleanField(default=False)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = True
+        db_table = 'tb_notificaciones'
+
+    def __str__(self):
+        return f"[{self.tipo}] {self.mensaje[:60]}"

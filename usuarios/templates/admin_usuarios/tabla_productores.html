@@ -36,7 +36,15 @@
                     <td>
                         <a href="{% url 'ver_usuario' p.id_usuario.id_usuario %}" class="btn btn-sm btn-info">Ver</a>
                         <a href="{% url 'editar_usuario' p.id_usuario.id_usuario %}" class="btn btn-sm btn-warning">Editar</a>
-                        <a href="{% url 'eliminar_usuario' p.id_usuario.id_usuario %}" class="btn btn-sm btn-danger">Eliminar</a>
+                        <a href="{% url 'toggle_estado_usuario' p.id_usuario.id_usuario %}"
+                           class="btn btn-sm {% if p.id_usuario.estado %}btn-warning{% else %}btn-success{% endif %}"
+                           onclick="return confirm('¿{% if p.id_usuario.estado %}Bloquear{% else %}Desbloquear{% endif %} este usuario?')">
+                            {% if p.id_usuario.estado %}
+                            <i class="bi bi-lock"></i> Bloquear
+                            {% else %}
+                            <i class="bi bi-unlock"></i> Desbloquear
+                            {% endif %}
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}

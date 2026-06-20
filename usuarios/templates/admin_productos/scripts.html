@@ -3,6 +3,7 @@
 function filtrar() {
     let cat = document.getElementById('categoriaFilter').value;
     let stock = document.getElementById('stockFilter').value;
+    let nombre = document.getElementById('nombreFilter').value.toLowerCase().trim();
 
     document.querySelectorAll('.producto-item').forEach(function(r) {
         let pasaCat = !cat || r.dataset.categoria === cat;
@@ -13,11 +14,14 @@ function filtrar() {
             (stock === 'bajo' && s > 0 && s < 10) ||
             (stock === 'agotado' && s === 0);
 
-        r.style.display = (pasaCat && pasaStock) ? '' : 'none';
+        let pasaNombre = !nombre || (r.dataset.nombre && r.dataset.nombre.includes(nombre));
+
+        r.style.display = (pasaCat && pasaStock && pasaNombre) ? '' : 'none';
     });
 }
 
 document.getElementById('categoriaFilter')?.addEventListener('change', filtrar);
 document.getElementById('stockFilter')?.addEventListener('change', filtrar);
+document.getElementById('nombreFilter')?.addEventListener('input', filtrar);
 
 </script>

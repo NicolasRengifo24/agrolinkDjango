@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Envio , Vehiculo
 from productos.models import Producto, Finca, CategoriaProducto
-from usuarios.models import Usuario , Transportista
+from usuarios.models import Usuario, Transportista, Administrador, Notificacion
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages 
 
@@ -143,12 +143,28 @@ def mostrar_vehiculos(request):
         usuario_obj = Usuario.objects.get(user=request.user)
         transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
         vehiculos = Vehiculo.objects.filter(id_transportista=transportista_obj)
+
+        notificaciones = Notificacion.objects.filter(
+            destino=usuario_obj,
+            tipo__in=['APROBACION_VEHICULO', 'RECHAZO_VEHICULO'],
+            leido=False
+        )
+        for n in notificaciones:
+            if n.tipo == 'APROBACION_VEHICULO':
+                messages.success(request, n.mensaje)
+            elif n.tipo == 'RECHAZO_VEHICULO':
+                messages.error(request, n.mensaje)
+
+        notificaciones_no_leidas = notificaciones.count()
+
     except (Usuario.DoesNotExist, Transportista.DoesNotExist):
         vehiculos = Vehiculo.objects.none()
+        notificaciones_no_leidas = 0
         messages.warning(request, "No tienes perfil de transportista")
     
     return render(request, 'vehiculos/vehiculos_dashboard.html', {
         'vehiculos': vehiculos,
+        'notificaciones_no_leidas': notificaciones_no_leidas,
     })
     
     
@@ -177,9 +193,20 @@ def agregar_vehiculo(request):
                 tipo_vehiculo=tipo_vehiculo,
                 placa_vehiculo=placa_vehiculo.upper(),
                 capacidad_carga=capacidad_carga if capacidad_carga else 0,
-                documento_propiedad=archivo  # 👈 Django guarda el archivo automáticamente
+                documento_propiedad=archivo,
+                estado='PENDIENTE'
             )
-            messages.success(request, f"Vehículo {placa_vehiculo} registrado exitosamente")
+
+            admins = Administrador.objects.select_related('id_usuario').all()
+            for admin in admins:
+                Notificacion.objects.create(
+                    tipo='SOLICITUD_VEHICULO',
+                    mensaje=f"El transportista {usuario_obj.nombre} {usuario_obj.apellido} ha registrado el vehículo {placa_vehiculo.upper()} y está pendiente de aprobación.",
+                    destino=admin.id_usuario,
+                    id_vehiculo=vehiculo
+                )
+
+            messages.success(request, f"Vehículo {placa_vehiculo} registrado. Pendiente de aprobación por un administrador.")
         except Exception as e:
             messages.error(request, f"Error al registrar vehículo: {str(e)}")
 
@@ -203,6 +230,10 @@ def cambiar_estado_vehiculo(request, vehiculo_id):
                 id_vehiculo=vehiculo_id, 
                 id_transportista=transportista_obj
             )
+
+            if vehiculo.estado in ('PENDIENTE', 'RECHAZADO'):
+                messages.error(request, "No puedes cambiar el estado de un vehículo que no ha sido aprobado por el administrador.")
+                return redirect('mostrar_vehiculos')
             
             # Cambiar estado
             if vehiculo.estado == 'ACTIVO':
@@ -255,6 +286,36 @@ def eliminar_vehiculo(request, vehiculo_id):
             messages.error(request, f"Error al eliminar: {str(e)}")
     
     return redirect('mostrar_vehiculos')
+
+
+@login_required
+def notificaciones_transportista(request):
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        notificaciones = Notificacion.objects.filter(
+            destino=usuario_obj,
+            tipo__in=['APROBACION_VEHICULO', 'RECHAZO_VEHICULO']
+        ).order_by('-fecha_creacion')
+
+        no_leidas = notificaciones.filter(leido=False).count()
+    except Usuario.DoesNotExist:
+        notificaciones = Notificacion.objects.none()
+        no_leidas = 0
+
+    return render(request, 'vehiculos/notificaciones.html', {
+        'notificaciones': notificaciones,
+        'no_leidas': no_leidas,
+    })
+
+
+@login_required
+def marcar_notif_transportista(request, notif_id):
+    notificacion = get_object_or_404(
+        Notificacion, id_notificacion=notif_id, destino__user=request.user
+    )
+    notificacion.leido = True
+    notificacion.save()
+    return redirect('notificaciones_transportista')
 
 
 @login_required

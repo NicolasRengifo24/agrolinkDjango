@@ -18,6 +18,7 @@
                     <th>Stock</th>
                     <th>Precio</th>
                     <th>Imagen</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -25,7 +26,7 @@
             <tbody>
 
                 {% for p in productos %}
-                <tr class="producto-item" data-stock="{{ p.stock }}" data-categoria="{{ p.id_categoria_id }}">
+                <tr class="producto-item" data-stock="{{ p.stock }}" data-categoria="{{ p.id_categoria_id }}" data-nombre="{{ p.nombre_producto|lower }}">
                     
                     <td>{{ p.id_producto }}</td>
 
@@ -58,13 +59,28 @@
                         {% endif %}
                     </td>
 
+                    <!-- ESTADO -->
+                    <td>
+                        {% if p.estado %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
+                    </td>
+
                     <!-- ACCIONES -->
                     <td>
                         <a href="{% url 'editar_producto_admin' p.id_producto %}" class="btn btn-sm btn-primary">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="{% url 'eliminar_producto_admin' p.id_producto %}" class="btn btn-sm btn-danger">
-                            <i class="bi bi-trash"></i>
+                        <a href="{% url 'toggle_estado_producto_admin' p.id_producto %}"
+                           class="btn btn-sm {% if p.estado %}btn-warning{% else %}btn-success{% endif %}"
+                           onclick="return confirm('¿{% if p.estado %}Inhabilitar{% else %}Habilitar{% endif %} este producto?')">
+                            {% if p.estado %}
+                            <i class="bi bi-eye-slash"></i>
+                            {% else %}
+                            <i class="bi bi-eye"></i>
+                            {% endif %}
                         </a>
                     </td>
 

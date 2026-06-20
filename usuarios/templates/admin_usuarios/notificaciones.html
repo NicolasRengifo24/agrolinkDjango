@@ -1,0 +1,82 @@
+{% extends "base/base_admin.html" %}
+{% load static %}
+
+{% block title %}Notificaciones | AgroLink{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card-glass">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-800 mb-0" style="color:var(--green);">
+                <i class="bi bi-bell me-2"></i>Notificaciones
+                {% if no_leidas > 0 %}
+                <span class="badge bg-danger ms-2">{{ no_leidas }} sin leer</span>
+                {% endif %}
+            </h5>
+            <a href="{% url 'ver_listas_usuarios_admin' %}" class="btn btn-secondary btn-sm">
+                Volver al dashboard
+            </a>
+        </div>
+
+        {% if notificaciones %}
+        <div class="list-group">
+            {% for n in notificaciones %}
+            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start
+                {% if not n.leido %}list-group-item-warning{% endif %}">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold">
+                        {% if n.tipo == 'SOLICITUD_VEHICULO' %}
+                        <i class="bi bi-truck text-warning me-1"></i>
+                        {% elif n.tipo == 'APROBACION_VEHICULO' %}
+                        <i class="bi bi-check-circle text-success me-1"></i>
+                        {% elif n.tipo == 'RECHAZO_VEHICULO' %}
+                        <i class="bi bi-x-circle text-danger me-1"></i>
+                        {% endif %}
+                        {{ n.get_tipo_display }}
+                        {% if not n.leido %}
+                        <span class="badge bg-warning text-dark ms-2">Nuevo</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-1">{{ n.mensaje }}</p>
+                    <small class="text-muted">{{ n.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                </div>
+
+                <div class="d-flex gap-2">
+                    {% if n.tipo == 'SOLICITUD_VEHICULO' and n.id_vehiculo and n.id_vehiculo.estado == 'PENDIENTE' %}
+                    <a href="{% url 'aprobar_vehiculo' n.id_vehiculo.id_vehiculo %}"
+                       class="btn btn-sm btn-success"
+                       onclick="return confirm('¿Aprobar este vehículo?')">
+                        <i class="bi bi-check-lg"></i> Aprobar
+                    </a>
+                    <a href="{% url 'rechazar_vehiculo' n.id_vehiculo.id_vehiculo %}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('¿Rechazar este vehículo?')">
+                        <i class="bi bi-x-lg"></i> Rechazar
+                    </a>
+                    {% endif %}
+
+                    {% if not n.leido %}
+                    <a href="{% url 'marcar_notificacion_leida' n.id_notificacion %}"
+                       class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-check2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-bell-slash fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No hay notificaciones</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

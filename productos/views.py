@@ -34,7 +34,7 @@ def inicio(request):
     busqueda = request.GET.get('busqueda')
 
     total_usuarios = Usuario.objects.count()
-    total_productos = Producto.objects.count()
+    total_productos = Producto.objects.filter(estado=True).count()
     categorias = CategoriaProducto.objects.all()
 
     categoria_f = request.GET.get('categoria')
@@ -42,7 +42,7 @@ def inicio(request):
     precio_min = request.GET.get('precioMin')
     precio_max = request.GET.get('precioMax')
 
-    productos = Producto.objects.prefetch_related('imagenProducto')
+    productos = Producto.objects.prefetch_related('imagenProducto').filter(estado=True)
 
     servicios_busqueda = None
 
@@ -124,7 +124,7 @@ def inicio(request):
 
     if producto_destacado_data:
         producto_destacado = Producto.objects.prefetch_related('imagenProducto').filter(
-            id_producto=producto_destacado_data['id_producto']
+            id_producto=producto_destacado_data['id_producto'], estado=True
         ).first()
 
     if producto_destacado:
@@ -176,7 +176,7 @@ def cargar_productos_pagina(request):
     precio_max = request.GET.get('precioMax', '')
     page = request.GET.get('page', 1)
 
-    productos = Producto.objects.prefetch_related('imagenProducto')
+    productos = Producto.objects.prefetch_related('imagenProducto').filter(estado=True)
 
     if busqueda:
         productos = productos.filter(
@@ -243,7 +243,7 @@ def cargar_productos_pagina(request):
 
 
 def mostrar_productos(request):
-    productos = Producto.objects.prefetch_related('imagenProducto').annotate(
+    productos = Producto.objects.prefetch_related('imagenProducto').filter(estado=True).annotate(
         promedio_estrellas=Avg('calificaciones__puntaje'),
         total_calificaciones=Count('calificaciones')
     ).distinct()
@@ -264,12 +264,12 @@ def mostrar_productos(request):
 
 def detalle_producto(request, id):
     producto = Producto.objects.prefetch_related('imagenProducto').filter(
-        id_producto=id
+        id_producto=id, estado=True
     ).first()
 
     if producto and producto.id_categoria:
         relacionados = Producto.objects.prefetch_related('imagenProducto').filter(
-            id_categoria=producto.id_categoria
+            id_categoria=producto.id_categoria, estado=True
         ).exclude(id_producto=producto.id_producto)[:4]
 
     # ⭐ estadísticas
@@ -1252,7 +1252,7 @@ def perfil_productor(request):
     usuario = request.user.usuario
     productor = Productor.objects.get(id_usuario=usuario)
 
-    productos_count = Producto.objects.filter(id_usuario=productor).count()
+    productos_count = Producto.objects.filter(id_usuario=productor, estado=True).count()
 
     ventas_count = DetallesCompra.objects.filter(
         id_producto__id_usuario=productor
@@ -1353,7 +1353,7 @@ def ver_perfil_productor(request, id):
                 es_dueno = True
 
 
-    productos_count = Producto.objects.filter(id_usuario=productor).count()
+    productos_count = Producto.objects.filter(id_usuario=productor, estado=True).count()
     
     ventas_count = DetallesCompra.objects.filter(
         id_producto__id_usuario=productor

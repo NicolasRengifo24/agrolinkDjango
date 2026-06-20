@@ -19,6 +19,21 @@
     <link rel="stylesheet" href="{% static 'css/envios.css' %}">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/vehiculos.css' %}">
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            padding-top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            flex: 1 0 auto;
+        }
+    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -29,8 +44,9 @@
     {% include "includes/toastify_messages.html" %}
     
     <!-- Contenido principal -->
-    
+    <div class="content-wrapper">
         {% block content %}{% endblock %}
+    </div>
     
     
     <!-- Footer -->

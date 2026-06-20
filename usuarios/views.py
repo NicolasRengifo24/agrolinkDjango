@@ -10,7 +10,7 @@ from reportlab.lib.pagesizes import letter
 
 
 
-from .models import Usuario, Cliente, Productor, Asesor, Administrador,Transportista
+from .models import Usuario, Cliente, Productor, Asesor, Administrador, Transportista, Notificacion
 from servicios.models import Servicio, Maquinas, Certificados
 
 from pedidos.models import Compra, DetallesCompra
@@ -374,6 +374,13 @@ def ver_listas_usuarios_admin(request):
     total_transportistas=Transportista.objects.filter(id_usuario__estado=True).count()
     total_asesores=Asesor.objects.filter(id_usuario__estado=True).count()
     
+    #notificaciones no leidas para el admin
+    try:
+        usuario_admin = Usuario.objects.get(user=request.user)
+        notificaciones_no_leidas = Notificacion.objects.filter(destino=usuario_admin, leido=False).count()
+    except Usuario.DoesNotExist:
+        notificaciones_no_leidas = 0
+    
     return render(request, 'admin_usuarios/dashboard.html', {
         'clientes': clientes,
         'productores': productores,
@@ -384,6 +391,8 @@ def ver_listas_usuarios_admin(request):
         'total_productores':total_productores,
         'total_transportistas': total_transportistas,
         'total_asesores': total_asesores,
+        
+        'notificaciones_no_leidas': notificaciones_no_leidas,
     })
     
     
@@ -593,12 +602,12 @@ def editar_producto_admin(request, id):
     }
     return render(request, 'admin_productos/editar_producto.html', context)
 
-def eliminar_Producto_admin(request, id):
+def toggle_estado_producto_admin(request, id):
     producto = get_object_or_404(Producto, id_producto=id)
-    
-    producto.delete()
-
-    messages.success(request, "Producto eliminado correctamente")
+    producto.estado = not producto.estado
+    producto.save()
+    accion = "inhabilitado" if not producto.estado else "habilitado"
+    messages.success(request, f"Producto {producto.nombre_producto} {accion} correctamente")
     return redirect('ver_lista_productos_admin')
 
 
@@ -925,20 +934,12 @@ def editar_usuario_admin(request, id):
         return redirect('ver_listas_usuarios_admin')
     return render(request, 'admin_usuarios/editar_usuario.html', {'usuario': usuario})
 
-def eliminar_usuario(request, id):
-    usuario = Usuario.objects.get(id_usuario=id)
-
-    Cliente.objects.filter(id_usuario=usuario).delete()
-    Productor.objects.filter(id_usuario=usuario).delete()
-    Transportista.objects.filter(id_usuario=usuario).delete()
-    Asesor.objects.filter(id_usuario=usuario).delete()
-
-    if usuario.user:
-        usuario.user.delete()
-    
-    usuario.delete()
-
-    messages.success(request, "Usuario eliminado correctamente")
+def toggle_estado_usuario(request, id):
+    usuario = get_object_or_404(Usuario, id_usuario=id)
+    usuario.estado = not usuario.estado
+    usuario.save()
+    accion = "bloqueado" if not usuario.estado else "desbloqueado"
+    messages.success(request, f"Usuario {usuario.nombre} {usuario.apellido} {accion} correctamente")
     return redirect('ver_listas_usuarios_admin')
 
 
@@ -953,10 +954,91 @@ def ver_usuario(request, id):
         except Transportista.DoesNotExist:
             pass
     
+    fincas = None
+    if usuario.rol == 'PRODUCTOR':
+        try:
+            productor = Productor.objects.get(id_usuario=usuario)
+            fincas = Finca.objects.filter(id_usuario=productor)
+        except Productor.DoesNotExist:
+            pass
+    
     return render(request, 'admin_usuarios/ver_usuario.html', {
         'usuario': usuario,
         'vehiculos': vehiculos,
+        'fincas': fincas,
     })
+
+
+# Notificaciones admin
+@login_required
+def listar_notificaciones(request):
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+    except Usuario.DoesNotExist:
+        return redirect('login_view')
+
+    notificaciones = Notificacion.objects.filter(destino=usuario_obj).order_by('-fecha_creacion')
+    no_leidas = notificaciones.filter(leido=False).count()
+
+    return render(request, 'admin_usuarios/notificaciones.html', {
+        'notificaciones': notificaciones,
+        'no_leidas': no_leidas,
+    })
+
+
+@login_required
+def marcar_notificacion_leida(request, notif_id):
+    notificacion = get_object_or_404(Notificacion, id_notificacion=notif_id)
+    notificacion.leido = True
+    notificacion.save()
+    return redirect('listar_notificaciones')
+
+
+@login_required
+def aprobar_vehiculo(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id_vehiculo=vehiculo_id, estado='PENDIENTE')
+    vehiculo.estado = 'ACTIVO'
+    vehiculo.save()
+
+    transportista = vehiculo.id_transportista
+    Notificacion.objects.create(
+        tipo='APROBACION_VEHICULO',
+        mensaje=f"Tu vehículo {vehiculo.placa_vehiculo} ha sido aprobado por el administrador.",
+        destino=transportista.id_usuario,
+        id_vehiculo=vehiculo
+    )
+
+    notif_pendientes = Notificacion.objects.filter(
+        id_vehiculo=vehiculo, tipo='SOLICITUD_VEHICULO', leido=False
+    )
+    notif_pendientes.update(leido=True)
+
+    messages.success(request, f"Vehículo {vehiculo.placa_vehiculo} aprobado correctamente")
+    return redirect('listar_notificaciones')
+
+
+@login_required
+def rechazar_vehiculo(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, id_vehiculo=vehiculo_id, estado='PENDIENTE')
+    vehiculo.estado = 'RECHAZADO'
+    vehiculo.save()
+
+    transportista = vehiculo.id_transportista
+    Notificacion.objects.create(
+        tipo='RECHAZO_VEHICULO',
+        mensaje=f"Tu vehículo {vehiculo.placa_vehiculo} ha sido rechazado por el administrador.",
+        destino=transportista.id_usuario,
+        id_vehiculo=vehiculo
+    )
+
+    notif_pendientes = Notificacion.objects.filter(
+        id_vehiculo=vehiculo, tipo='SOLICITUD_VEHICULO', leido=False
+    )
+    notif_pendientes.update(leido=True)
+
+    messages.success(request, f"Vehículo {vehiculo.placa_vehiculo} rechazado")
+    return redirect('listar_notificaciones')
+
 
 # esto es el login , la autenticacion de cada usuario 
 
@@ -978,6 +1060,11 @@ def login_view(request):
                     usuario = Usuario.objects.get(user=user)
                 except Usuario.DoesNotExist:
                     messages.error(request, "No se encontró información extendida del usuario")
+                    return redirect('login_view')
+
+                if not usuario.estado:
+                    logout(request)
+                    messages.error(request, "Tu cuenta está bloqueada. Contacta al administrador.")
                     return redirect('login_view')
 
                 rol = usuario.rol.upper()

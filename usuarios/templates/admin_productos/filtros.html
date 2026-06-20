@@ -2,7 +2,7 @@
 
     <div class="row g-3">
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <select class="form-select" id="categoriaFilter">
                 <option value="">Todas las categorías</option>
                 {% for cat in categorias %}
@@ -11,7 +11,7 @@
             </select>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <select class="form-select" id="stockFilter">
                 <option value="">Todos los stocks</option>
                 <option value="disponible">Disponible</option>
@@ -20,7 +20,11 @@
             </select>
         </div>
 
-        <div class="col-md-4 text-end">
+        <div class="col-md-3">
+            <input type="text" class="form-control" id="nombreFilter" placeholder="Buscar por nombre...">
+        </div>
+
+        <div class="col-md-3 text-end">
             <a href="{% url 'crear_producto_admin' %}" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> Agregar Producto
             </a>

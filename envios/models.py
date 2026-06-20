@@ -8,7 +8,9 @@ from django.db import models
 class Vehiculo(models.Model):
     # Definir choices como tupla (más simple)
     ESTADOS = [
+        ('PENDIENTE', 'Pendiente de aprobación'),
         ('ACTIVO', 'Activo'),
+        ('RECHAZADO', 'Rechazado'),
         ('SUSPENDIDO', 'Suspendido'),
         ('MANTENIMIENTO', 'En Mantenimiento'),
     ]

@@ -43,8 +43,14 @@
                         <a href="{% url 'editar_usuario' c.id_usuario.id_usuario %}" class="btn btn-sm btn-warning">
                             Editar
                         </a>
-                        <a href="{% url 'eliminar_usuario' c.id_usuario.id_usuario %}" class="btn btn-sm btn-danger">
-                            Eliminar
+                        <a href="{% url 'toggle_estado_usuario' c.id_usuario.id_usuario %}"
+                           class="btn btn-sm {% if c.id_usuario.estado %}btn-warning{% else %}btn-success{% endif %}"
+                           onclick="return confirm('¿{% if c.id_usuario.estado %}Bloquear{% else %}Desbloquear{% endif %} este usuario?')">
+                            {% if c.id_usuario.estado %}
+                            <i class="bi bi-lock"></i> Bloquear
+                            {% else %}
+                            <i class="bi bi-unlock"></i> Desbloquear
+                            {% endif %}
                         </a>
                     </td>
                 </tr>

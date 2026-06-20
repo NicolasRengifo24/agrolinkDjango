@@ -8,8 +8,12 @@
                     <h5 class="card-title fw-bold text-success mb-0">
                         <i class="bi bi-truck me-2"></i>{{ vehiculo.tipo_vehiculo }}
                     </h5>
-                    <span class="badge {% if vehiculo.estado == 'ACTIVO' %}bg-success{% else %}bg-secondary{% endif %}">
-                        {% if vehiculo.estado == 'ACTIVO' %}Activo{% else %}Suspendido{% endif %}
+                    <span class="badge 
+                        {% if vehiculo.estado == 'ACTIVO' %}bg-success
+                        {% elif vehiculo.estado == 'PENDIENTE' %}bg-warning text-dark
+                        {% elif vehiculo.estado == 'RECHAZADO' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ vehiculo.get_estado_display }}
                     </span>
                 </div>
 
@@ -35,7 +39,7 @@
                             <i class="bi bi-pause-circle me-1"></i>Suspender
                         </button>
                     </form>
-                    {% else %}
+                    {% elif vehiculo.estado == 'SUSPENDIDO' %}
                     <form method="post" action="{% url 'cambiar_estado_vehiculo' vehiculo.id_vehiculo %}"
                         style="flex: 1;">
                         {% csrf_token %}
@@ -46,6 +50,7 @@
                     </form>
                     {% endif %}
 
+                    {% if vehiculo.estado != 'PENDIENTE' and vehiculo.estado != 'RECHAZADO' %}
                     <form method="post" action="{% url 'eliminar_vehiculo' vehiculo.id_vehiculo %}" style="flex: 1;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm w-100"
@@ -53,6 +58,7 @@
                             <i class="bi bi-trash me-1"></i>Eliminar
                         </button>
                     </form>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -46,6 +46,7 @@ class Producto(models.Model):
     descripcion_producto = models.CharField(max_length=255, blank=True, null=True)
     stock = models.IntegerField(blank=True, null=True)
     peso_kg = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    estado = models.BooleanField(default=True)
 
 
     class Meta:

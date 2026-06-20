@@ -25,6 +25,8 @@ urlpatterns = [
      #perfil
     path('perfil-transportista/', views.perfil_transportista, name='perfil_transportista'),
     path('editar-perfil-transportista/', views.editar_perfil_transportista, name='editar_perfil_transportista'),
+    path('mis-notificaciones/', views.notificaciones_transportista, name='notificaciones_transportista'),
+    path('mis-notificaciones/marcar/<int:notif_id>/', views.marcar_notif_transportista, name='marcar_notif_transportista'),
     
 ] 
 
