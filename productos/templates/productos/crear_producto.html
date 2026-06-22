@@ -56,6 +56,44 @@
                 </div>
 
                 <div class="row g-3">
+                    <!-- Tipo de Producto (catálogo) -->
+                    <div class="col-md-6">
+                        <label for="id_tipo" class="form-label">
+                            Tipo de Producto<span class="required">*</span>
+                            <i class="bi bi-info-circle help-tooltip"
+                               data-bs-toggle="tooltip"
+                               title="Selecciona el tipo de producto del catálogo. Si no existe, se creará automáticamente."></i>
+                        </label>
+                        <select class="form-select" id="id_tipo" name="id_tipo" required>
+                            <option value="">Seleccione un tipo</option>
+                            {% for tipo in tipos_producto %}
+                                <option value="{{ tipo.id_tipo }}" data-categoria="{{ tipo.id_categoria_id }}">
+                                    {{ tipo.nombre|capfirst }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Variedad -->
+                    <div class="col-md-6">
+                        <label for="id_variedad" class="form-label">
+                            Variedad
+                            <i class="bi bi-info-circle help-tooltip"
+                               data-bs-toggle="tooltip"
+                               title="Selecciona la variedad específica del producto (opcional)"></i>
+                        </label>
+                        <div class="input-group">
+                            <select class="form-select" id="id_variedad" name="id_variedad" disabled>
+                                <option value="">Primero selecciona un tipo</option>
+                            </select>
+                            <button class="btn btn-outline-success" type="button" id="btnNuevaVariedad" disabled
+                                    data-bs-toggle="modal" data-bs-target="#modalNuevaVariedad"
+                                    title="Agregar nueva variedad">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Nombre del Producto -->
                     <div class="col-md-6">
                         <label for="nombre_producto" class="form-label">
@@ -68,7 +106,7 @@
                                placeholder="Ej: Tomate Cherry Orgánico"
                                required
                                maxlength="100">
-                        <small class="text-muted">Máximo 100 caracteres</small>
+                        <small class="text-muted">Se autocompleta según tipo y variedad</small>
                     </div>
 
                     <!-- Categoría -->
@@ -305,6 +343,30 @@ Este peso se usa para calcular el costo de envío."></i>
     <div class="text-center">
         <div class="spinner"></div>
         <p class="text-white mt-3 fw-bold">Guardando producto...</p>
+    </div>
+</div>
+
+<!-- Modal Nueva Variedad -->
+<div class="modal fade" id="modalNuevaVariedad" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h6 class="modal-title"><i class="bi bi-plus-circle me-1"></i>Nueva Variedad</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label small">Nombre de la variedad</label>
+                <input type="text" id="inputNuevaVariedad" class="form-control"
+                       placeholder="Ej: Albión, Monterey..." maxlength="100">
+                <div id="variedadFeedback" class="mt-2 small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success btn-sm" id="btnGuardarVariedad">
+                    <i class="bi bi-check-lg me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -676,5 +738,133 @@ Este peso se usa para calcular el costo de envío."></i>
 
     if (nombreProducto) addCharCounter(nombreProducto, 100);
     if (descripcionProducto) addCharCounter(descripcionProducto, 255);
+
+    // ====================================
+    // CATÁLOGO: TIPO → VARIEDAD
+    // ====================================
+    const tipoSelect = document.getElementById('id_tipo');
+    const variedadSelect = document.getElementById('id_variedad');
+    const categoriaSelect = document.getElementById('categoria');
+
+    function autoFillNombre() {
+        var tipo = tipoSelect.options[tipoSelect.selectedIndex];
+        if (!tipo || !tipo.value) return;
+        var nombre = tipo.text;
+        var variedad = variedadSelect.options[variedadSelect.selectedIndex];
+        if (variedad && variedad.value && variedad.text !== 'Primero selecciona un tipo' && variedad.text !== 'Sin variedad') {
+            nombre += ' - ' + variedad.text;
+        }
+        nombreProducto.value = nombre;
+    }
+
+    tipoSelect.addEventListener('change', function() {
+        var tipoId = this.value;
+        var selected = this.options[this.selectedIndex];
+
+        // Auto-asignar categoría
+        var catId = selected.getAttribute('data-categoria');
+        if (catId && categoriaSelect) {
+            categoriaSelect.value = catId;
+        }
+
+        // Deshabilitar variedad mientras carga
+        variedadSelect.disabled = true;
+        variedadSelect.innerHTML = '<option value="">Cargando...</option>';
+
+        if (!tipoId) {
+            variedadSelect.innerHTML = '<option value="">Primero selecciona un tipo</option>';
+            return;
+        }
+
+        fetch('/variedades-por-tipo/?id_tipo=' + tipoId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                variedadSelect.innerHTML = '<option value="">Sin variedad</option>';
+                data.forEach(function(v) {
+                    var opt = document.createElement('option');
+                    opt.value = v.id_variedad;
+                    opt.textContent = v.nombre;
+                    variedadSelect.appendChild(opt);
+                });
+                variedadSelect.disabled = false;
+                autoFillNombre();
+            });
+    });
+
+    variedadSelect.addEventListener('change', autoFillNombre);
+
+    // ====================================
+    // NUEVA VARIEDAD
+    // ====================================
+    const btnNuevaVariedad = document.getElementById('btnNuevaVariedad');
+    const modalNuevaVariedad = document.getElementById('modalNuevaVariedad');
+    const inputNuevaVariedad = document.getElementById('inputNuevaVariedad');
+    const btnGuardarVariedad = document.getElementById('btnGuardarVariedad');
+    const variedadFeedback = document.getElementById('variedadFeedback');
+
+    // Habilitar botón + solo cuando hay un tipo seleccionado
+    tipoSelect.addEventListener('change', function() {
+        btnNuevaVariedad.disabled = !this.value;
+    });
+
+    // Limpiar input al abrir modal
+    modalNuevaVariedad.addEventListener('show.bs.modal', function() {
+        inputNuevaVariedad.value = '';
+        variedadFeedback.innerHTML = '';
+        inputNuevaVariedad.focus();
+    });
+
+    // Enter en el input → click guardar
+    inputNuevaVariedad.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            btnGuardarVariedad.click();
+        }
+    });
+
+    btnGuardarVariedad.addEventListener('click', function() {
+        var nombre = inputNuevaVariedad.value.trim();
+        if (!nombre) {
+            variedadFeedback.innerHTML = '<span class="text-danger">Escribe un nombre</span>';
+            return;
+        }
+        if (!tipoSelect.value) {
+            variedadFeedback.innerHTML = '<span class="text-danger">Selecciona un tipo primero</span>';
+            return;
+        }
+
+        btnGuardarVariedad.disabled = true;
+        btnGuardarVariedad.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+
+        fetch('/crear-variedad/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: 'id_tipo=' + tipoSelect.value + '&nombre=' + encodeURIComponent(nombre),
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                variedadFeedback.innerHTML = '<span class="text-danger">' + data.error + '</span>';
+                btnGuardarVariedad.disabled = false;
+                btnGuardarVariedad.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
+                return;
+            }
+            // Agregar al dropdown y seleccionar
+            var opt = document.createElement('option');
+            opt.value = data.id_variedad;
+            opt.textContent = data.nombre;
+            variedadSelect.appendChild(opt);
+            variedadSelect.value = data.id_variedad;
+            variedadSelect.disabled = false;
+
+            // Cerrar modal
+            var modal = bootstrap.Modal.getInstance(modalNuevaVariedad);
+            modal.hide();
+            autoFillNombre();
+        });
+    });
 </script>
 {% endblock %}

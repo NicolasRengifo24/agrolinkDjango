@@ -20,11 +20,11 @@
                     <tr>
                         <th>#</th>
                         <th>Producto</th>
-                        <th>Cliente</th>
-                        <th>Ruta</th>
+                        <th class="d-none d-md-table-cell">Cliente</th>
+                        <th class="d-none d-md-table-cell">Ruta</th>
                         <th>Estado</th>
-                        <th>Fotos</th>
-                        <th>Costo</th>
+                        <th class="d-none d-md-table-cell">Fotos</th>
+                        <th class="d-none d-md-table-cell">Costo</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -35,11 +35,18 @@
 
                         <td>
                             {% with detalle=envio.id_compra.detallescompra_set.first %}
-                            {{ detalle.id_producto.nombre_producto|default:"—" }}
+                            <span class="d-block d-md-none small text-muted">{{ detalle.id_producto.nombre_producto|default:"—" }}</span>
+                            <span class="d-none d-md-inline">{{ detalle.id_producto.nombre_producto|default:"—" }}</span>
+                            <small class="d-block d-md-none text-muted">
+                                {% if envio.id_compra and envio.id_compra.id_cliente %}
+                                    {{ envio.id_compra.id_cliente.id_usuario.nombre }}
+                                {% endif %}
+                                · ${{ envio.costo_total|default:"0"|floatformat:0 }}
+                            </small>
                             {% endwith %}
                         </td>
 
-                        <td>
+                        <td class="d-none d-md-table-cell">
                             {% if envio.id_compra and envio.id_compra.id_cliente %}
                                 {{ envio.id_compra.id_cliente.id_usuario.nombre }}
                             {% else %}
@@ -47,7 +54,7 @@
                             {% endif %}
                         </td>
 
-                        <td class="small">
+                        <td class="small d-none d-md-table-cell">
                             {% with detalle=envio.id_compra.detallescompra_set.first %}
                             <span class="text-success">{{ detalle.id_producto.finca.ciudad|default:"?" }}</span>
                             {% endwith %}
@@ -67,7 +74,7 @@
                             {% endif %}
                         </td>
 
-                        <td class="text-center">
+                        <td class="text-center d-none d-md-table-cell">
                             {% if envio.estado_envio == 'En_Transito' and not envio.foto_carga %}
                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger" title="Foto de carga pendiente">
                                     <i class="bi bi-camera"></i>
@@ -85,10 +92,10 @@
                             {% endif %}
                         </td>
 
-                        <td><strong>${{ envio.costo_total|default:"0"|floatformat:0 }}</strong></td>
+                        <td class="d-none d-md-table-cell"><strong>${{ envio.costo_total|default:"0"|floatformat:0 }}</strong></td>
 
-                        <td style="min-width: 200px; white-space: nowrap;">
-                            <div class="d-flex align-items-center gap-1">
+                        <td style="min-width: 170px;">
+                            <div class="d-flex flex-wrap align-items-center gap-1">
 
                                 <button type="button" class="btn btn-outline-info btn-sm btn-detalle px-2"
                                         title="Ver detalle del envío"
@@ -257,9 +264,20 @@ document.querySelectorAll('.btn-detalle').forEach(function(btn) {
         if (!detalle) return;
 
         var body = document.getElementById('contenidoDetalleEnvio');
+        var fotosHtml = '';
+        if (detalle.foto_carga_url || detalle.foto_descarga_url) {
+            fotosHtml = '<div class="col-12"><hr><h6 class="text-success mb-2"><i class="bi bi-camera me-1"></i>Evidencia fotográfica</h6><div class="row g-2">';
+            if (detalle.foto_carga_url) {
+                fotosHtml += '<div class="col-6"><div class="border rounded p-1"><p class="small text-muted mb-1">Carga</p><img src="' + detalle.foto_carga_url + '" class="img-fluid rounded" style="max-height:180px;width:100%;object-fit:cover"></div></div>';
+            }
+            if (detalle.foto_descarga_url) {
+                fotosHtml += '<div class="col-6"><div class="border rounded p-1"><p class="small text-muted mb-1">Descarga</p><img src="' + detalle.foto_descarga_url + '" class="img-fluid rounded" style="max-height:180px;width:100%;object-fit:cover"></div></div>';
+            }
+            fotosHtml += '</div></div>';
+        }
         body.innerHTML = `
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="border-start border-success border-3 ps-3">
                         <h6 class="text-success small mb-2"><i class="bi bi-shop me-1"></i>Punto de recolección</h6>
                         <p class="mb-1 fw-semibold">${detalle.finca_nombre}</p>
@@ -267,7 +285,7 @@ document.querySelectorAll('.btn-detalle').forEach(function(btn) {
                         <p class="mb-0 small text-muted">${detalle.finca_ciudad}</p>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="border-start border-success border-3 ps-3">
                         <h6 class="text-success small mb-2"><i class="bi bi-person me-1"></i>Productor</h6>
                         <p class="mb-1 fw-semibold">${detalle.productor_nombre}</p>
@@ -275,7 +293,7 @@ document.querySelectorAll('.btn-detalle').forEach(function(btn) {
                     </div>
                 </div>
                 <div class="col-12"><hr></div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="border-start border-info border-3 ps-3">
                         <h6 class="text-info small mb-2"><i class="bi bi-person-circle me-1"></i>Cliente</h6>
                         <p class="mb-1 fw-semibold">${detalle.cliente_nombre}</p>
@@ -283,12 +301,13 @@ document.querySelectorAll('.btn-detalle').forEach(function(btn) {
                         <p class="mb-0 small text-muted"><i class="bi bi-geo-alt me-1"></i>${detalle.cliente_direccion}</p>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="border-start border-info border-3 ps-3">
                         <h6 class="text-info small mb-2"><i class="bi bi-box me-1"></i>Producto</h6>
                         <p class="mb-0 fw-semibold">${detalle.producto_nombre || '—'}</p>
                     </div>
                 </div>
+                ${fotosHtml}
             </div>
         `;
         var modal = new bootstrap.Modal(document.getElementById('modalDetalleEnvio'));

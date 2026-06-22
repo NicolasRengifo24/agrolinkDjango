@@ -1,0 +1,18 @@
+{% load static %}
+<div class="charts-row">
+    <!-- Earnings Line Chart -->
+    <div class="chart-card">
+        <h5><i class="bi bi-graph-up text-success"></i> Ganancias por Mes</h5>
+        <canvas id="chartEarnings"
+                data-ganancias='{{ ganancias_meses_json|safe }}'
+                height="220"></canvas>
+    </div>
+
+    <!-- Trips Donut Chart -->
+    <div class="chart-card">
+        <h5><i class="bi bi-pie-chart text-success"></i> Envíos por Estado</h5>
+        <canvas id="chartStatus"
+                data-status='{{ envios_por_estado_json|safe }}'
+                height="220"></canvas>
+    </div>
+</div>

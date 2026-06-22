@@ -102,7 +102,14 @@ body {
 
             <!-- Nombre -->
             <h5 class="product-title">
-                {{ producto.nombre_producto }}
+                {% if producto.id_tipo %}
+                    {{ producto.id_tipo.nombre }}
+                    {% if producto.id_variedad %}
+                        <small class="text-muted fw-normal">- {{ producto.id_variedad.nombre }}</small>
+                    {% endif %}
+                {% else %}
+                    {{ producto.nombre_producto }}
+                {% endif %}
             </h5>
 
             <!-- Descripción -->

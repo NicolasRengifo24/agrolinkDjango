@@ -1,0 +1,89 @@
+{% extends 'base_interfaz_transportista.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/panel_control.css' %}">
+
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h2><i class="bi bi-sliders2"></i> Panel de Control</h2>
+        <span class="badge bg-success rounded-pill">
+            <i class="bi bi-calendar3 me-1"></i> {{ ultimos_envios.0.fecha_entrega|default:ultimos_envios.0.fecha_salida|date:"d M Y"|default:"Hoy" }}
+        </span>
+    </div>
+
+    <!-- Mini-KPIs -->
+    {% include 'components/panel_kpis_mini.html' %}
+
+    <!-- Grid 2 columnas: Fotos pendientes + Envíos por vehículo -->
+    <div class="panel-grid">
+        {% include 'components/panel_fotos_pendientes.html' %}
+        {% include 'components/panel_envios_vehiculo.html' %}
+    </div>
+
+    <!-- Reportes -->
+    {% include 'components/panel_reportes.html' %}
+
+    <!-- Actividad Reciente -->
+    <div class="panel-card mb-4">
+        <h5><i class="bi bi-clock-history text-success"></i> Actividad Reciente</h5>
+        {% if ultimos_envios %}
+        <div class="table-responsive">
+            <table class="table-actividad">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Seguimiento</th>
+                        <th>Producto</th>
+                        <th>Ruta</th>
+                        <th>Vehículo</th>
+                        <th>Estado</th>
+                        <th>Costo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for envio in ultimos_envios %}
+                    {% with detalle=envio.id_compra.detallescompra_set.first %}
+                    <tr>
+                        <td><strong>#{{ envio.id_envio }}</strong></td>
+                        <td><small>{{ envio.numero_seguimiento|default:"—" }}</small></td>
+                        <td>{{ detalle.id_producto.nombre_producto|default:"—" }}</td>
+                        <td class="small">
+                            <span class="text-success">{{ detalle.id_producto.finca.ciudad|default:"?" }}</span>
+                            <i class="bi bi-arrow-right mx-1 small"></i>
+                            <span class="text-danger">{{ envio.id_compra.id_cliente.id_usuario.ciudad|default:"?" }}</span>
+                        </td>
+                        <td>{{ envio.id_vehiculo.placa_vehiculo|default:"—" }}</td>
+                        <td>
+                            {% if envio.estado_envio == 'Entregado' %}
+                            <span class="status-badge-sm entregado">Entregado</span>
+                            {% elif envio.estado_envio == 'En_Transito' %}
+                            <span class="status-badge-sm transito">En tránsito</span>
+                            {% elif envio.estado_envio == 'Asignado' %}
+                            <span class="status-badge-sm asignado">Asignado</span>
+                            {% elif envio.estado_envio == 'pendiente' or envio.estado_envio == 'Pendiente' %}
+                            <span class="status-badge-sm pendiente">Pendiente</span>
+                            {% else %}
+                            <span class="status-badge-sm otros">{{ envio.estado_envio }}</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>${{ envio.costo_total|default:"0"|floatformat:0|intcomma }}</strong></td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-fotos">
+            <i class="bi bi-inbox"></i>
+            <p>Aún no tienes envíos registrados</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="{% static 'script/panel_control.js' %}"></script>
+{% endblock %}

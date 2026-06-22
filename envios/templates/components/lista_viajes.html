@@ -17,7 +17,7 @@
             <div class="row g-3">
 
                 <!-- COLUMNA IZQUIERDA: Info principal -->
-                <div class="col-md-8">
+                <div class="col-12 col-md-8">
                     <div class="d-flex justify-content-between align-items-start pb-2 mb-3 border-bottom border-light">
                         <div>
                             <span class="badge bg-success mb-2">
@@ -31,7 +31,7 @@
                         <h4 class="text-success fw-bold mb-0">${{ envio.costo_total|floatformat:0|intcomma }}</h4>
                     </div>
 
-                    <div class="d-flex align-items-center mb-3">
+                    <div class="d-flex flex-wrap align-items-center mb-3">
                         <span class="badge bg-success bg-opacity-10 text-success border border-success small px-2 py-1">
                             <i class="bi bi-geo-alt-fill me-1"></i>{{ detalle.id_producto.finca.ciudad|default:"Origen" }}
                         </span>
@@ -76,8 +76,8 @@
                 </div>
 
                 <!-- COLUMNA DERECHA: Mapa + acciones -->
-                <div class="col-md-4 d-flex flex-column">
-                    <div class="mapa-mini mb-2" id="mapa-mini-{{ envio.id_envio }}" style="height: 160px; width: 100%; border-radius: 8px; overflow: hidden;"></div>
+                <div class="col-12 col-md-4 d-flex flex-column">
+                    <div class="mapa-mini mb-2" id="mapa-mini-{{ envio.id_envio }}" style="height: 120px; width: 100%; border-radius: 8px; overflow: hidden;"></div>
 
                     <button type="button" class="btn btn-outline-primary btn-sm btn-mapa w-100 mb-2" data-envio-id="{{ envio.id_envio }}">
                         <i class="bi bi-map me-1"></i>Ver mapa completo
@@ -90,7 +90,7 @@
                         {% endif %}
                     </div>
 
-                    <button type="button" class="btn btn-success btn-aceptar-viaje mt-auto"
+                    <button type="button" class="btn btn-success btn-aceptar-viaje mt-auto w-100"
                         data-envio-id="{{ envio.id_envio }}"
                         data-origen="{{ envio.direccion_origen|escapejs }}"
                         data-destino="{{ envio.direccion_destino|escapejs }}"
@@ -231,6 +231,23 @@ function abrirMapaModal(envioId) {
     });
 }
 
+function mostrarWarningFotos(envios) {
+    var lista = document.getElementById('fotosPendientesLista');
+    lista.innerHTML = '';
+    envios.forEach(function(e) {
+        var item = document.createElement('a');
+        item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+        item.href = '/mis-envios/';
+        item.innerHTML =
+            '<div><strong>#' + e.id + '</strong> — ' + e.producto +
+            '<br><small class="text-muted">' + e.numero_seguimiento + '</small></div>' +
+            '<div><span class="badge bg-warning text-dark">Falta: ' + e.faltantes.join(', ') + '</span></div>';
+        lista.appendChild(item);
+    });
+    var modal = new bootstrap.Modal(document.getElementById('fotosPendientesModal'));
+    modal.show();
+}
+
 function calcularDistancia(origen, destino) {
     var R = 6371;
     var lat1 = origen[0] * Math.PI / 180;
@@ -255,13 +272,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.btn-aceptar-viaje').forEach(function(button) {
         button.addEventListener('click', function() {
-            window.abrirModalAceptarViaje(
-                parseInt(this.dataset.envioId, 10),
-                this.dataset.origen,
-                this.dataset.destino,
-                parseFloat(this.dataset.distancia || '0'),
-                parseFloat(this.dataset.peso || '0')
-            );
+            var self = this;
+            fetch('/verificar-fotos-pendientes/')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.pendientes) {
+                        mostrarWarningFotos(data.envios);
+                    } else {
+                        window.abrirModalAceptarViaje(
+                            parseInt(self.dataset.envioId, 10),
+                            self.dataset.origen,
+                            self.dataset.destino,
+                            parseFloat(self.dataset.distancia || '0'),
+                            parseFloat(self.dataset.peso || '0')
+                        );
+                    }
+                })
+                .catch(function() {
+                    window.abrirModalAceptarViaje(
+                        parseInt(self.dataset.envioId, 10),
+                        self.dataset.origen,
+                        self.dataset.destino,
+                        parseFloat(self.dataset.distancia || '0'),
+                        parseFloat(self.dataset.peso || '0')
+                    );
+                });
         });
     });
 });

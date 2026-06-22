@@ -1,0 +1,57 @@
+{% load humanize %}
+<div class="panel-card">
+    <h5><i class="bi bi-truck text-success"></i> Envíos por Vehículo</h5>
+
+    {% if envios_por_vehiculo %}
+    <!-- Chart -->
+    <div class="chart-container mb-3">
+        <canvas id="chartVehiculos"
+                data-vehiculos='{{ chart_data_vehiculo|safe }}'
+                height="180"></canvas>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+        <table class="table-vehiculos">
+            <thead>
+                <tr>
+                    <th>Vehículo</th>
+                    <th>Placa</th>
+                    <th>Viajes</th>
+                    <th>Entregados</th>
+                    <th>Ingresos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in envios_por_vehiculo %}
+                <tr>
+                    <td>{{ item.vehiculo.tipo_vehiculo|default:"—" }}</td>
+                    <td><strong>{{ item.vehiculo.placa_vehiculo|default:"—" }}</strong></td>
+                    <td>{{ item.total }}</td>
+                    <td>
+                        {{ item.entregados }}
+                        {% if item.total > 0 %}
+                        <small class="text-muted">({% widthratio item.entregados item.total 100 %}%)</small>
+                        {% endif %}
+                    </td>
+                    <td><strong>${{ item.ingresos|floatformat:0|intcomma }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Chart ingresos -->
+    <div class="chart-container mt-3">
+        <canvas id="chartIngresos"
+                data-ingresos='{{ chart_data_ingresos|safe }}'
+                height="160"></canvas>
+    </div>
+
+    {% else %}
+    <div class="empty-fotos">
+        <i class="bi bi-truck"></i>
+        <p>Sin actividad registrada en vehículos</p>
+    </div>
+    {% endif %}
+</div>

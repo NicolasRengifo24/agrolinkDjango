@@ -12,8 +12,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/envios.css'%}">
     <link rel="stylesheet" href="{% static 'css/estilos.css'%}">
+    <link rel="stylesheet" href="{% static 'css/dashboard_transportista.css'%}">
     <!--  mapa interactivo -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* Eliminar espacios en blanco */
@@ -169,6 +172,37 @@
     </div>
 
     {% include 'components/footer.html' %}
+
+<!-- Modal: Fotos pendientes -->
+<div class="modal fade" id="fotosPendientesModal" tabindex="-1" aria-labelledby="fotosPendientesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                <h5 class="modal-title text-white" id="fotosPendientesModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Fotos Pendientes
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-camera fs-4"></i>
+                    <span>Debes subir las fotos faltantes antes de aceptar nuevos viajes.</span>
+                </div>
+                <div id="fotosPendientesLista" class="list-group list-group-flush"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cerrar
+                </button>
+                <a href="{% url 'mis_envios' %}" class="btn btn-success">
+                    <i class="bi bi-box me-1"></i>Ir a Mis Envíos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
     <!--Script del mapa -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -342,13 +376,22 @@
         .col-lg-3 {
             flex: 0 0 auto;
             width: 280px;
-            /* Ancho fijo para el filtro */
         }
 
         .col-lg-9 {
             flex: 1;
-            /* Ocupa el resto */
             width: auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .col-lg-3 {
+            padding-right: 0 !important;
         }
     }
 </style>

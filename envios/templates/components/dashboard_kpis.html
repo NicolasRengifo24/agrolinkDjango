@@ -1,0 +1,57 @@
+{% load humanize %}
+<div class="kpi-row">
+    <!-- Viajes Disponibles -->
+    <div class="kpi-dashboard-card kpi-green">
+        <div class="kpi-dashboard-icon">
+            <i class="bi bi-truck"></i>
+        </div>
+        <div class="kpi-dashboard-body">
+            <h3>{{ kpi_disponibles }}</h3>
+            <p>Viajes Disponibles</p>
+        </div>
+    </div>
+
+    <!-- En Curso -->
+    <div class="kpi-dashboard-card kpi-blue">
+        <div class="kpi-dashboard-icon">
+            <i class="bi bi-arrow-repeat"></i>
+        </div>
+        <div class="kpi-dashboard-body">
+            <h3>{{ kpi_en_curso }}</h3>
+            <p>En Curso</p>
+        </div>
+    </div>
+
+    <!-- Entregados -->
+    <div class="kpi-dashboard-card kpi-success">
+        <div class="kpi-dashboard-icon">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="kpi-dashboard-body">
+            <h3>{{ kpi_entregados }}</h3>
+            <p>Entregados</p>
+        </div>
+    </div>
+
+    <!-- Ganancias -->
+    <div class="kpi-dashboard-card kpi-orange">
+        <div class="kpi-dashboard-icon">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="kpi-dashboard-body">
+            <h3>${{ kpi_ganancias|floatformat:0|intcomma }}</h3>
+            <p>Ganancias Totales</p>
+        </div>
+    </div>
+
+    <!-- Tasa de Éxito -->
+    <div class="kpi-dashboard-card kpi-purple">
+        <div class="kpi-dashboard-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <div class="kpi-dashboard-body">
+            <h3>{{ kpi_tasa_exito }}%</h3>
+            <p>Tasa de Éxito</p>
+        </div>
+    </div>
+</div>

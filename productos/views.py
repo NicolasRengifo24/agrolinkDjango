@@ -7,7 +7,7 @@ from .models import Producto, ProductoFinca, CategoriaProducto
 from pedidos.models import DetallesCompra 
 from django.shortcuts import render, redirect,get_object_or_404 
 from django.contrib.auth.decorators import login_required
-from .models import Producto, ProductoFinca, CategoriaProducto, Finca ,ImagenesProducto
+from .models import Producto, ProductoFinca, CategoriaProducto, Finca, ImagenesProducto, TipoProducto, VariedadProducto
 from pedidos.models import DetallesCompra, Compra
 from usuarios.models import Usuario
 from django.db.models import Prefetch, Sum, Avg, Count, Max
@@ -76,7 +76,7 @@ def inicio(request):
     if precio_max:
         productos = productos.filter(precio__lte=precio_max)
 
-    productos = productos.distinct()
+    productos = productos.distinct().order_by('-id_producto')
 
     promedios = Calificacion.objects.values(
         'id_compra__detallescompra__id_producto'
@@ -559,9 +559,13 @@ def crear_producto(request):
             return redirect('crear_producto')
         
         # Crear producto
+        tipo_id = request.POST.get('id_tipo') or None
+        variedad_id = request.POST.get('id_variedad') or None
         producto = Producto(
             id_usuario=productor,
             id_categoria_id=request.POST.get('categoria'),
+            id_tipo_id=tipo_id,
+            id_variedad_id=variedad_id,
             nombre_producto=request.POST.get('nombre_producto'),
             descripcion_producto=request.POST.get('descripcion_producto') or '',
             precio=request.POST.get('precio') or 0,
@@ -594,6 +598,7 @@ def crear_producto(request):
     
     context = {
         'categorias': CategoriaProducto.objects.all(),
+        'tipos_producto': TipoProducto.objects.all().order_by('nombre'),
         'fincas_productor': Finca.objects.filter(id_usuario=productor),
         'productor_nombre': f"{productor.id_usuario.nombre} {productor.id_usuario.apellido}",
     }
@@ -601,6 +606,35 @@ def crear_producto(request):
 
 
 
+
+
+def variedades_por_tipo(request):
+    tipo_id = request.GET.get('id_tipo')
+    if not tipo_id:
+        return JsonResponse([], safe=False)
+    variedades = VariedadProducto.objects.filter(
+        id_tipo_id=tipo_id
+    ).values('id_variedad', 'nombre')
+    return JsonResponse(list(variedades), safe=False)
+
+
+@csrf_exempt
+def crear_variedad(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    tipo_id = request.POST.get('id_tipo')
+    nombre = request.POST.get('nombre', '').strip().capitalize()
+    if not tipo_id or not nombre:
+        return JsonResponse({'error': 'Faltan datos'}, status=400)
+    variedad, created = VariedadProducto.objects.get_or_create(
+        id_tipo_id=tipo_id,
+        nombre=nombre,
+    )
+    return JsonResponse({
+        'id_variedad': variedad.id_variedad,
+        'nombre': variedad.nombre,
+        'created': created,
+    })
 
 
 @login_required

@@ -1,0 +1,18 @@
+{% load static %}
+<div class="panel-card mb-4">
+    <h5><i class="bi bi-file-earmark-bar-graph text-success"></i> Reportes</h5>
+    <div class="reportes-grid">
+        <a href="{% url 'reporte_envios_csv' %}" class="btn-reporte">
+            <i class="bi bi-download"></i>
+            <span>CSV - Envíos Completados</span>
+        </a>
+        <a href="{% url 'reporte_ingresos_csv' %}" class="btn-reporte">
+            <i class="bi bi-cash-stack"></i>
+            <span>CSV - Ingresos por Vehículo</span>
+        </a>
+        <a href="{% url 'mis_envios' %}" class="btn-reporte">
+            <i class="bi bi-eye"></i>
+            <span>Ver todos los envíos</span>
+        </a>
+    </div>
+</div>

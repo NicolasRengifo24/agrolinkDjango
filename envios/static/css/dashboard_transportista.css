@@ -1,0 +1,220 @@
+/* === DASHBOARD TRANSPORTISTA === */
+
+/* ── KPI Cards ── */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-dashboard-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.kpi-dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-dashboard-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.kpi-dashboard-icon i {
+    color: white;
+}
+
+.kpi-dashboard-body h3 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.2;
+    color: #212529;
+}
+
+.kpi-dashboard-body p {
+    font-size: 0.82rem;
+    color: #6c757d;
+    margin: 2px 0 0 0;
+    font-weight: 500;
+}
+
+/* KPI color variants */
+.kpi-dashboard-card.kpi-green::before { background: #2f6b31; }
+.kpi-dashboard-card.kpi-green .kpi-dashboard-icon { background: linear-gradient(135deg, #2f6b31, #3f8a41); }
+
+.kpi-dashboard-card.kpi-blue::before { background: #3498db; }
+.kpi-dashboard-card.kpi-blue .kpi-dashboard-icon { background: linear-gradient(135deg, #3498db, #2980b9); }
+
+.kpi-dashboard-card.kpi-success::before { background: #2ecc71; }
+.kpi-dashboard-card.kpi-success .kpi-dashboard-icon { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
+.kpi-dashboard-card.kpi-orange::before { background: #f39c12; }
+.kpi-dashboard-card.kpi-orange .kpi-dashboard-icon { background: linear-gradient(135deg, #f39c12, #e67e22); }
+
+.kpi-dashboard-card.kpi-purple::before { background: #9b59b6; }
+.kpi-dashboard-card.kpi-purple .kpi-dashboard-icon { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+
+/* ── Charts Row ── */
+.charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.chart-card h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2f6b31;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-card canvas {
+    max-height: 260px;
+}
+
+/* ── Section Title ── */
+.section-title {
+    border-left: 4px solid #2f6b31;
+    padding-left: 1rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #212529;
+    margin-bottom: 0;
+}
+
+.section-title i {
+    color: #2f6b31;
+    margin-right: 8px;
+}
+
+/* ── Dashboard Header ── */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dashboard-header h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #2f6b31;
+    margin: 0;
+}
+
+.dashboard-header h2 i {
+    margin-right: 10px;
+}
+
+.dashboard-header .badge {
+    font-size: 0.8rem;
+    padding: 6px 14px;
+    border-radius: 50px;
+}
+
+/* ── Empty state for charts ── */
+.chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #adb5bd;
+}
+
+.chart-empty i {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    color: #c6dc93;
+}
+
+/* ── Responsive ── */
+@media (max-width: 992px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-row {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .kpi-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .kpi-dashboard-card {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .kpi-dashboard-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+    }
+
+    .kpi-dashboard-body h3 {
+        font-size: 1.2rem;
+    }
+
+    .kpi-dashboard-body p {
+        font-size: 0.72rem;
+    }
+
+    .dashboard-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: start;
+    }
+}
+
+@media (max-width: 400px) {
+    .kpi-row {
+        grid-template-columns: 1fr;
+    }
+}

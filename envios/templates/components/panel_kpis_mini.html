@@ -1,0 +1,39 @@
+{% load humanize %}
+<div class="kpi-mini-row">
+    <div class="kpi-mini-card">
+        <div class="kpi-mini-icon bg-primary">
+            <i class="bi bi-box-seam"></i>
+        </div>
+        <div class="kpi-mini-body">
+            <h4>{{ total_asignados }}</h4>
+            <p>Total Envíos</p>
+        </div>
+    </div>
+    <div class="kpi-mini-card">
+        <div class="kpi-mini-icon bg-success">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="kpi-mini-body">
+            <h4>{{ entregados }}</h4>
+            <p>Entregados</p>
+        </div>
+    </div>
+    <div class="kpi-mini-card">
+        <div class="kpi-mini-icon bg-warning">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="kpi-mini-body">
+            <h4>{{ pendientes }}</h4>
+            <p>Pendientes</p>
+        </div>
+    </div>
+    <div class="kpi-mini-card">
+        <div class="kpi-mini-icon bg-danger">
+            <i class="bi bi-camera"></i>
+        </div>
+        <div class="kpi-mini-body">
+            <h4>{{ fotos_pendientes_count }}</h4>
+            <p>Fotos Pendientes</p>
+        </div>
+    </div>
+</div>

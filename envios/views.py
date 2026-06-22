@@ -4,7 +4,8 @@ import io
 from django.shortcuts import render , redirect, get_object_or_404
 from django.http import JsonResponse
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
+from django.db.models.functions import TruncMonth
 from .models import Envio , Vehiculo
 from productos.models import Producto, Finca, CategoriaProducto
 from usuarios.models import Usuario, Transportista, Administrador, Notificacion
@@ -134,6 +135,7 @@ def inicio_transportista(request):
         'ciudades_origen': ciudades_origen,
         'ciudades_destino': ciudades_destino,
         'categorias': categorias,
+        'kpi_disponibles': page_obj.paginator.count,
     })
    
 
@@ -415,6 +417,8 @@ def mis_envios(request):
             'cliente_telefono': envio.id_compra.id_cliente.id_usuario.telefono if envio.id_compra else '',
             'cliente_direccion': envio.direccion_destino or '',
             'producto_nombre': producto.nombre_producto if producto else '',
+            'foto_carga_url': envio.foto_carga.url if envio.foto_carga else '',
+            'foto_descarga_url': envio.foto_descarga.url if envio.foto_descarga else '',
         })
 
     envios_detalle_json = json.dumps(envios_detalle)
@@ -433,6 +437,43 @@ def mis_envios(request):
     })
     
     
+def _fotos_pendientes_data(transportista_obj):
+    """Devuelve lista de envíos del transportista con fotos faltantes."""
+    qs = Envio.objects.filter(id_transportista=transportista_obj).exclude(
+        estado_envio__in=['pendiente', 'Cancelado', 'cancelado']
+    ).filter(
+        Q(foto_carga__isnull=True) | Q(foto_descarga__isnull=True)
+    )
+    data = []
+    for e in qs:
+        faltantes = []
+        if not e.foto_carga:
+            faltantes.append('Carga')
+        if not e.foto_descarga:
+            faltantes.append('Descarga')
+        detalle = e.id_compra.detallescompra_set.first() if e.id_compra else None
+        producto = detalle.id_producto.nombre_producto if detalle else '—'
+        data.append({
+            'id': e.id_envio,
+            'numero_seguimiento': e.numero_seguimiento or f'#{e.id_envio}',
+            'producto': producto,
+            'faltantes': faltantes,
+        })
+    return data
+
+
+@login_required
+def verificar_fotos_pendientes(request):
+    """GET — Verifica si el transportista tiene envíos con fotos pendientes."""
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+        data = _fotos_pendientes_data(transportista_obj)
+        return JsonResponse({'pendientes': len(data) > 0, 'envios': data})
+    except Exception:
+        return JsonResponse({'pendientes': False, 'envios': []})
+
+
 @login_required
 def aceptar_viaje(request, envio_id):
     """Acepta un viaje y asigna vehículo, fechas y número de seguimiento"""
@@ -442,6 +483,16 @@ def aceptar_viaje(request, envio_id):
             # Obtener el transportista actual
             usuario_obj = Usuario.objects.get(user=request.user)
             transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+
+            # ── Validar fotos pendientes ──
+            fotos_pend = _fotos_pendientes_data(transportista_obj)
+            if fotos_pend:
+                return JsonResponse({
+                    'success': False,
+                    'fotos_pendientes': True,
+                    'envios': fotos_pend,
+                    'message': 'Tienes fotos pendientes por subir'
+                }, status=400)
             
             # Obtener el envío
             envio = get_object_or_404(Envio, id_envio=envio_id)
@@ -826,6 +877,194 @@ def cargar_vehiculos_csv(request):
         return redirect('mostrar_vehiculos')
     
     return redirect('mostrar_vehiculos')
+
+
+@login_required
+def panel_control(request):
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    mis_envios_qs = Envio.objects.select_related(
+        'id_vehiculo', 'id_compra__id_cliente__id_usuario'
+    ).filter(id_transportista=transportista_obj)
+
+    # ── Mini-KPIs ──
+    total_asignados = mis_envios_qs.count()
+    entregados = mis_envios_qs.filter(estado_envio='Entregado').count()
+    pendientes = mis_envios_qs.exclude(
+        estado_envio__in=['Entregado', 'Cancelado']
+    ).count()
+
+    # ── Fotos pendientes ──
+    fotos_pendientes_qs = mis_envios_qs.filter(
+        Q(estado_envio='En_Transito', foto_carga__isnull=True) |
+        Q(estado_envio='Entregado', foto_carga__isnull=True) |
+        Q(estado_envio='Entregado', foto_descarga__isnull=True)
+    ).order_by('-id_envio')
+
+    # ── Envíos por vehículo ──
+    envios_por_vehiculo = []
+    vehiculos_del_tran = Vehiculo.objects.filter(
+        id_transportista=transportista_obj
+    )
+    chart_vehiculo_labels = []
+    chart_vehiculo_total = []
+    chart_vehiculo_entregados = []
+    chart_ingresos_vehiculo_labels = []
+    chart_ingresos_vehiculo_data = []
+
+    for v in vehiculos_del_tran:
+        envios_vehiculo = mis_envios_qs.filter(id_vehiculo=v)
+        total_v = envios_vehiculo.count()
+        entregados_v = envios_vehiculo.filter(
+            estado_envio='Entregado'
+        ).count()
+        ingresos_v = envios_vehiculo.filter(
+            estado_envio='Entregado'
+        ).aggregate(total=Sum('costo_total'))['total'] or 0
+
+        if total_v > 0:
+            envios_por_vehiculo.append({
+                'vehiculo': v,
+                'total': total_v,
+                'entregados': entregados_v,
+                'ingresos': float(ingresos_v),
+            })
+            placa = v.placa_vehiculo or f"V-{v.id_vehiculo}"
+            chart_vehiculo_labels.append(placa)
+            chart_vehiculo_total.append(total_v)
+            chart_vehiculo_entregados.append(entregados_v)
+            chart_ingresos_vehiculo_labels.append(placa)
+            chart_ingresos_vehiculo_data.append(float(ingresos_v))
+
+    # ── Últimos envíos ──
+    ultimos_envios = mis_envios_qs.order_by('-id_envio')[:10]
+
+    # ── Charts JSON ──
+    chart_data_vehiculo = json.dumps({
+        'labels': chart_vehiculo_labels,
+        'total': chart_vehiculo_total,
+        'entregados': chart_vehiculo_entregados,
+    })
+    chart_data_ingresos = json.dumps({
+        'labels': chart_ingresos_vehiculo_labels,
+        'ingresos': chart_ingresos_vehiculo_data,
+    })
+
+    return render(request, 'envios/panel_control.html', {
+        'total_asignados': total_asignados,
+        'entregados': entregados,
+        'pendientes': pendientes,
+        'fotos_pendientes_count': fotos_pendientes_qs.count(),
+        'fotos_pendientes_list': fotos_pendientes_qs,
+        'envios_por_vehiculo': envios_por_vehiculo,
+        'ultimos_envios': ultimos_envios,
+        'chart_data_vehiculo': chart_data_vehiculo,
+        'chart_data_ingresos': chart_data_ingresos,
+    })
+
+
+import csv
+from django.http import HttpResponse
+
+
+@login_required
+def reporte_envios_csv(request):
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    envios = Envio.objects.select_related(
+        'id_vehiculo', 'id_compra__id_cliente__id_usuario'
+    ).filter(id_transportista=transportista_obj).order_by('-id_envio')
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="reporte_envios.csv"'
+    response.write('\ufeff')
+    writer = csv.writer(response)
+
+    writer.writerow([
+        'ID', 'Seguimiento', 'Estado', 'Vehículo', 'Placa',
+        'Cliente', 'Origen', 'Destino',
+        'Distancia (km)', 'Peso (kg)', 'Costo Total',
+        'Fecha Salida', 'Fecha Entrega'
+    ])
+
+    for e in envios:
+        detalle = e.id_compra.detallescompra_set.first() if e.id_compra else None
+        producto = detalle.id_producto if detalle else None
+        finca_rel = producto.fincas.first() if producto else None
+        finca = finca_rel.id_finca if finca_rel else None
+
+        writer.writerow([
+            e.id_envio,
+            e.numero_seguimiento or '',
+            e.estado_envio or '',
+            e.id_vehiculo.tipo_vehiculo if e.id_vehiculo else '',
+            e.id_vehiculo.placa_vehiculo if e.id_vehiculo else '',
+            f"{e.id_compra.id_cliente.id_usuario.nombre} {e.id_compra.id_cliente.id_usuario.apellido}" if e.id_compra and e.id_compra.id_cliente else '',
+            finca.ciudad if finca else '',
+            e.id_compra.id_cliente.id_usuario.ciudad if e.id_compra and e.id_compra.id_cliente else '',
+            e.distancia_km or 0,
+            e.peso_total_kg or 0,
+            float(e.costo_total or 0),
+            e.fecha_salida or '',
+            e.fecha_entrega or '',
+        ])
+
+    return response
+
+
+@login_required
+def reporte_ingresos_csv(request):
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    vehiculos = Vehiculo.objects.filter(id_transportista=transportista_obj)
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="reporte_ingresos.csv"'
+    response.write('\ufeff')
+    writer = csv.writer(response)
+
+    writer.writerow([
+        'Vehículo', 'Placa', 'Tipo', 'Capacidad (kg)',
+        'Total Viajes', 'Entregados', 'Ingresos Totales'
+    ])
+
+    for v in vehiculos:
+        envios_v = Envio.objects.filter(
+            id_transportista=transportista_obj, id_vehiculo=v
+        )
+        total_v = envios_v.count()
+        entregados_v = envios_v.filter(estado_envio='Entregado').count()
+        ingresos_v = envios_v.filter(
+            estado_envio='Entregado'
+        ).aggregate(total=Sum('costo_total'))['total'] or 0
+
+        if total_v > 0:
+            writer.writerow([
+                v.tipo_vehiculo or '',
+                v.placa_vehiculo or '',
+                v.tipo_vehiculo or '',
+                float(v.capacidad_carga or 0),
+                total_v,
+                entregados_v,
+                float(ingresos_v),
+            ])
+
+    return response
 
 
 def perfil_transportista(request):

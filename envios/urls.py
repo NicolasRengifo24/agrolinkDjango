@@ -1,7 +1,5 @@
 from django.urls import path
 from . import views
-## api 
-from django.urls import path
 from .views import ciudades_cundinamarca_api
 
 
@@ -18,6 +16,7 @@ urlpatterns = [
     path('aceptar-viaje/<int:envio_id>/', views.aceptar_viaje, name='aceptar_viaje'),
     path('cambiar-estado/<int:envio_id>/<str:nuevo_estado>/', views.cambiar_estado_envio,name='cambiar_estado_envio'),
     path('subir-foto-envio/<int:envio_id>/', views.subir_foto_envio, name='subir_foto_envio'),
+    path('verificar-fotos-pendientes/', views.verificar_fotos_pendientes, name='verificar_fotos_pendientes'),
     ## api ##
     path("api/cundinamarca/ciudades/",ciudades_cundinamarca_api, name="ciudades_cundinamarca_api"),    
     
@@ -28,6 +27,10 @@ urlpatterns = [
     path('editar-perfil-transportista/', views.editar_perfil_transportista, name='editar_perfil_transportista'),
     path('mis-notificaciones/', views.notificaciones_transportista, name='notificaciones_transportista'),
     path('mis-notificaciones/marcar/<int:notif_id>/', views.marcar_notif_transportista, name='marcar_notif_transportista'),
-    
+
+    # panel de control
+    path('panel-control/', views.panel_control, name='panel_control_transportista'),
+    path('reporte-envios-csv/', views.reporte_envios_csv, name='reporte_envios_csv'),
+    path('reporte-ingresos-csv/', views.reporte_ingresos_csv, name='reporte_ingresos_csv'),
 ] 
 

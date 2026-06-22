@@ -31,6 +31,14 @@
                     </a>
                 </li>
 
+                <!-- PANEL DE CONTROL -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'panel_control_transportista' %}active-link{% endif %}"
+                       href="{% url 'panel_control_transportista' %}">
+                        <i class="bi bi-sliders2 me-1"></i> Panel
+                    </a>
+                </li>
+
                 <!-- MIS VEHÍCULOS -->
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'mostrar_vehiculos' %}active-link{% endif %}" 
@@ -323,6 +331,7 @@
 
         .nav-link {
             justify-content: center;
+            min-height: 44px;
         }
 
         .active-link::after {
@@ -337,6 +346,17 @@
 
         .brand-logo span {
             font-size: 1.4rem;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .nav-link {
+            font-size: 0.85rem;
+            gap: 0.3rem;
+        }
+
+        .brand-logo span {
+            font-size: 1.1rem;
         }
     }
 

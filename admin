@@ -15,3 +15,5 @@ esto es para guardar cambios temporalmente descargar lo de git y volver aplicar 
 git stash
 git pull origin main
 git stash pop
+
+.\caddy_windows_amd64_custom.exe run

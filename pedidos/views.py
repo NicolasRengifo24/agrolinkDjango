@@ -427,12 +427,16 @@ def calificar_pedido(request, compra_id):
     if request.method == "POST":
         compra = get_object_or_404(Compra, id_compra=compra_id)
 
-        puntaje = request.POST.get("calificacion")
-        comentario = request.POST.get("comentario")
+        puntaje = int(request.POST.get("calificacion", 0))
+        comentario = request.POST.get("comentario", "").strip()
+
+        if puntaje <= 2 and not comentario:
+            messages.error(request, "Cuéntanos por qué esa calificación para poder mejorar la calidad de los productos y la entrega")
+            return redirect("mis_pedidos")
 
         Calificacion.objects.create(
             id_compra=compra,
-            puntaje_producto=int(puntaje),
+            puntaje_producto=puntaje,
             comentario=comentario
         )
 

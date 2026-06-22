@@ -41,10 +41,10 @@
                     <div class="modal-body">
                         <p>¿Cómo fue tu experiencia con este pedido?</p>
 
-                        <form method="POST" action="{% url 'calificar_pedido' pedido.compra.id_compra %}">
+                        <form method="POST" action="{% url 'calificar_pedido' pedido.compra.id_compra %}" class="form-calificar">
                             {% csrf_token %}
 
-                            <select name="calificacion" class="form-select">
+                            <select name="calificacion" class="form-select calificacion-select" data-compra="{{ pedido.compra.id_compra }}">
                                 <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
                                 <option value="4">⭐⭐⭐⭐ Bueno</option>
                                 <option value="3">⭐⭐⭐ Regular</option>
@@ -52,8 +52,13 @@
                                 <option value="1">⭐ Muy malo</option>
                             </select>
 
-                            <textarea name="comentario" class="form-control mt-2"
-                                placeholder="Comentario..."></textarea>
+                            <div id="aviso-baja-{{ pedido.compra.id_compra }}" class="alert alert-warning d-none mt-2 mb-0 py-2">
+                                <i class="bi bi-chat-square-text me-1"></i>
+                                Cuéntanos por qué esa calificación — nos ayuda a mejorar la calidad de los productos y la entrega
+                            </div>
+
+                            <textarea name="comentario" id="comentario-{{ pedido.compra.id_compra }}"
+                                class="form-control mt-2" placeholder="Comentario..."></textarea>
 
                             <button type="submit" class="btn btn-success mt-3">
                                 Enviar calificación
@@ -148,6 +153,26 @@
                     <p>{{ pedido.envio.fecha_entrega|default:"Pendiente" }}</p>
                 </div>
 
+                {% if pedido.envio.foto_carga or pedido.envio.foto_descarga %}
+                <div class="bloque fotos-evidencia">
+                    <strong>📸 Evidencia fotográfica</strong>
+                    <div class="d-flex gap-2 mt-2 flex-wrap">
+                        {% if pedido.envio.foto_carga %}
+                        <a href="{{ pedido.envio.foto_carga.url }}" target="_blank" class="text-decoration-none">
+                            <img src="{{ pedido.envio.foto_carga.url }}" alt="Foto de carga" class="img-fluid rounded border" style="max-height:120px;width:auto;cursor:pointer">
+                            <small class="d-block text-muted text-center">Carga</small>
+                        </a>
+                        {% endif %}
+                        {% if pedido.envio.foto_descarga %}
+                        <a href="{{ pedido.envio.foto_descarga.url }}" target="_blank" class="text-decoration-none">
+                            <img src="{{ pedido.envio.foto_descarga.url }}" alt="Foto de descarga" class="img-fluid rounded border" style="max-height:120px;width:auto;cursor:pointer">
+                            <small class="d-block text-muted text-center">Descarga</small>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
             </div>
             {% endif %}
 
@@ -188,4 +213,39 @@
 
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.calificacion-select').forEach(function(select) {
+        select.addEventListener('change', function() {
+            var compraId = this.dataset.compra;
+            var aviso = document.getElementById('aviso-baja-' + compraId);
+            var textarea = document.getElementById('comentario-' + compraId);
+            if (parseInt(this.value) <= 2) {
+                aviso.classList.remove('d-none');
+                textarea.required = true;
+                textarea.placeholder = 'Cuéntanos por qué... (obligatorio)';
+            } else {
+                aviso.classList.add('d-none');
+                textarea.required = false;
+                textarea.placeholder = 'Comentario...';
+            }
+        });
+    });
+
+    document.querySelectorAll('.form-calificar').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            var select = form.querySelector('.calificacion-select');
+            var textarea = form.querySelector('textarea[name="comentario"]');
+            if (parseInt(select.value) <= 2 && !textarea.value.trim()) {
+                e.preventDefault();
+                alert('Por favor cuéntanos por qué esa calificación para poder mejorar');
+                textarea.focus();
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

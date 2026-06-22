@@ -37,10 +37,40 @@ class Finca(models.Model):
     def __str__(self):
         return self.nombre_finca
 
+class TipoProducto(models.Model):
+    id_tipo = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, unique=True)
+    id_categoria = models.ForeignKey(CategoriaProducto, models.DO_NOTHING, db_column='id_categoria')
+    descripcion_general = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'tb_tipos_producto'
+
+    def __str__(self):
+        return self.nombre
+
+
+class VariedadProducto(models.Model):
+    id_variedad = models.AutoField(primary_key=True)
+    id_tipo = models.ForeignKey(TipoProducto, models.CASCADE, db_column='id_tipo', related_name='variedades')
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        managed = True
+        db_table = 'tb_variedades_producto'
+        unique_together = ('id_tipo', 'nombre')
+
+    def __str__(self):
+        return f"{self.id_tipo.nombre} - {self.nombre}"
+
+
 class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey('usuarios.Productor', models.DO_NOTHING, db_column='id_usuario')
     id_categoria = models.ForeignKey(CategoriaProducto, models.DO_NOTHING, db_column='id_categoria')
+    id_tipo = models.ForeignKey(TipoProducto, models.DO_NOTHING, db_column='id_tipo', blank=True, null=True)
+    id_variedad = models.ForeignKey(VariedadProducto, models.DO_NOTHING, db_column='id_variedad', blank=True, null=True)
     precio = models.DecimalField(max_digits=12, decimal_places=0, blank=True, null=True)
     nombre_producto = models.CharField(max_length=100)
     descripcion_producto = models.CharField(max_length=255, blank=True, null=True)
