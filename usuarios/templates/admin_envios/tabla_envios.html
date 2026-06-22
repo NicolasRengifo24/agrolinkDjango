@@ -1,3 +1,4 @@
+{% load humanize %}
 <div class="card p-4">
 
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -27,7 +28,7 @@
       <tbody>
 
         {% for e in envios %}
-        <tr>
+        <tr class="pedido-item">
 
           <!-- ID ENVIO -->
           <td>#ENV-{{ e.id_envio }}</td>
@@ -62,14 +63,14 @@
 
           <!-- ESTADO -->
           <td>
-            {% if e.estado_envio == "Asignado" %}
+            {% if e.estado_envio == 'Asignado' %}
               <span class="badge-envio estado-asignado">Asignado</span>
-            {% elif e.estado_envio == "En_Transito" %}
+            {% elif e.estado_envio == 'En_Transito' %}
               <span class="badge-envio estado-camino">En tránsito</span>
-            {% elif e.estado_envio == "Entregado" %}
+            {% elif e.estado_envio == 'Entregado' %}
               <span class="badge-envio estado-entregado">Entregado</span>
             {% else %}
-              <span class="badge-envio estado-asignado">{{ e.estado_envio|default:"Desconocido" }}</span>
+              <span class="badge-envio estado-pendiente">{{ e.estado_envio }}</span>
             {% endif %}
           </td>
 
@@ -89,7 +90,7 @@
 
           <!-- COSTO -->
           <td>
-            ${{ e.costo_total|default:"0" }}
+            ${{ e.costo_total|floatformat:0|intcomma }}
           </td>
 
           <!-- ACCIONES -->

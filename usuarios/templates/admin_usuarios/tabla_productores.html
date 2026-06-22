@@ -25,7 +25,7 @@
                     <td>{{ p.id_usuario.nombre }}</td>
                     <td>{{ p.id_usuario.correo }}</td>
                     <td>{{ p.id_usuario.telefono }}</td>
-                    <td>{{ p.id_usuario.finca }}</td>
+                    <td>{% with finca=p.finca_set.first %}{{ finca.nombre_finca|default:"Sin finca" }}{% endwith %}</td>
                     <td>
                         {% if p.id_usuario.estado %}
                             <span class="badge bg-success">Activo</span>

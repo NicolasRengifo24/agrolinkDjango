@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/detalle_compra.css' %}">
 {% endblock %}
@@ -25,8 +26,8 @@
       <div class="info-item">
         <span class="info-item__label">Cliente</span>
         <span class="info-item__value">
-          {{ compra.id_cliente.nombre|default:"" }} 
-          {{ compra.id_cliente.apellido|default:"" }}
+          {{ compra.id_cliente.id_usuario.nombre|default:"" }} 
+          {{ compra.id_cliente.id_usuario.apellido|default:"" }}
         </span>
       </div>
 
@@ -92,11 +93,11 @@
             <td class="td-cantidad">{{ d.cantidad }}</td>
 
             <td class="td-precio">
-              ${{ d.precio_unitario }}
+              ${{ d.precio_unitario|floatformat:0|intcomma }}
             </td>
 
             <td class="td-subtotal">
-              ${{ d.subtotal|default:d.precio_unitario }}
+              ${{ d.subtotal|floatformat:0|intcomma }}
             </td>
           </tr>
           {% empty %}
@@ -116,24 +117,24 @@
 
       <div class="totales-fila">
         <span class="totales-fila__label">Subtotal</span>
-        <span class="totales-fila__valor">${{ compra.subtotal }}</span>
+        <span class="totales-fila__valor">${{ compra.subtotal|floatformat:0|intcomma }}</span>
       </div>
 
       <div class="totales-fila">
         <span class="totales-fila__label">Impuestos</span>
-        <span class="totales-fila__valor">${{ compra.impuestos }}</span>
+        <span class="totales-fila__valor">${{ compra.impuestos|floatformat:0|intcomma }}</span>
       </div>
 
       <div class="totales-fila">
         <span class="totales-fila__label">Envío</span>
         <span class="totales-fila__valor">
-          ${{ compra.valor_envio|default:"0" }}
+          ${{ compra.valor_envio|default:0|floatformat:0|intcomma }}
         </span>
       </div>
 
       <div class="totales-fila totales-fila--total">
         <span class="totales-fila__label">Total</span>
-        <span class="totales-fila__valor">${{ compra.total }}</span>
+        <span class="totales-fila__valor">${{ compra.total|floatformat:0|intcomma }}</span>
       </div>
 
     </div>

@@ -1,0 +1,85 @@
+{% extends 'base_vehiculos.html' %}
+{% load static %}
+
+{% block title %}AgroLink - Editar Vehículo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'mostrar_vehiculos' %}">Mis vehículos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Editar vehículo</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+
+            <h4 class="fw-bold mb-2">
+                <i class="bi bi-pencil-square me-2 text-success"></i>Editar vehículo
+            </h4>
+            <p class="text-muted mb-4">
+                {% if vehiculo.estado == 'RECHAZADO' %}
+                    Corrige los datos y vuelve a enviarlo para revisión.
+                {% else %}
+                    Modifica los datos del vehículo mientras está pendiente de aprobación.
+                {% endif %}
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Tipo de vehículo *</label>
+                        <select class="form-select" name="tipo_vehiculo" required>
+                            <option value="" disabled>Selecciona un tipo</option>
+                            <option value="Camión" {% if vehiculo.tipo_vehiculo == 'Camión' %}selected{% endif %}>🚛 Camión</option>
+                            <option value="Camioneta" {% if vehiculo.tipo_vehiculo == 'Camioneta' %}selected{% endif %}>🚙 Camioneta</option>
+                            <option value="Van" {% if vehiculo.tipo_vehiculo == 'Van' %}selected{% endif %}>🚐 Van</option>
+                            <option value="Furgón" {% if vehiculo.tipo_vehiculo == 'Furgón' %}selected{% endif %}>📦 Furgón</option>
+                            <option value="Volqueta" {% if vehiculo.tipo_vehiculo == 'Volqueta' %}selected{% endif %}>⛟ Volqueta</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Placa *</label>
+                        <input type="text" class="form-control" name="placa_vehiculo"
+                               value="{{ vehiculo.placa_vehiculo }}" placeholder="Ej: ABC123" required>
+                        <div class="form-text">Sin espacios, solo letras y números</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Capacidad máxima (kg) *</label>
+                        <input type="number" class="form-control" name="capacidad_carga" step="0.01"
+                               value="{{ vehiculo.capacidad_carga }}" placeholder="Ej: 5000" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Documento propiedad</label>
+                        <input type="file" class="form-control" name="documento_propiedad"
+                               accept=".pdf,.jpg,.png,.webp">
+                        {% if vehiculo.documento_propiedad %}
+                        <div class="form-text">
+                            <i class="bi bi-paperclip me-1"></i>
+                            <a href="{{ vehiculo.documento_propiedad.url }}" target="_blank">Ver documento actual</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 mt-4 d-flex gap-2">
+                        <a href="{% url 'mostrar_vehiculos' %}" class="btn btn-outline-secondary py-2 px-4">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success py-2 px-4 fw-semibold">
+                            <i class="bi bi-save me-1"></i>Guardar cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -364,7 +364,7 @@ def lista_servicios_admin(request):
 def ver_listas_usuarios_admin(request):
     #tablas por rol de usuarios
     clientes = Cliente.objects.select_related('id_usuario').all()
-    productores = Productor.objects.select_related('id_usuario').all()
+    productores = Productor.objects.select_related('id_usuario').prefetch_related('finca_set').all()
     transportistas = Transportista.objects.select_related('id_usuario').all()
     asesores = Asesor.objects.select_related('id_usuario').all()
     
@@ -615,7 +615,7 @@ def toggle_estado_producto_admin(request, id):
 @admin_required
 def ver_lista_pedidos_admin(request):
 
-    compras = Compra.objects.select_related('id_cliente').prefetch_related('detallescompra_set')
+    compras = Compra.objects.select_related('id_cliente__id_usuario').prefetch_related('detallescompra_set').order_by('-fecha_hora_compra')
 
     hoy = datetime.now()
 
@@ -667,9 +667,9 @@ def ver_detalle_compra_admin(request, id):
 def ver_lista_envio_admin(request):
     envios = Envio.objects.select_related(
         'id_compra',
-        'id_transportista',
+        'id_transportista__id_usuario',
         'id_vehiculo'
-    ).all()
+    ).all().order_by('-fecha_salida')
     
     hoy = datetime.now()
 
@@ -713,7 +713,7 @@ def ver_lista_envio_admin(request):
         'envios_activos': envios_activos,
         'envios_entregados': envios_entregados,
         'envios_pendientes': envios_pendientes,
-        'costo_total_envios': costo_total_envios,
+        'costo_envios': costo_total_envios,
 
         # KPIs del mes
         'envios_mes': envios_mes,
@@ -750,9 +750,9 @@ def obtener_envio(request, id):
         "latitud_destino": envio.latitud_destino or 0,
         "longitud_destino": envio.longitud_destino or 0,
 
-        "costo_base": float(envio.costo_base or 0),
-        "costo_peso": float(envio.costo_peso or 0),
-        "costo_total": float(envio.costo_total or 0),
+        "costo_base": int(float(envio.costo_base or 0)),
+        "costo_peso": int(float(envio.costo_peso or 0)),
+        "costo_total": int(float(envio.costo_total or 0)),
 
         # 
         "transportista": (

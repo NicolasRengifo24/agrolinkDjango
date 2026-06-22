@@ -1,3 +1,4 @@
+{% load humanize %}
 <div class="row g-4 mb-5">
 
   <!-- TOTAL PEDIDOS -->
@@ -20,7 +21,7 @@
     <div class="kpi-card kpi-blue">
       <div class="kpi-content">
         <div>
-          <h3>${{ total_ventas }}</h3>
+          <h3>${{ total_ventas|floatformat:0|intcomma }}</h3>
           <p>Total Ventas</p>
         </div>
         <div class="kpi-icon">
@@ -50,7 +51,7 @@
     <div class="kpi-card kpi-purple">
       <div class="kpi-content">
         <div>
-          <h3>${{ ventas_mes }}</h3>
+          <h3>${{ ventas_mes|floatformat:0|intcomma }}</h3>
           <p>Ventas del Mes</p>
         </div>
         <div class="kpi-icon">

@@ -1,19 +1,27 @@
+{% load humanize %}
 <div class="card-glass p-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Listado de Compras</h5>
-        <a href="{% url 'reporte_pedidos_admin_pdf' %}" class="btn btn-success btn-sm">
-            <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
-        </a>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div class="input-group filter-search" style="max-width: 380px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Filtrar por ID o nombre del cliente...">
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <h5 class="mb-0">Listado de Compras</h5>
+            <a href="{% url 'reporte_pedidos_admin_pdf' %}" class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
+            </a>
+        </div>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle mb-0">
 
             <thead class="table-dark">
                 <tr>
-                    <th>#</th>
-                    <th>Cliente</th>
+                    <th>Pedido #</th>
+                    <th>ID Cliente</th>
+                    <th>Nombre Cliente</th>
                     <th>Fecha</th>
                     <th>Subtotal</th>
                     <th>Impuestos</th>
@@ -21,40 +29,39 @@
                     <th>Total</th>
                     <th>Dirección</th>
                     <th>Método de Pago</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
 
                 {% for c in compras %}
-                <tr>
+                <tr class="pedido-item">
 
                     <td>{{ c.id_compra }}</td>
 
-                    <td>
-                        {{ c.id_cliente.nombre }} 
-                        {{ c.id_cliente.apellido }}
-                    </td>
+                    <td>{{ c.id_cliente.id_usuario_id }}</td>
+                    <td>{{ c.id_cliente.id_usuario.nombre }} {{ c.id_cliente.id_usuario.apellido }}</td>
 
                     <td>
                         {{ c.fecha_hora_compra|date:"d/m/Y H:i" }}
                     </td>
 
                     <td class="text-success">
-                        ${{ c.subtotal }}
+                        ${{ c.subtotal|floatformat:0|intcomma }}
                     </td>
 
 
                     <td>
-                        ${{ c.impuestos }}
+                        ${{ c.impuestos|floatformat:0|intcomma }}
                     </td>
 
                     <td>
-                        ${{ c.valor_envio|default:"0" }}
+                        ${{ c.valor_envio|default:0|floatformat:0|intcomma }}
                     </td>
 
                     <td class="fw-bold text-primary">
-                        ${{ c.total }}
+                        ${{ c.total|floatformat:0|intcomma }}
                     </td>
 
                     <td>
@@ -68,7 +75,6 @@
                     <td>
                         <a href="{% url 'ver_detalle_compra' c.id_compra %}" class="btn btn-sm btn-info">
                             <i class="bi bi-eye"></i>
-                            Ver Detalle
                         </a>
                     </td>
 

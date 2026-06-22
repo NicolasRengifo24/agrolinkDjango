@@ -12,6 +12,7 @@ urlpatterns = [
     path('vehiculos/',views.mostrar_vehiculos, name = 'mostrar_vehiculos'), 
     path('vehiculos/agregar/', views.agregar_vehiculo, name='agregar_vehiculo'),
     path('vehiculos/cambiar-estado/<int:vehiculo_id>/', views.cambiar_estado_vehiculo, name='cambiar_estado_vehiculo'),
+    path('vehiculos/editar/<int:vehiculo_id>/', views.editar_vehiculo, name='editar_vehiculo'),
     path('vehiculos/eliminar/<int:vehiculo_id>/', views.eliminar_vehiculo, name='eliminar_vehiculo'),
     path('mis-envios/', views.mis_envios, name='mis_envios'),
     path('aceptar-viaje/<int:envio_id>/', views.aceptar_viaje, name='aceptar_viaje'),

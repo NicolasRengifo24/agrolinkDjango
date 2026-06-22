@@ -213,8 +213,65 @@ def agregar_vehiculo(request):
         return redirect('mostrar_vehiculos')
 
     return redirect('mostrar_vehiculos')
-    
-    
+
+
+@login_required
+def editar_vehiculo(request, vehiculo_id):
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes permisos de transportista")
+        return redirect('mostrar_vehiculos')
+
+    vehiculo = get_object_or_404(
+        Vehiculo,
+        id_vehiculo=vehiculo_id,
+        id_transportista=transportista_obj
+    )
+
+    if vehiculo.estado not in ('PENDIENTE', 'RECHAZADO'):
+        messages.error(request, "No puedes editar un vehículo que ya fue aprobado.")
+        return redirect('mostrar_vehiculos')
+
+    if request.method == 'POST':
+        tipo_vehiculo = request.POST.get('tipo_vehiculo')
+        placa_vehiculo = request.POST.get('placa_vehiculo')
+        capacidad_carga = request.POST.get('capacidad_carga')
+        archivo = request.FILES.get('documento_propiedad')
+
+        if not tipo_vehiculo or not placa_vehiculo:
+            messages.error(request, "Por favor completa los campos obligatorios")
+            return render(request, 'vehiculos/editar_vehiculo.html', {'vehiculo': vehiculo})
+
+        try:
+            vehiculo.tipo_vehiculo = tipo_vehiculo
+            vehiculo.placa_vehiculo = placa_vehiculo.upper()
+            vehiculo.capacidad_carga = capacidad_carga if capacidad_carga else 0
+            if archivo:
+                vehiculo.documento_propiedad = archivo
+            if vehiculo.estado == 'RECHAZADO':
+                vehiculo.estado = 'PENDIENTE'
+
+                admins = Administrador.objects.select_related('id_usuario').all()
+                for admin in admins:
+                    Notificacion.objects.create(
+                        tipo='SOLICITUD_VEHICULO',
+                        mensaje=f"El transportista {usuario_obj.nombre} {usuario_obj.apellido} ha editado el vehículo {placa_vehiculo.upper()} y está pendiente de re-aprobación.",
+                        destino=admin.id_usuario,
+                        id_vehiculo=vehiculo
+                    )
+
+            vehiculo.save()
+
+            messages.success(request, f"Vehículo {placa_vehiculo} actualizado correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al actualizar vehículo: {str(e)}")
+
+        return redirect('mostrar_vehiculos')
+
+    return render(request, 'vehiculos/editar_vehiculo.html', {'vehiculo': vehiculo})
+
 
 @login_required
 def cambiar_estado_vehiculo(request, vehiculo_id):

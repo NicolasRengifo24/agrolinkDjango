@@ -24,7 +24,7 @@
                     
                     <td>{{ a.id_usuario.nombre }}</td>
                     <td>{{ a.id_usuario.correo }}</td>
-                    <td>{{ a.id_usuario.especialidad }}</td>
+                    <td>{{ a.tipo_asesoria|default:"—" }}</td>
                     <td>
                         {% if a.id_usuario.estado %}
                             <span class="badge bg-success">Activo</span>

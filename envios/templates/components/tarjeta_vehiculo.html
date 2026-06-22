@@ -50,7 +50,21 @@
                     </form>
                     {% endif %}
 
-                    {% if vehiculo.estado != 'PENDIENTE' and vehiculo.estado != 'RECHAZADO' %}
+                    {% if vehiculo.estado == 'RECHAZADO' or vehiculo.estado == 'PENDIENTE' %}
+                    <a href="{% url 'editar_vehiculo' vehiculo.id_vehiculo %}" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    {% endif %}
+
+                    {% if vehiculo.estado == 'RECHAZADO' %}
+                    <form method="post" action="{% url 'eliminar_vehiculo' vehiculo.id_vehiculo %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm w-100"
+                            onclick="return confirm('¿Eliminar este vehículo?')">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </button>
+                    </form>
+                    {% elif vehiculo.estado != 'PENDIENTE' and vehiculo.estado != 'RECHAZADO' and not vehiculo.envio_set.exists %}
                     <form method="post" action="{% url 'eliminar_vehiculo' vehiculo.id_vehiculo %}" style="flex: 1;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm w-100"

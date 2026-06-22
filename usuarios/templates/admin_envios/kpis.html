@@ -1,3 +1,4 @@
+{% load humanize %}
 <div class="kpi-carousel-wrapper">
   <div class="kpi-carousel-track">
     <!-- KPI 1 -->
@@ -80,7 +81,7 @@
       <div class="kpi-card kpi-red">
         <div class="kpi-content">
           <div>
-            <h3>${{ costo_envios_mes|default:"0" }}</h3>
+            <h3>${{ costo_envios_mes|floatformat:0|intcomma }}</h3>
             <p>Costo Envíos Mes</p>
           </div>
           <div class="kpi-icon">
@@ -95,7 +96,7 @@
       <div class="kpi-card kpi-purple">
         <div class="kpi-content">
           <div>
-            <h3>${{ costo_envios|default:"0" }}</h3>
+            <h3>${{ costo_envios|floatformat:0|intcomma }}</h3>
             <p>Costos Envío</p>
           </div>
           <div class="kpi-icon">
@@ -180,7 +181,7 @@
       <div class="kpi-card kpi-red">
         <div class="kpi-content">
           <div>
-            <h3>${{ costo_envios_mes|default:"0" }}</h3>
+            <h3>${{ costo_envios_mes|floatformat:0|intcomma }}</h3>
             <p>Costo Envíos Mes</p>
           </div>
           <div class="kpi-icon">
@@ -194,7 +195,7 @@
       <div class="kpi-card kpi-purple">
         <div class="kpi-content">
           <div>
-            <h3>${{ costo_envios|default:"0" }}</h3>
+            <h3>${{ costo_envios|floatformat:0|intcomma }}</h3>
             <p>Costos Envío</p>
           </div>
           <div class="kpi-icon">
