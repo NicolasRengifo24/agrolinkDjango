@@ -320,7 +320,7 @@ CATEGORIA_POR_TIPO = {
     "Amaranto": "Cereales",
     "Leche": "Lácteos",
     "Queso": "Lácteos",
-    "Yogur": "Lácteos",
+    "Yogurt": "Lácteos",
     "Arequipe": "Lácteos",
     "Mantequilla": "Lácteos",
     "Miel": "Procesados",

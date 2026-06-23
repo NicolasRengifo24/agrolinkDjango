@@ -1,5 +1,5 @@
-var data = document.getElementById("envios-data").textContent;
-var envios = JSON.parse(data);
+var dataEl = document.getElementById("envios-data");
+var envios = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
 
 // Crear mapa centrado en Colombia
 var map = L.map('map').setView([4.7110, -74.0721], 6);
@@ -34,8 +34,8 @@ var mapModal;
 var markerGroup;
 
 // Obtener datos
-var data = document.getElementById("envios-data").textContent;
-var envios = JSON.parse(data);
+var dataEl = document.getElementById("envios-data");
+var envios = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
 
 function abrirMapa(idEnvio) {
 

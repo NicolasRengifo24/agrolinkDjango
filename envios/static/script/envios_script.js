@@ -17,6 +17,7 @@ document.querySelectorAll('.btn-aceptar').forEach(btn => {
 const slider = document.querySelector('.peso-slider');
 const valueDisplay = document.querySelector('.valor-peso');
 
+if (slider) {
 slider.addEventListener('input', function () {
     valueDisplay.textContent = this.value + ' kg';
 
@@ -32,7 +33,7 @@ slider.addEventListener('input', function () {
         valueDisplay.classList.add('bg-primary');
     }
 });
-
+}
 
 // Función para abrir el modal y cargar los datos del viaje
 function abrirModalAceptarViaje(envioId, origen, destino, distancia, peso) {
@@ -127,8 +128,8 @@ document.getElementById('formAceptarViaje').addEventListener('submit', function 
         .catch(error => {
             console.error('Error:', error);
             alert('Error al aceptar el viaje');
-        });
-});
+    });
+}
 
 // Función para obtener el token CSRF
 function getCookie(name) {

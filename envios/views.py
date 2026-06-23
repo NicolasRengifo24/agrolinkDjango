@@ -442,7 +442,8 @@ def _fotos_pendientes_data(transportista_obj):
     qs = Envio.objects.filter(id_transportista=transportista_obj).exclude(
         estado_envio__in=['pendiente', 'Cancelado', 'cancelado']
     ).filter(
-        Q(foto_carga__isnull=True) | Q(foto_descarga__isnull=True)
+        Q(foto_carga__exact='') | Q(foto_carga__isnull=True) |
+        Q(foto_descarga__exact='') | Q(foto_descarga__isnull=True)
     )
     data = []
     for e in qs:
@@ -901,9 +902,9 @@ def panel_control(request):
 
     # ── Fotos pendientes ──
     fotos_pendientes_qs = mis_envios_qs.filter(
-        Q(estado_envio='En_Transito', foto_carga__isnull=True) |
-        Q(estado_envio='Entregado', foto_carga__isnull=True) |
-        Q(estado_envio='Entregado', foto_descarga__isnull=True)
+        Q(estado_envio__in=['Asignado', 'En_Transito', 'Entregado']),
+        Q(foto_carga__exact='') | Q(foto_carga__isnull=True) |
+        Q(foto_descarga__exact='') | Q(foto_descarga__isnull=True)
     ).order_by('-id_envio')
 
     # ── Envíos por vehículo ──
