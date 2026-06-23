@@ -29,6 +29,30 @@ function verEnvio(id) {
         document.getElementById("envioCostoPeso").innerText = envio.costo_peso || 0;
         document.getElementById("envioCostoTotal").innerText = envio.costo_total || 0;
 
+        // 🔹 FOTOS
+        const fotoCarga = document.getElementById('envioFotoCarga');
+        const fotoDescarga = document.getElementById('envioFotoDescarga');
+        const fotoCargaEmpty = document.getElementById('fotoCargaEmpty');
+        const fotoDescargaEmpty = document.getElementById('fotoDescargaEmpty');
+
+        if (envio.foto_carga_url) {
+            fotoCarga.src = envio.foto_carga_url;
+            fotoCarga.style.display = 'block';
+            fotoCargaEmpty.style.display = 'none';
+        } else {
+            fotoCarga.style.display = 'none';
+            fotoCargaEmpty.style.display = 'block';
+        }
+
+        if (envio.foto_descarga_url) {
+            fotoDescarga.src = envio.foto_descarga_url;
+            fotoDescarga.style.display = 'block';
+            fotoDescargaEmpty.style.display = 'none';
+        } else {
+            fotoDescarga.style.display = 'none';
+            fotoDescargaEmpty.style.display = 'block';
+        }
+
         // 🔹 ABRIR MODAL
         let modal = new bootstrap.Modal(document.getElementById('modalEnvio'));
         modal.show();

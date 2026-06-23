@@ -30,7 +30,7 @@ import random
 from .forms import LoginForm, RegistroUsuarioForm
 
 
-from productos.models import Producto, ImagenesProducto, ProductoFinca, Finca, CategoriaProducto
+from productos.models import Producto, ImagenesProducto, ProductoFinca, Finca, CategoriaProducto, TipoProducto
 from. forms import ProductoForm, ImagenesProducto, ImagenPrincipalForm, ProductoFincaForm, ProductoEditarForm
 
 
@@ -502,6 +502,7 @@ def crear_producto_admin(request):
         'imagen_form': imagen_form,
         'finca_form': finca_form,
         'productores': productores,
+        'tipos_producto': TipoProducto.objects.all().order_by('nombre'),
         'fincas_json': _fincas_por_productor(),
     }
 
@@ -598,6 +599,7 @@ def editar_producto_admin(request, id):
         'form'          : producto_form,
         'imagen_form'   : imagen_form,
         'finca_form'    : finca_form,
+        'tipos_producto': TipoProducto.objects.all().order_by('nombre'),
         'fincas_json'   : _fincas_por_productor(),
     }
     return render(request, 'admin_productos/editar_producto.html', context)
@@ -763,7 +765,9 @@ def obtener_envio(request, id):
         "vehiculo": (
             f"{envio.id_vehiculo.tipo_vehiculo} - {envio.id_vehiculo.placa_vehiculo}"
             if envio.id_vehiculo else "No asignado"
-        )
+        ),
+        "foto_carga_url": envio.foto_carga.url if envio.foto_carga else "",
+        "foto_descarga_url": envio.foto_descarga.url if envio.foto_descarga else "",
     }
 
     return JsonResponse(data)

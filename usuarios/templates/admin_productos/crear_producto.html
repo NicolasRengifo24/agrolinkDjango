@@ -5,6 +5,7 @@
 {% block extra_head %}
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{% static 'css/crear_producto.css' %}">
+  
 {% endblock %}
 
 {% block content %}
@@ -135,6 +136,55 @@
           {% endif %}
         </div>
 
+        {# Tipo de producto #}
+        <div class="field">
+          <label for="id_tipo">
+            Tipo de producto <span class="req">*</span>
+          </label>
+          <div class="select-wrap">
+            <select id="id_tipo" name="id_tipo" required>
+              <option value="" disabled {% if not form.id_tipo.value %}selected{% endif %}>
+                Seleccionar tipo
+              </option>
+              {% for tipo in tipos_producto %}
+                <option value="{{ tipo.id_tipo }}" data-categoria="{{ tipo.id_categoria_id }}"
+                  {% if form.id_tipo.value|stringformat:"s" == tipo.id_tipo|stringformat:"s" %}selected{% endif %}>
+                  {{ tipo.nombre|capfirst }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% if form.id_tipo.errors %}
+            <span style="color:var(--error); font-size:12px;">{{ form.id_tipo.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
+        {# Variedad #}
+        <div class="field">
+          <label for="id_variedad">
+            Variedad
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="cursor:help;vertical-align:middle;margin-left:4px;" title="Selecciona la variedad específica del producto (opcional)">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4M12 8h.01"/>
+            </svg>
+          </label>
+          <div class="select-wrap" style="display:flex;gap:6px;">
+            <select id="id_variedad" name="id_variedad" disabled style="flex:1;">
+              <option value="">Primero selecciona un tipo</option>
+            </select>
+            <button type="button" id="btnNuevaVariedad" disabled
+                    class="btn-add-variedad"
+                    title="Agregar nueva variedad">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3v10M3 8h10"/>
+              </svg>
+            </button>
+          </div>
+          {% if form.id_variedad.errors %}
+            <span style="color:var(--error); font-size:12px;">{{ form.id_variedad.errors|join:", " }}</span>
+          {% endif %}
+        </div>
+
       </div><!-- /grid-2 -->
 
       {# Descripción #}
@@ -245,6 +295,70 @@
   </div><!-- /card -->
 </div><!-- /wrapper -->
 
+<!-- Modal Nueva Variedad -->
+<div class="modal-overlay" id="modalVariedad" style="display:none;">
+  <div class="modal-content-variedad">
+    <div class="modal-header-variedad">
+      <h3><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg>Nueva Variedad</h3>
+      <button type="button" class="modal-close" id="btnCerrarModal">&times;</button>
+    </div>
+    <div class="modal-body-variedad">
+      <label for="inputNuevaVariedad" style="display:block;margin-bottom:6px;font-weight:500;font-size:14px;">Nombre de la variedad</label>
+      <input type="text" id="inputNuevaVariedad" class="form-input-variedad"
+             placeholder="Ej: Albión, Monterey..." maxlength="100">
+      <div id="variedadFeedback" class="mt-2 small" style="font-size:13px;"></div>
+    </div>
+    <div class="modal-footer-variedad">
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="btnCancelarVariedad">Cancelar</button>
+      <button type="button" class="btn btn-primary btn-sm" id="btnGuardarVariedad">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M5 13l4 4L19 7"/></svg>
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-add-variedad {
+    background:none; border:1px solid #ccc; border-radius:8px; padding:8px 12px;
+    cursor:pointer; white-space:nowrap; display:flex; align-items:center;
+    transition:all .2s;
+  }
+  .btn-add-variedad:hover:not(:disabled) { border-color:var(--primary,#2f6b31); color:var(--primary,#2f6b31); }
+  .btn-add-variedad:disabled { opacity:.5; cursor:not-allowed; }
+
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9999;
+  }
+  .modal-content-variedad {
+    background:#fff; border-radius:12px; width:90%; max-width:420px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3); animation:fadeInUp .25s ease-out;
+  }
+  .modal-header-variedad {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 24px; border-bottom:1px solid #eee;
+  }
+  .modal-header-variedad h3 { margin:0; font-size:18px; color:#333; }
+  .modal-close {
+    background:none; border:none; font-size:28px; cursor:pointer;
+    color:#999; line-height:1; padding:0;
+  }
+  .modal-close:hover { color:#333; }
+  .modal-body-variedad { padding:20px 24px; }
+  .form-input-variedad {
+    width:100%; padding:10px 14px; border:2px solid #e0e0e0;
+    border-radius:8px; font-size:14px; outline:none; transition:border-color .2s;
+    box-sizing:border-box;
+  }
+  .form-input-variedad:focus { border-color:var(--primary,#2f6b31); }
+  .modal-footer-variedad {
+    display:flex; justify-content:flex-end; gap:10px;
+    padding:16px 24px; border-top:1px solid #eee;
+  }
+</style>
+
 <!-- Toast -->
 <div class="toast" id="toast">
   <svg viewBox="0 0 24 24" stroke-width="2">
@@ -263,4 +377,147 @@
     const FINCAS_JSON = {{ fincas_json|safe }};
   </script>
   <script src="{% static 'js/crear_producto.js' %}"></script>
+  {# ───────────────────────────────────────────── #}
+  {# Tipo → Variedad (similar al formulario del productor) #}
+  {# ───────────────────────────────────────────── #}
+  <script>
+    (function() {
+      var tipoSelect = document.getElementById('id_tipo');
+      var variedadSelect = document.getElementById('id_variedad');
+      var nombreInput = document.getElementById('nombre_producto');
+      var categoriaSelect = document.getElementById('categoria');
+      var btnNueva = document.getElementById('btnNuevaVariedad');
+
+      // ── Habilitar/deshabilitar botón + según tipo seleccionado ──
+      function toggleBtnNueva() {
+        if (btnNueva) btnNueva.disabled = !tipoSelect.value;
+      }
+
+      // ── Auto-completar nombre ──
+      function autoFillNombre() {
+        if (!nombreInput) return;
+        var tipo = tipoSelect.options[tipoSelect.selectedIndex];
+        if (!tipo || !tipo.value) return;
+        var nombre = tipo.text;
+        var variedad = variedadSelect.options[variedadSelect.selectedIndex];
+        if (variedad && variedad.value && variedad.text !== 'Primero selecciona un tipo' && variedad.text !== 'Sin variedad') {
+          nombre += ' - ' + variedad.text;
+        }
+        nombreInput.value = nombre;
+      }
+
+      // ── Cargar variedades al cambiar tipo ──
+      tipoSelect.addEventListener('change', function() {
+        var tipoId = this.value;
+        var selected = this.options[this.selectedIndex];
+
+        // Auto-asignar categoría
+        var catId = selected.getAttribute('data-categoria');
+        if (catId && categoriaSelect) {
+          categoriaSelect.value = catId;
+        }
+
+        variedadSelect.disabled = true;
+        variedadSelect.innerHTML = '<option value="">Cargando...</option>';
+        toggleBtnNueva();
+
+        if (!tipoId) {
+          variedadSelect.innerHTML = '<option value="">Primero selecciona un tipo</option>';
+          return;
+        }
+
+        fetch('/variedades-por-tipo/?id_tipo=' + tipoId)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            variedadSelect.innerHTML = '<option value="">Sin variedad</option>';
+            data.forEach(function(v) {
+              var opt = document.createElement('option');
+              opt.value = v.id_variedad;
+              opt.textContent = v.nombre;
+              variedadSelect.appendChild(opt);
+            });
+            variedadSelect.disabled = false;
+            autoFillNombre();
+          });
+      });
+
+      variedadSelect.addEventListener('change', autoFillNombre);
+      toggleBtnNueva();
+
+      // ── Modal Nueva Variedad ──
+      var modal = document.getElementById('modalVariedad');
+      var inputVar = document.getElementById('inputNuevaVariedad');
+      var feedback = document.getElementById('variedadFeedback');
+      var btnGuardar = document.getElementById('btnGuardarVariedad');
+
+      function abrirModal() {
+        if (!tipoSelect.value) return;
+        modal.style.display = 'flex';
+        inputVar.value = '';
+        feedback.innerHTML = '';
+        setTimeout(function() { inputVar.focus(); }, 100);
+      }
+
+      function cerrarModal() {
+        modal.style.display = 'none';
+      }
+
+      document.getElementById('btnNuevaVariedad').addEventListener('click', abrirModal);
+      document.getElementById('btnCerrarModal').addEventListener('click', cerrarModal);
+      document.getElementById('btnCancelarVariedad').addEventListener('click', cerrarModal);
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) cerrarModal();
+      });
+
+      inputVar.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnGuardar.click();
+        }
+      });
+
+      btnGuardar.addEventListener('click', function() {
+        var nombre = inputVar.value.trim();
+        if (!nombre) {
+          feedback.innerHTML = '<span style="color:var(--error,#dc3545);">Escribe un nombre</span>';
+          return;
+        }
+        if (!tipoSelect.value) {
+          feedback.innerHTML = '<span style="color:var(--error,#dc3545);">Selecciona un tipo primero</span>';
+          return;
+        }
+
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = 'Guardando...';
+
+        fetch('/crear-variedad/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}',
+          },
+          body: 'id_tipo=' + tipoSelect.value + '&nombre=' + encodeURIComponent(nombre),
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.error) {
+            feedback.innerHTML = '<span style="color:var(--error,#dc3545);">' + data.error + '</span>';
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M5 13l4 4L19 7"/></svg> Guardar';
+            return;
+          }
+          var opt = document.createElement('option');
+          opt.value = data.id_variedad;
+          opt.textContent = data.nombre;
+          variedadSelect.appendChild(opt);
+          variedadSelect.value = data.id_variedad;
+          variedadSelect.disabled = false;
+          cerrarModal();
+          autoFillNombre();
+          btnGuardar.disabled = false;
+          btnGuardar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M5 13l4 4L19 7"/></svg> Guardar';
+        });
+      });
+    })();
+  </script>
 {% endblock %}

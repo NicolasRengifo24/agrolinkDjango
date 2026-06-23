@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from productos.models import Producto, ImagenesProducto, ProductoFinca, CategoriaProducto, Finca
+from productos.models import Producto, ImagenesProducto, ProductoFinca, CategoriaProducto, TipoProducto, VariedadProducto, Finca
 from usuarios.models import Usuario, Productor
 from django.core.validators import RegexValidator
 
@@ -145,6 +145,8 @@ class ProductoForm(forms.ModelForm):
         fields = [
             'id_usuario',
             'id_categoria',
+            'id_tipo',
+            'id_variedad',
             'nombre_producto',
             'descripcion_producto',
             'precio',
@@ -157,6 +159,12 @@ class ProductoForm(forms.ModelForm):
             
             'id_categoria': forms.Select(attrs={
                 'id': 'categoria', 'name': 'categoria',
+            }),
+            'id_tipo': forms.Select(attrs={
+                'id': 'id_tipo', 'name': 'id_tipo',
+            }),
+            'id_variedad': forms.Select(attrs={
+                'id': 'id_variedad', 'name': 'id_variedad',
             }),
             'nombre_producto': forms.TextInput(attrs={
                 'id': 'nombre_producto', 'placeholder': 'Ej: Café especial tostado',
@@ -179,6 +187,8 @@ class ProductoForm(forms.ModelForm):
         labels = {
             'id_usuario'          : 'Productor',
             'id_categoria'        : 'Categoría',
+            'id_tipo'             : 'Tipo de producto',
+            'id_variedad'         : 'Variedad',
             'nombre_producto'     : 'Nombre del producto',
             'descripcion_producto': 'Descripción',
             'precio'              : 'Precio unitario (COP)',
@@ -191,11 +201,15 @@ class ProductoForm(forms.ModelForm):
         # Solo muestra productores activos (ajusta el filtro a tu modelo)
         self.fields['id_usuario'].queryset = Productor.objects.all()
         self.fields['id_categoria'].queryset = CategoriaProducto.objects.all()
+        self.fields['id_tipo'].queryset = TipoProducto.objects.all().order_by('nombre')
+        self.fields['id_variedad'].queryset = VariedadProducto.objects.all()
         # Campos opcionales según el modelo
         self.fields['descripcion_producto'].required = False
         self.fields['precio'].required  = False
         self.fields['stock'].required   = False
         self.fields['peso_kg'].required = False
+        self.fields['id_tipo'].required = False
+        self.fields['id_variedad'].required = False
 
 
 class ImagenPrincipalForm(forms.ModelForm):
@@ -266,12 +280,21 @@ class ProductoEditarForm(forms.ModelForm):
         model  = Producto
         fields = [
             'id_categoria',
+            'id_tipo',
+            'id_variedad',
             'nombre_producto',
             'descripcion_producto',
             'precio',
             'stock',
             'peso_kg',
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_tipo'].queryset = TipoProducto.objects.all().order_by('nombre')
+        self.fields['id_variedad'].queryset = VariedadProducto.objects.all()
+        self.fields['id_tipo'].required = False
+        self.fields['id_variedad'].required = False
     
         
         
