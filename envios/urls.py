@@ -32,5 +32,9 @@ urlpatterns = [
     path('panel-control/', views.panel_control, name='panel_control_transportista'),
     path('reporte-envios-csv/', views.reporte_envios_csv, name='reporte_envios_csv'),
     path('reporte-ingresos-csv/', views.reporte_ingresos_csv, name='reporte_ingresos_csv'),
+    path('reporte-envios-excel/', views.reporte_envios_excel, name='reporte_envios_excel'),
+    path('reporte-ingresos-excel/', views.reporte_ingresos_excel, name='reporte_ingresos_excel'),
+    path('reporte-envios-pdf/', views.reporte_envios_pdf, name='reporte_envios_pdf'),
+    path('reporte-ingresos-pdf/', views.reporte_ingresos_pdf, name='reporte_ingresos_pdf'),
 ] 
 

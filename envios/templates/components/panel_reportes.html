@@ -1,18 +1,52 @@
 {% load static %}
 <div class="panel-card mb-4">
     <h5><i class="bi bi-file-earmark-bar-graph text-success"></i> Reportes</h5>
-    <div class="reportes-grid">
+
+    <p class="text-muted small mb-3" style="font-size:0.82rem;">
+        <i class="bi bi-info-circle"></i>
+        Descarga informaci&oacute;n detallada para analizar tu rendimiento y tomar decisiones.
+    </p>
+
+    <h6 class="text-secondary" style="font-size:0.85rem; font-weight:700; margin-bottom:8px;">
+        <i class="bi bi-truck"></i> Env&iacute;os
+    </h6>
+    <div class="reportes-grid mb-3">
         <a href="{% url 'reporte_envios_csv' %}" class="btn-reporte">
-            <i class="bi bi-download"></i>
-            <span>CSV - Envíos Completados</span>
+            <i class="bi bi-filetype-csv text-success"></i>
+            <span>CSV</span>
         </a>
+        <a href="{% url 'reporte_envios_excel' %}" class="btn-reporte">
+            <i class="bi bi-file-earmark-excel text-success"></i>
+            <span>Excel</span>
+        </a>
+        <a href="{% url 'reporte_envios_pdf' %}" class="btn-reporte">
+            <i class="bi bi-file-earmark-pdf text-danger"></i>
+            <span>PDF</span>
+        </a>
+    </div>
+
+    <h6 class="text-secondary" style="font-size:0.85rem; font-weight:700; margin-bottom:8px;">
+        <i class="bi bi-cash-stack"></i> Ingresos
+    </h6>
+    <div class="reportes-grid mb-3">
         <a href="{% url 'reporte_ingresos_csv' %}" class="btn-reporte">
-            <i class="bi bi-cash-stack"></i>
-            <span>CSV - Ingresos por Vehículo</span>
+            <i class="bi bi-filetype-csv text-success"></i>
+            <span>CSV</span>
         </a>
+        <a href="{% url 'reporte_ingresos_excel' %}" class="btn-reporte">
+            <i class="bi bi-file-earmark-excel text-success"></i>
+            <span>Excel</span>
+        </a>
+        <a href="{% url 'reporte_ingresos_pdf' %}" class="btn-reporte">
+            <i class="bi bi-file-earmark-pdf text-danger"></i>
+            <span>PDF</span>
+        </a>
+    </div>
+
+    <div class="reportes-grid">
         <a href="{% url 'mis_envios' %}" class="btn-reporte">
             <i class="bi bi-eye"></i>
-            <span>Ver todos los envíos</span>
+            <span>Ver todos los env&iacute;os</span>
         </a>
     </div>
 </div>

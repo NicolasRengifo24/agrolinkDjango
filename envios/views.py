@@ -1067,6 +1067,592 @@ def reporte_ingresos_csv(request):
     return response
 
 
+# ──────────────────────────────────────────────
+#  REPORTES EXCEL (openpyxl)
+# ──────────────────────────────────────────────
+
+@login_required
+def reporte_envios_excel(request):
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    envios = Envio.objects.select_related(
+        'id_vehiculo', 'id_compra__id_cliente__id_usuario'
+    ).filter(id_transportista=transportista_obj).order_by('-id_envio')
+
+    wb = openpyxl.Workbook()
+
+    # ── Estilos ──
+    hdr_font = Font(bold=True, color='FFFFFF', size=11)
+    hdr_fill = PatternFill('solid', fgColor='2f6b31')
+    hdr_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+    title_font = Font(bold=True, size=14, color='2f6b31')
+    kpi_label_font = Font(bold=False, size=11, color='555555')
+    kpi_value_font = Font(bold=True, size=16, color='2f6b31')
+    kpi_fill = PatternFill('solid', fgColor='F0F7F0')
+
+    # =============== SHEET 1: RESUMEN ===============
+    ws_res = wb.active
+    ws_res.title = 'Resumen'
+
+    ws_res.merge_cells('A1:F1')
+    ws_res['A1'] = 'Reporte de Envíos — Resumen Ejecutivo'
+    ws_res['A1'].font = title_font
+
+    total_envios = envios.count()
+    entregados = envios.filter(estado_envio='Entregado').count()
+    pendientes = envios.exclude(estado_envio__in=['Entregado', 'Cancelado']).count()
+    cancelados = envios.filter(estado_envio__in=['Cancelado', 'cancelado']).count()
+    ingresos_totales = envios.filter(estado_envio='Entregado').aggregate(
+        total=Sum('costo_total'))['total'] or 0
+    distancia_total = envios.aggregate(total=Sum('distancia_km'))['total'] or 0
+    peso_total = envios.aggregate(total=Sum('peso_total_kg'))['total'] or 0
+    promedio_ingreso = float(ingresos_totales / entregados) if entregados > 0 else 0
+    tasa_exito = round(entregados / total_envios * 100, 1) if total_envios > 0 else 0
+
+    kpis = [
+        ('Total Envíos', total_envios, 'Entregados', entregados),
+        ('Pendientes', pendientes, 'Cancelados', cancelados),
+        ('Tasa de Éxito', f'{tasa_exito}%', 'Ingresos Totales', f'${float(ingresos_totales):,.0f}'),
+        ('Promedio x Viaje', f'${promedio_ingreso:,.0f}', 'Distancia Total', f'{float(distancia_total):,.0f} km'),
+        ('Peso Total', f'{float(peso_total):,.0f} kg', '', ''),
+    ]
+
+    row = 3
+    for c, label in [(1, 'Métrica'), (2, 'Valor'), (3, 'Métrica'), (4, 'Valor')]:
+        cell = ws_res.cell(row=row, column=c, value=label)
+        cell.font = hdr_font
+        cell.fill = hdr_fill
+        cell.alignment = hdr_align
+        cell.border = thin_border
+
+    for r, (l1, v1, l2, v2) in enumerate(kpis, start=row + 1):
+        ws_res.cell(row=r, column=1, value=l1).font = kpi_label_font
+        ws_res.cell(row=r, column=1).border = thin_border
+        ws_res.cell(row=r, column=1).fill = kpi_fill
+        ws_res.cell(row=r, column=2, value=v1).font = kpi_value_font
+        ws_res.cell(row=r, column=2).border = thin_border
+        ws_res.cell(row=r, column=2).fill = kpi_fill
+        ws_res.cell(row=r, column=3, value=l2).font = kpi_label_font
+        ws_res.cell(row=r, column=3).border = thin_border
+        ws_res.cell(row=r, column=3).fill = kpi_fill
+        ws_res.cell(row=r, column=4, value=v2).font = kpi_value_font if v2 else Font()
+        ws_res.cell(row=r, column=4).border = thin_border
+        ws_res.cell(row=r, column=4).fill = kpi_fill
+
+    # ── Resumen mensual ──
+    monthly = envios.filter(estado_envio='Entregado').annotate(
+        mes=TruncMonth('fecha_entrega')
+    ).values('mes').annotate(
+        total_ingresos=Sum('costo_total'),
+        cantidad=Count('id_envio')
+    ).order_by('-mes')
+
+    if monthly:
+        row += len(kpis) + 2
+        ws_res.cell(row=row, column=1, value='Ingresos Mensuales').font = Font(bold=True, size=12, color='2f6b31')
+        row += 1
+        ws_res.cell(row=row, column=1, value='Mes').font = hdr_font
+        ws_res.cell(row=row, column=1).fill = hdr_fill
+        ws_res.cell(row=row, column=1).border = thin_border
+        ws_res.cell(row=row, column=2, value='Viajes').font = hdr_font
+        ws_res.cell(row=row, column=2).fill = hdr_fill
+        ws_res.cell(row=row, column=2).border = thin_border
+        ws_res.cell(row=row, column=3, value='Ingresos').font = hdr_font
+        ws_res.cell(row=row, column=3).fill = hdr_fill
+        ws_res.cell(row=row, column=3).border = thin_border
+        ws_res.cell(row=row, column=4, value='Promedio').font = hdr_font
+        ws_res.cell(row=row, column=4).fill = hdr_fill
+        ws_res.cell(row=row, column=4).border = thin_border
+        for m in monthly:
+            row += 1
+            ws_res.cell(row=row, column=1, value=m['mes'].strftime('%B %Y') if m['mes'] else '—').border = thin_border
+            ws_res.cell(row=row, column=2, value=m['cantidad']).border = thin_border
+            ws_res.cell(row=row, column=3, value=float(m['total_ingresos'] or 0)).border = thin_border
+            ws_res.cell(row=row, column=3).number_format = '$#,##0'
+            avg = float(m['total_ingresos'] or 0) / m['cantidad'] if m['cantidad'] else 0
+            ws_res.cell(row=row, column=4, value=avg).border = thin_border
+            ws_res.cell(row=row, column=4).number_format = '$#,##0'
+
+    for col in range(1, 7):
+        ws_res.column_dimensions[get_column_letter(col)].width = 22
+
+    # =============== SHEET 2: DETALLE ===============
+    ws_det = wb.create_sheet('Detalle')
+    headers = [
+        'ID', 'Seguimiento', 'Estado', 'Vehículo', 'Placa',
+        'Cliente', 'Origen', 'Destino',
+        'Dist. (km)', 'Peso (kg)', 'Costo Base', 'Costo Total',
+        'Fecha Salida', 'Fecha Entrega', 'Días Tránsito',
+        'Costo x km', 'Costo x kg',
+    ]
+    for c, h in enumerate(headers, 1):
+        cell = ws_det.cell(row=1, column=c, value=h)
+        cell.font = hdr_font
+        cell.fill = hdr_fill
+        cell.alignment = hdr_align
+        cell.border = thin_border
+
+    for i, e in enumerate(envios, start=2):
+        detalle = e.id_compra.detallescompra_set.first() if e.id_compra else None
+        producto = detalle.id_producto if detalle else None
+        finca_rel = producto.fincas.first() if producto else None
+        finca = finca_rel.id_finca if finca_rel else None
+
+        dias = None
+        if e.fecha_salida and e.fecha_entrega:
+            dias = (e.fecha_entrega - e.fecha_salida).days
+
+        costo = float(e.costo_total or 0)
+        dist = float(e.distancia_km or 0)
+        peso = float(e.peso_total_kg or 0)
+        costo_x_km = round(costo / dist, 2) if dist > 0 else 0
+        costo_x_kg = round(costo / peso, 2) if peso > 0 else 0
+
+        row_data = [
+            e.id_envio,
+            e.numero_seguimiento or '',
+            e.estado_envio or '',
+            e.id_vehiculo.tipo_vehiculo if e.id_vehiculo else '',
+            e.id_vehiculo.placa_vehiculo if e.id_vehiculo else '',
+            f"{e.id_compra.id_cliente.id_usuario.nombre} {e.id_compra.id_cliente.id_usuario.apellido}" if e.id_compra and e.id_compra.id_cliente else '',
+            finca.ciudad if finca else '',
+            e.id_compra.id_cliente.id_usuario.ciudad if e.id_compra and e.id_compra.id_cliente else '',
+            dist,
+            peso,
+            float(e.costo_base or 0),
+            costo,
+            e.fecha_salida or '',
+            e.fecha_entrega or '',
+            dias or '',
+            costo_x_km,
+            costo_x_kg,
+        ]
+        for c, val in enumerate(row_data, 1):
+            cell = ws_det.cell(row=i, column=c, value=val)
+            cell.border = thin_border
+            if isinstance(val, float):
+                cell.number_format = '$#,##0' if c in (11, 12, 16, 17) else '#,##0.00'
+
+    for col in range(1, len(headers) + 1):
+        ws_det.column_dimensions[get_column_letter(col)].width = 16
+    ws_det.column_dimensions[get_column_letter(6)].width = 28
+    ws_det.column_dimensions[get_column_letter(2)].width = 18
+    ws_det.auto_filter.ref = f'A1:{get_column_letter(len(headers))}{envios.count() + 1}'
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_envios.xlsx"'
+    wb.save(response)
+    return response
+
+
+@login_required
+def reporte_ingresos_excel(request):
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    vehiculos = Vehiculo.objects.filter(id_transportista=transportista_obj)
+    envios_qs = Envio.objects.filter(id_transportista=transportista_obj)
+
+    wb = openpyxl.Workbook()
+
+    hdr_font = Font(bold=True, color='FFFFFF', size=11)
+    hdr_fill = PatternFill('solid', fgColor='2f6b31')
+    hdr_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+    title_font = Font(bold=True, size=14, color='2f6b31')
+
+    # =============== SHEET 1: RESUMEN ===============
+    ws_res = wb.active
+    ws_res.title = 'Resumen'
+
+    ws_res.merge_cells('A1:E1')
+    ws_res['A1'] = 'Reporte de Ingresos — Resumen Ejecutivo'
+    ws_res['A1'].font = title_font
+
+    total_ingresos = envios_qs.filter(estado_envio='Entregado').aggregate(
+        total=Sum('costo_total'))['total'] or 0
+    total_viajes = envios_qs.count()
+    entregados = envios_qs.filter(estado_envio='Entregado').count()
+
+    # Totales por vehículo
+    data = []
+    for v in vehiculos:
+        ev = envios_qs.filter(id_vehiculo=v)
+        total = ev.count()
+        ent = ev.filter(estado_envio='Entregado').count()
+        ing = ev.filter(estado_envio='Entregado').aggregate(
+            total=Sum('costo_total'))['total'] or 0
+        if total > 0:
+            avg_ing = float(ing / ent) if ent > 0 else 0
+            data.append({
+                'placa': v.placa_vehiculo or f'V-{v.id_vehiculo}',
+                'tipo': v.tipo_vehiculo or '',
+                'capacidad': float(v.capacidad_carga or 0),
+                'total': total,
+                'entregados': ent,
+                'ingresos': float(ing),
+                'promedio': avg_ing,
+            })
+
+    row = 3
+    for c, label in [(1, 'Métrica'), (2, 'Valor'), (3, 'Métrica'), (4, 'Valor')]:
+        cell = ws_res.cell(row=row, column=c, value=label)
+        cell.font = hdr_font
+        cell.fill = hdr_fill
+        cell.border = thin_border
+
+    mejor_vehiculo = max(data, key=lambda x: x['ingresos']) if data else None
+    kpis = [
+        ('Total Viajes', total_viajes, 'Entregados', entregados),
+        ('Ingresos Totales', f'${float(total_ingresos):,.0f}', 'Promedio x Viaje', f'${float(total_ingresos / entregados):,.0f}' if entregados > 0 else '$0'),
+        ('Mejor Vehículo', f'{mejor_vehiculo["placa"]} (${mejor_vehiculo["ingresos"]:,.0f})' if mejor_vehiculo else '—', 'Vehículos Activos', len(data)),
+    ]
+    for r, (l1, v1, l2, v2) in enumerate(kpis, start=row + 1):
+        for c, val in [(1, l1), (2, v1), (3, l2), (4, v2)]:
+            ws_res.cell(row=r, column=c, value=val).border = thin_border
+
+    # =============== SHEET 2: POR VEHÍCULO ===============
+    ws_v = wb.create_sheet('Por Vehículo')
+    v_headers = ['Placa', 'Tipo', 'Capacidad (kg)', 'Viajes', 'Entregados', 'Ingresos', 'Promedio x Viaje']
+    for c, h in enumerate(v_headers, 1):
+        cell = ws_v.cell(row=1, column=c, value=h)
+        cell.font = hdr_font
+        cell.fill = hdr_fill
+        cell.alignment = hdr_align
+        cell.border = thin_border
+
+    for i, d in enumerate(data, start=2):
+        vals = [d['placa'], d['tipo'], d['capacidad'], d['total'], d['entregados'], d['ingresos'], d['promedio']]
+        for c, val in enumerate(vals, 1):
+            cell = ws_v.cell(row=i, column=c, value=val)
+            cell.border = thin_border
+            if c in (3,):
+                cell.number_format = '#,##0'
+            if c in (6, 7):
+                cell.number_format = '$#,##0'
+
+    # =============== SHEET 3: MENSUAL ===============
+    monthly = envios_qs.filter(estado_envio='Entregado').annotate(
+        mes=TruncMonth('fecha_entrega')
+    ).values('mes').annotate(
+        ingresos=Sum('costo_total'),
+        viajes=Count('id_envio'),
+    ).order_by('-mes')
+
+    if monthly:
+        ws_m = wb.create_sheet('Mensual')
+        ws_m.cell(row=1, column=1, value='Mes').font = hdr_font
+        ws_m.cell(row=1, column=1).fill = hdr_fill
+        ws_m.cell(row=1, column=1).border = thin_border
+        ws_m.cell(row=1, column=2, value='Viajes').font = hdr_font
+        ws_m.cell(row=1, column=2).fill = hdr_fill
+        ws_m.cell(row=1, column=2).border = thin_border
+        ws_m.cell(row=1, column=3, value='Ingresos').font = hdr_font
+        ws_m.cell(row=1, column=3).fill = hdr_fill
+        ws_m.cell(row=1, column=3).border = thin_border
+        ws_m.cell(row=1, column=4, value='Promedio').font = hdr_font
+        ws_m.cell(row=1, column=4).fill = hdr_fill
+        ws_m.cell(row=1, column=4).border = thin_border
+        for i, m in enumerate(monthly, start=2):
+            avg = float(m['ingresos'] or 0) / m['viajes'] if m['viajes'] else 0
+            ws_m.cell(row=i, column=1, value=m['mes'].strftime('%B %Y') if m['mes'] else '—').border = thin_border
+            ws_m.cell(row=i, column=2, value=m['viajes']).border = thin_border
+            cell = ws_m.cell(row=i, column=3, value=float(m['ingresos'] or 0))
+            cell.border = thin_border
+            cell.number_format = '$#,##0'
+            cell = ws_m.cell(row=i, column=4, value=avg)
+            cell.border = thin_border
+            cell.number_format = '$#,##0'
+
+    for ws in [ws_res, ws_v]:
+        for col in range(1, 8):
+            ws.column_dimensions[get_column_letter(col)].width = 22
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_ingresos.xlsx"'
+    wb.save(response)
+    return response
+
+
+# ──────────────────────────────────────────────
+#  REPORTES PDF (reportlab)
+# ──────────────────────────────────────────────
+
+@login_required
+def reporte_envios_pdf(request):
+    from reportlab.lib.pagesizes import letter, landscape
+    from reportlab.lib.units import inch, mm
+    from reportlab.lib import colors
+    from reportlab.platypus import (
+        SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+    from io import BytesIO
+
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    envios = Envio.objects.select_related(
+        'id_vehiculo', 'id_compra__id_cliente__id_usuario'
+    ).filter(id_transportista=transportista_obj).order_by('-id_envio')
+
+    total_envios = envios.count()
+    entregados = envios.filter(estado_envio='Entregado').count()
+    pendientes = envios.exclude(estado_envio__in=['Entregado', 'Cancelado']).count()
+    cancelados = envios.filter(estado_envio__in=['Cancelado', 'cancelado']).count()
+    ingresos_totales = envios.filter(estado_envio='Entregado').aggregate(
+        total=Sum('costo_total'))['total'] or 0
+    tasa_exito = round(entregados / total_envios * 100, 1) if total_envios > 0 else 0
+    promedio = float(ingresos_totales / entregados) if entregados > 0 else 0
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=landscape(letter),
+                            leftMargin=20*mm, rightMargin=20*mm,
+                            topMargin=15*mm, bottomMargin=15*mm)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # ── Title ──
+    title_style = ParagraphStyle('Title2', parent=styles['Title'],
+                                 textColor=colors.HexColor('#2f6b31'),
+                                 fontSize=18, spaceAfter=6)
+    elements.append(Paragraph('Reporte de Envios — Transportista', title_style))
+    elements.append(Paragraph(
+        f'Generado: {datetime.now().strftime("%d/%m/%Y %H:%M")}  |  '
+        f'{transportista_obj.id_usuario.nombre} {transportista_obj.id_usuario.apellido}',
+        styles['Normal']
+    ))
+    elements.append(Spacer(1, 10))
+    elements.append(HRFlowable(width='100%', color=colors.HexColor('#2f6b31'), thickness=2))
+
+    # ── KPI Summary ──
+    kpi_style = ParagraphStyle('KPI', parent=styles['Normal'],
+                               fontSize=10, alignment=TA_CENTER)
+    kpi_data = [
+        ['Total Envios', 'Entregados', 'Pendientes', 'Cancelados', 'Tasa Exito', 'Ingresos Totales', 'Promedio x Viaje'],
+        [str(total_envios), str(entregados), str(pendientes), str(cancelados),
+         f'{tasa_exito}%', f'${float(ingresos_totales):,.0f}', f'${promedio:,.0f}'],
+    ]
+    kpi_table = Table(kpi_data, colWidths=[80, 80, 80, 80, 70, 100, 100])
+    kpi_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+        ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#f0f7f0')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fafafa')]),
+    ]))
+    elements.append(Spacer(1, 8))
+    elements.append(kpi_table)
+    elements.append(Spacer(1, 12))
+
+    # ── Detail Table ──
+    hdr_style = ParagraphStyle('Hdr', parent=styles['Normal'],
+                               fontSize=7, alignment=TA_CENTER,
+                               textColor=colors.white)
+    cell_style = ParagraphStyle('Cell', parent=styles['Normal'],
+                                fontSize=7, alignment=TA_CENTER)
+
+    table_data = [[Paragraph(h, hdr_style) for h in [
+        'ID', 'Seguimiento', 'Estado', 'Vehiculo', 'Placa',
+        'Cliente', 'Origen', 'Destino',
+        'Dist.', 'Peso', 'Costo', 'Salida', 'Entrega', 'Dias'
+    ]]]
+    for e in envios:
+        detalle = e.id_compra.detallescompra_set.first() if e.id_compra else None
+        producto = detalle.id_producto if detalle else None
+        finca_rel = producto.fincas.first() if producto else None
+        finca = finca_rel.id_finca if finca_rel else None
+        dias = ''
+        if e.fecha_salida and e.fecha_entrega:
+            dias = str((e.fecha_entrega - e.fecha_salida).days)
+
+        table_data.append([Paragraph(str(e.id_envio), cell_style),
+                           Paragraph(e.numero_seguimiento or '—', cell_style),
+                           Paragraph(e.estado_envio or '—', cell_style),
+                           Paragraph(e.id_vehiculo.tipo_vehiculo if e.id_vehiculo else '—', cell_style),
+                           Paragraph(e.id_vehiculo.placa_vehiculo if e.id_vehiculo else '—', cell_style),
+                           Paragraph(f"{e.id_compra.id_cliente.id_usuario.nombre} {e.id_compra.id_cliente.id_usuario.apellido}" if e.id_compra and e.id_compra.id_cliente else '—', cell_style),
+                           Paragraph(finca.ciudad if finca else '—', cell_style),
+                           Paragraph(e.id_compra.id_cliente.id_usuario.ciudad if e.id_compra and e.id_compra.id_cliente else '—', cell_style),
+                           Paragraph(f'{float(e.distancia_km or 0):.0f}', cell_style),
+                           Paragraph(f'{float(e.peso_total_kg or 0):.0f}', cell_style),
+                           Paragraph(f'${float(e.costo_total or 0):,.0f}', cell_style),
+                           Paragraph(e.fecha_salida.strftime('%d/%m/%Y') if e.fecha_salida else '—', cell_style),
+                           Paragraph(e.fecha_entrega.strftime('%d/%m/%Y') if e.fecha_entrega else '—', cell_style),
+                           Paragraph(dias, cell_style)])
+
+    col_widths = [25, 65, 55, 55, 50, 95, 50, 55, 40, 40, 65, 60, 60, 35]
+    detail_table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    detail_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#cccccc')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f9f5')]),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(detail_table)
+
+    doc.build(elements)
+    buf.seek(0)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_envios.pdf"'
+    response.write(buf.read())
+    return response
+
+
+@login_required
+def reporte_ingresos_pdf(request):
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import inch, mm
+    from reportlab.lib import colors
+    from reportlab.platypus import (
+        SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+    from io import BytesIO
+
+    try:
+        usuario_obj = Usuario.objects.get(user=request.user)
+        transportista_obj = Transportista.objects.get(id_usuario=usuario_obj)
+    except (Usuario.DoesNotExist, Transportista.DoesNotExist):
+        messages.error(request, "No tienes perfil de transportista")
+        return redirect('inicio_transportista')
+
+    vehiculos = Vehiculo.objects.filter(id_transportista=transportista_obj)
+    envios_qs = Envio.objects.filter(id_transportista=transportista_obj)
+
+    total_viajes = envios_qs.count()
+    entregados = envios_qs.filter(estado_envio='Entregado').count()
+    ingresos_totales = envios_qs.filter(estado_envio='Entregado').aggregate(
+        total=Sum('costo_total'))['total'] or 0
+    promedio = float(ingresos_totales / entregados) if entregados > 0 else 0
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=letter,
+                            leftMargin=20*mm, rightMargin=20*mm,
+                            topMargin=15*mm, bottomMargin=15*mm)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    title_style = ParagraphStyle('Title2', parent=styles['Title'],
+                                 textColor=colors.HexColor('#2f6b31'),
+                                 fontSize=18, spaceAfter=6)
+    elements.append(Paragraph('Reporte de Ingresos — Transportista', title_style))
+    elements.append(Paragraph(
+        f'Generado: {datetime.now().strftime("%d/%m/%Y %H:%M")}  |  '
+        f'{transportista_obj.id_usuario.nombre} {transportista_obj.id_usuario.apellido}',
+        styles['Normal']
+    ))
+    elements.append(Spacer(1, 10))
+    elements.append(HRFlowable(width='100%', color=colors.HexColor('#2f6b31'), thickness=2))
+
+    # KPI summary
+    kpi_style = ParagraphStyle('KPI', parent=styles['Normal'],
+                               fontSize=11, alignment=TA_CENTER)
+    kpi_data = [
+        ['Total Viajes', 'Entregados', 'Ingresos Totales', 'Promedio x Viaje'],
+        [str(total_viajes), str(entregados),
+         f'${float(ingresos_totales):,.0f}', f'${promedio:,.0f}'],
+    ]
+    kpi_table = Table(kpi_data, colWidths=[110, 90, 130, 130])
+    kpi_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+        ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#f0f7f0')),
+    ]))
+    elements.append(Spacer(1, 8))
+    elements.append(kpi_table)
+    elements.append(Spacer(1, 14))
+
+    # Detail by vehicle
+    hdr_style = ParagraphStyle('Hdr', parent=styles['Normal'],
+                               fontSize=9, alignment=TA_CENTER,
+                               textColor=colors.white)
+    cell_style = ParagraphStyle('Cell', parent=styles['Normal'],
+                                fontSize=9, alignment=TA_CENTER)
+
+    table_data = [[Paragraph(h, hdr_style) for h in [
+        'Placa', 'Tipo', 'Capacidad (kg)', 'Viajes', 'Entregados',
+        'Ingresos', 'Promedio x Viaje'
+    ]]]
+    for v in vehiculos:
+        ev = envios_qs.filter(id_vehiculo=v)
+        total = ev.count()
+        ent = ev.filter(estado_envio='Entregado').count()
+        ing = ev.filter(estado_envio='Entregado').aggregate(
+            total=Sum('costo_total'))['total'] or 0
+        if total > 0:
+            avg = float(ing / ent) if ent > 0 else 0
+            table_data.append([
+                Paragraph(v.placa_vehiculo or f'V-{v.id_vehiculo}', cell_style),
+                Paragraph(v.tipo_vehiculo or '—', cell_style),
+                Paragraph(f'{float(v.capacidad_carga or 0):.0f}', cell_style),
+                Paragraph(str(total), cell_style),
+                Paragraph(str(ent), cell_style),
+                Paragraph(f'${float(ing):,.0f}', cell_style),
+                Paragraph(f'${avg:,.0f}', cell_style),
+            ])
+
+    cols = [70, 80, 90, 60, 70, 100, 100]
+    det_table = Table(table_data, colWidths=cols, repeatRows=1)
+    det_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2f6b31')),
+        ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#cccccc')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f9f5')]),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(det_table)
+
+    doc.build(elements)
+    buf.seek(0)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_ingresos.pdf"'
+    response.write(buf.read())
+    return response
+
+
 def perfil_transportista(request):
     usuario = request.user.usuario
     transportista = Transportista.objects.get(id_usuario=usuario)
