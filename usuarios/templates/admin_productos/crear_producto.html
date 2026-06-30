@@ -5,19 +5,35 @@
 {% block extra_head %}
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{% static 'css/crear_producto.css' %}">
-  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 {% endblock %}
 
 {% block content %}
 
-{# ── Mensaje de Django para el toast JS ─────────────────── #}
-{% for message in messages %}
-  <span id="django-message"
-        data-msg="{{ message }}"
-        data-error="{% if message.tags == 'error' %}true{% else %}false{% endif %}"
-        style="display:none;">
-  </span>
-{% endfor %}
+{% if messages %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+  {% for message in messages %}
+    Toastify({
+      text: '{{ message|escapejs }}',
+      duration: 3500,
+      gravity: 'top',
+      position: 'right',
+      stopOnFocus: true,
+      style: {
+        background: '{% if message.tags == "error" %}#c0392b{% elif message.tags == "warning" %}#e67e22{% else %}#2a4f26{% endif %}',
+        borderRadius: '10px',
+        fontSize: '14px',
+        fontFamily: 'DM Sans, sans-serif',
+        padding: '12px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      }
+    }).showToast();
+  {% endfor %}
+  });
+</script>
+{% endif %}
 
 <div class="wrapper">
 

@@ -606,12 +606,59 @@ def editar_producto_admin(request, id):
 
 def toggle_estado_producto_admin(request, id):
     producto = get_object_or_404(Producto, id_producto=id)
+    inhabilitando = producto.estado
+
     producto.estado = not producto.estado
     producto.save()
+
+    if inhabilitando:
+        tiene_ordenes = DetallesCompra.objects.filter(
+            id_producto=producto,
+            id_compra__estado__in=['pagado', 'pendiente'],
+        ).exists()
+        if tiene_ordenes:
+            messages.warning(
+                request,
+                f'El producto "{producto.nombre_producto}" está asociado a pedidos activos.'
+            )
+
     accion = "inhabilitado" if not producto.estado else "habilitado"
     messages.success(request, f"Producto {producto.nombre_producto} {accion} correctamente")
     return redirect('ver_lista_productos_admin')
 
+
+def ver_producto_admin(request, id):
+    producto = get_object_or_404(Producto, pk=id)
+
+    detalles = DetallesCompra.objects.filter(
+        id_producto=producto,
+        id_compra__estado='pagado',
+    ).select_related('id_compra').order_by('id_compra__fecha_hora_compra')
+
+    stock_actual = producto.stock or 0
+    historial = []
+    stock_acumulado = stock_actual
+
+    for d in reversed(detalles):
+        stock_despues = stock_acumulado
+        stock_antes = stock_acumulado + d.cantidad
+        stock_acumulado = stock_antes
+        historial.insert(0, {
+            'fecha': d.id_compra.fecha_hora_compra,
+            'cantidad': d.cantidad,
+            'stock_antes': stock_antes,
+            'stock_despues': stock_despues,
+            'compra_id': d.id_compra.id_compra,
+        })
+
+    context = {
+        'producto': producto,
+        'historial': historial,
+        'stock_inicial': stock_acumulado,
+        'stock_actual': stock_actual,
+        'vendidas': stock_acumulado - stock_actual,
+    }
+    return render(request, 'admin_productos/ver_producto.html', context)
 
 
 @admin_required
@@ -856,6 +903,7 @@ def crear_usuario_admin(request):
         username = request.POST.get('txt_nombreUsuario')
         correo = request.POST.get('txt_correo')
         password = request.POST.get('txt_contrasena')
+        confirm_password = request.POST.get('txt_contrasena_confirm')
         telefono = request.POST.get('txt_telefono')
         documento = request.POST.get('txt_documento')
         ciudad = request.POST.get('txt_ciudad')
@@ -863,9 +911,24 @@ def crear_usuario_admin(request):
         direccion = request.POST.get('txt_direccion')
         rol = request.POST.get('role')
 
-        #  Validación correcta
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "El usuario ya existe")
+        #  Validaciones
+        errores = []
+
+        if User.objects.filter(username=username).exists() or Usuario.objects.filter(nombre_usuario=username).exists():
+            errores.append("El nombre de usuario ya está registrado.")
+
+        if User.objects.filter(email=correo).exists() or Usuario.objects.filter(correo=correo).exists():
+            errores.append("El correo electrónico ya está registrado.")
+
+        if len(password) < 6:
+            errores.append("La contraseña debe tener al menos 6 caracteres.")
+
+        if password != confirm_password:
+            errores.append("Las contraseñas no coinciden.")
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
             return redirect('crear_usuario')
 
         #  Crear User estándar (contraseña encriptada automáticamente)

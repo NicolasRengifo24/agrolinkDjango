@@ -127,8 +127,22 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (!valid) {
-        e.preventDefault(); // ← solo bloquea si hay errores
-        showToast('Por favor completa todos los campos requeridos.', true);
+        e.preventDefault();
+        Toastify({
+          text: 'Por favor completa todos los campos requeridos.',
+          duration: 3500,
+          gravity: 'top',
+          position: 'right',
+          stopOnFocus: true,
+          style: {
+            background: '#c0392b',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontFamily: 'DM Sans, sans-serif',
+            padding: '12px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          }
+        }).showToast();
       }
       // Si valid === true el form hace POST normal a Django
     });
@@ -155,24 +169,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-
-  /* ─────────────────────────────────────────────────────────
-     5. TOAST DE NOTIFICACIÓN
-  ───────────────────────────────────────────────────────── */
-  window.showToast = function (msg, isError) {
-    const toast    = document.getElementById('toast');
-    const toastMsg = document.getElementById('toastMsg');
-    if (!toast || !toastMsg) return;
-    toastMsg.textContent   = msg;
-    toast.style.background = isError ? '#c0392b' : 'var(--accent-dark)';
-    toast.classList.add('show');
-    setTimeout(function () { toast.classList.remove('show'); }, 3200);
-  };
-
-  // Mostrar toast si Django envió mensaje via messages framework
-  const djangoMsg = document.getElementById('django-message');
-  if (djangoMsg) {
-    showToast(djangoMsg.dataset.msg, djangoMsg.dataset.error === 'true');
-  }
 
 });

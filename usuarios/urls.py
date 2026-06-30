@@ -41,6 +41,7 @@ urlpatterns = [
     path('formulario_producto_admin/', views.crear_producto_admin, name= 'crear_producto_admin'),
     path('productos_admin/<int:id>/editar/', views.editar_producto_admin, name='editar_producto_admin'),
     path('producto/<int:id>/toggle-estado/', views.toggle_estado_producto_admin, name='toggle_estado_producto_admin'),
+    path('productos_admin/<int:id>/', views.ver_producto_admin, name='ver_producto_admin'),
     
     path('pedidos_admin/', views.ver_lista_pedidos_admin, name='ver_lista_pedidos_admin'),
     path('compra/<int:id>/', views.ver_detalle_compra_admin, name= 'ver_detalle_compra'),

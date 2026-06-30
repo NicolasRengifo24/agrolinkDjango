@@ -70,6 +70,9 @@
 
                     <!-- ACCIONES -->
                     <td>
+                        <a href="{% url 'ver_producto_admin' p.id_producto %}" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i>
+                        </a>
                         <a href="{% url 'editar_producto_admin' p.id_producto %}" class="btn btn-sm btn-primary">
                             <i class="bi bi-pencil"></i>
                         </a>

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from productos.models import Producto, ImagenesProducto, ProductoFinca, CategoriaProducto, TipoProducto, VariedadProducto, Finca
 from usuarios.models import Usuario, Productor
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator
 
 
 class LoginForm(forms.Form):
@@ -210,6 +210,22 @@ class ProductoForm(forms.ModelForm):
         self.fields['peso_kg'].required = False
         self.fields['id_tipo'].required = False
         self.fields['id_variedad'].required = False
+        self.fields['precio'].validators.append(MinValueValidator(0))
+        self.fields['stock'].validators.append(MinValueValidator(0))
+        self.fields['peso_kg'].validators.append(MinValueValidator(0))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre_producto')
+        usuario = cleaned_data.get('id_usuario')
+
+        if nombre and usuario:
+            if Producto.objects.filter(
+                nombre_producto=nombre,
+                id_usuario=usuario,
+            ).exists():
+                self.add_error('nombre_producto', 'Ya existe un producto con este nombre para este productor.')
+        return cleaned_data
 
 
 class ImagenPrincipalForm(forms.ModelForm):
@@ -272,7 +288,8 @@ class ProductoFincaForm(forms.ModelForm):
         else:
             self.fields['id_finca'].queryset = Finca.objects.none()
         self.fields['cantidad_produccion'].required = False
-        self.fields['fecha_cosecha'].required       = False    
+        self.fields['fecha_cosecha'].required       = False
+        self.fields['cantidad_produccion'].validators.append(MinValueValidator(0))
 
 
 class ProductoEditarForm(forms.ModelForm):
@@ -295,6 +312,19 @@ class ProductoEditarForm(forms.ModelForm):
         self.fields['id_variedad'].queryset = VariedadProducto.objects.all()
         self.fields['id_tipo'].required = False
         self.fields['id_variedad'].required = False
-    
-        
-        
+        self.fields['precio'].validators.append(MinValueValidator(0))
+        self.fields['stock'].validators.append(MinValueValidator(0))
+        self.fields['peso_kg'].validators.append(MinValueValidator(0))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre_producto')
+
+        if nombre and self.instance.pk:
+            qs = Producto.objects.filter(
+                nombre_producto=nombre,
+                id_usuario=self.instance.id_usuario,
+            ).exclude(pk=self.instance.pk)
+            if qs.exists():
+                self.add_error('nombre_producto', 'Ya existe un producto con este nombre para este productor.')
+        return cleaned_data
