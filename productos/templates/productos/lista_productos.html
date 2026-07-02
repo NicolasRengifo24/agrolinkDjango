@@ -220,7 +220,10 @@
                     <img class="card-img-top h-100" style="object-fit: cover;" src="{% static 'imag/placeholder.jpg' %}"
                         alt="Imagen del producto">
                     {% endif %}
-                    <div class="position-absolute top-0 end-0 m-2">
+                    <div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
+                        {% if not producto.estado %}
+                        <span class="badge bg-danger">Inactivo</span>
+                        {% endif %}
                         {% if producto.stock > 0 %}
                         <span class="badge bg-success">{{ producto.stock }} unidades</span>
                         {% else %}
@@ -244,24 +247,21 @@
                             <span class="h5 text-success mb-0">${{ producto.precio|floatformat:0|intcomma}}</span>
                             <small class="text-muted">{{ producto.id_categoria.nombre_categoria }}</small>
                         </div>
-                        <!-- Botones originales -->
-                        <div class="btn-group w-100">
-                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                        <!-- Botones -->
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-info text-white flex-fill" data-bs-toggle="modal"
                                 data-bs-target="#verProductoModal" data-producto-id="{{ producto.id_producto }}">
                                 <i class="bi bi-eye"></i> Ver
                             </button>
-                            <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-primary flex-fill" data-bs-toggle="modal"
                                 data-bs-target="#editarProductoModal" data-producto-id="{{ producto.id_producto }}">
                                 <i class="bi bi-pencil"></i> Editar
                             </button>
-                            <form action="{% url 'eliminar_producto' producto.id_producto %}" method="post"
-                                style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-danger btn-sm"
-                                    onclick="return confirm('¿Está seguro de eliminar este producto?')">
-                                    <i class="bi bi-trash"></i> Eliminar
-                                </button>
-                            </form>
+                            <a href="{% url 'toggle_estado_producto' producto.id_producto %}"
+                               class="btn flex-fill {% if producto.estado %}btn-warning text-dark{% else %}btn-success{% endif %}">
+                                <i class="bi bi-{% if producto.estado %}eye-slash{% else %}eye{% endif %}"></i>
+                                {% if producto.estado %}Inhabilitar{% else %}Habilitar{% endif %}
+                            </a>
                         </div>
 
                         <!-- Modal Ver Producto -->

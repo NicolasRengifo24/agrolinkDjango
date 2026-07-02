@@ -26,7 +26,7 @@ urlpatterns = [
     path('crear-variedad/', views.crear_variedad, name='crear_variedad'),
     path('productor/productos/nuevo/', views.crear_producto, name='crear_producto'),
     path('productor/productos/buscar/', views.buscar_productos, name='buscar_productos'),
-    path('productor/productos/eliminar/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),
+    path('productor/productos/toggle-estado/<int:producto_id>/', views.toggle_estado_producto, name='toggle_estado_producto'),
     
     
     path('productos/<int:producto_id>/detalles/', views.ver_producto_detalles, name='ver_producto_detalles'),

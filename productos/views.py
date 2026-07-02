@@ -874,28 +874,26 @@ def editar_producto(request, producto_id):
 
 
 @login_required
-def eliminar_producto(request, producto_id):
-    """Vista para eliminar un producto"""
+def toggle_estado_producto(request, producto_id):
+    """Vista para inhabilitar/habilitar un producto (en lugar de eliminarlo)"""
     producto = get_object_or_404(Producto, id_producto=producto_id)
     
     # Verificar permiso
     try:
         productor = request.user.usuario.productor
         if producto.id_usuario != productor:
-            messages.error(request, 'No tienes permiso para eliminar este producto')
+            messages.error(request, 'No tienes permiso para modificar este producto')
             return redirect('lista_productos')
     except (AttributeError, Productor.DoesNotExist):
-        messages.error(request, 'No tienes permiso para eliminar productos')
+        messages.error(request, 'No tienes permiso para modificar productos')
         return redirect('lista_productos')
     
-    if request.method == 'POST':
-        try:
-            nombre_producto = producto.nombre_producto
-            producto.delete()
-            messages.success(request, f'Producto "{nombre_producto}" eliminado exitosamente')
-        except Exception as e:
-            messages.error(request, f'Error al eliminar el producto: {str(e)}')
+    # Toggle estado
+    producto.estado = not producto.estado
+    producto.save()
     
+    accion = "inhabilitado" if not producto.estado else "habilitado"
+    messages.success(request, f'Producto "{producto.nombre_producto}" {accion} correctamente')
     return redirect('lista_productos')
 
 
