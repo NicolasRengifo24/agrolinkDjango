@@ -393,6 +393,8 @@ def mis_envios(request):
     envios = Envio.objects.select_related(
         'id_compra__id_cliente__id_usuario',
         'id_vehiculo'
+    ).prefetch_related(
+        'id_compra__detallescompra_set__id_producto'
     ).filter(
         id_transportista=transportista_obj
     ).order_by('-id_envio')
@@ -400,11 +402,23 @@ def mis_envios(request):
     # ── Datos para modales de detalle ──
     envios_detalle = []
     for envio in envios:
-        detalle = envio.id_compra.detallescompra_set.first() if envio.id_compra else None
-        producto = detalle.id_producto if detalle else None
-        productor = producto.id_usuario if producto else None
-        finca_rel = producto.fincas.first() if producto else None
+        detalles = envio.id_compra.detallescompra_set.all() if envio.id_compra else []
+        primer_detalle = detalles[0] if detalles else None
+        primer_producto = primer_detalle.id_producto if primer_detalle else None
+        productor = primer_producto.id_usuario if primer_producto else None
+        finca_rel = primer_producto.fincas.first() if primer_producto else None
         finca = finca_rel.id_finca if finca_rel else None
+
+        productos_list = []
+        for det in detalles:
+            p = det.id_producto
+            productos_list.append({
+                'nombre': p.nombre_producto,
+                'cantidad': det.cantidad,
+                'peso_kg': float(p.peso_kg or 0),
+                'precio': float(det.precio_unitario or 0),
+                'subtotal': float(det.subtotal or 0),
+            })
 
         envios_detalle.append({
             'id_envio': envio.id_envio,
@@ -416,7 +430,9 @@ def mis_envios(request):
             'cliente_nombre': f"{envio.id_compra.id_cliente.id_usuario.nombre} {envio.id_compra.id_cliente.id_usuario.apellido}" if envio.id_compra else 'N/A',
             'cliente_telefono': envio.id_compra.id_cliente.id_usuario.telefono if envio.id_compra else '',
             'cliente_direccion': envio.direccion_destino or '',
-            'producto_nombre': producto.nombre_producto if producto else '',
+            'producto_nombre': primer_producto.nombre_producto if primer_producto else '',
+            'productos': productos_list,
+            'peso_total_kg': float(envio.peso_total_kg or 0),
             'foto_carga_url': envio.foto_carga.url if envio.foto_carga else '',
             'foto_descarga_url': envio.foto_descarga.url if envio.foto_descarga else '',
         })

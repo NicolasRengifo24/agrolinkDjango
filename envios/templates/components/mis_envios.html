@@ -34,16 +34,24 @@
                         <td><strong>#ENV-{{ envio.id_envio }}</strong></td>
 
                         <td>
-                            {% with detalle=envio.id_compra.detallescompra_set.first %}
-                            <span class="d-block d-md-none small text-muted">{{ detalle.id_producto.nombre_producto|default:"—" }}</span>
-                            <span class="d-none d-md-inline">{{ detalle.id_producto.nombre_producto|default:"—" }}</span>
-                            <small class="d-block d-md-none text-muted">
-                                {% if envio.id_compra and envio.id_compra.id_cliente %}
-                                    {{ envio.id_compra.id_cliente.id_usuario.nombre }}
-                                {% endif %}
-                                · ${{ envio.costo_total|default:"0"|floatformat:0 }}
-                            </small>
-                            {% endwith %}
+                            {% if envio.id_compra %}
+                                {% with detalles=envio.id_compra.detallescompra_set.all %}
+                                <div class="productos-lista">
+                                    {% for detalle in detalles %}
+                                    <div class="{% if not forloop.last %}mb-1{% endif %}">
+                                        <span class="d-none d-md-inline">{{ detalle.id_producto.nombre_producto }}</span>
+                                        <span class="d-block d-md-none small">{{ detalle.id_producto.nombre_producto }}</span>
+                                        <small class="text-muted">×{{ detalle.cantidad }}</small>
+                                    </div>
+                                    {% endfor %}
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-box-seam"></i> {{ envio.peso_total_kg|floatformat:1 }} kg
+                                    </small>
+                                </div>
+                                {% endwith %}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
                         </td>
 
                         <td class="d-none d-md-table-cell">
@@ -303,9 +311,16 @@ document.querySelectorAll('.btn-detalle').forEach(function(btn) {
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="border-start border-info border-3 ps-3">
-                        <h6 class="text-info small mb-2"><i class="bi bi-box me-1"></i>Producto</h6>
-                        <p class="mb-0 fw-semibold">${detalle.producto_nombre || '—'}</p>
+                        <h6 class="text-info small mb-2"><i class="bi bi-box me-2"></i>Productos</h6>
+                        ${detalle.productos && detalle.productos.length > 0
+                            ? detalle.productos.map(function(p) {
+                                return '<p class="mb-1 fw-semibold">' + p.nombre + ' <small class="text-muted">×' + p.cantidad + '</small></p>';
+                              }).join('')
+                            : '<p class="mb-0 fw-semibold">' + (detalle.producto_nombre || '—') + '</p>'
+                        }
+                        <p class="mb-0 small text-muted mt-1"><i class="bi bi-box-seam me-1"></i>Peso total: ${detalle.peso_total_kg.toFixed(1)} kg</p>
                     </div>
+                </div>
                 </div>
                 ${fotosHtml}
             </div>

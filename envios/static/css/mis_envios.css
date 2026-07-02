@@ -175,6 +175,15 @@ body {
     color: #842029;
 }
 
+.productos-lista {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.productos-lista .text-muted i {
+    font-size: 0.8rem;
+}
+
 .btn-action {
     background: none;
     border: none;
