@@ -1,7 +1,7 @@
 {% load humanize %}
 
 <h3 class="fw-bold mb-4" data-aos="fade-right">
-  Te podría interesar
+  Este Campesino Tambien Produce
 </h3>
 
 <div class="row g-4">
@@ -9,15 +9,17 @@
   {% for producto in productos %}
   <div class="col-md-3" data-aos="zoom-in">
 
+    <a href="{% url 'detalle_producto' producto.id_producto %}" class="text-decoration-none text-dark">
+
     <div class="card p-2 h-100">
 
       <!-- IMAGEN -->
-      {% if producto.imagen_principal %}
-        <img src="{{ producto.imagen_principal.url }}" 
+      {% if producto.imagen_principal_url %}
+        <img src="{{ producto.imagen_principal_url }}"
              class="img-fluid rounded"
              style="height:180px; object-fit:cover;">
       {% else %}
-        <img src="{{ MEDIA_URL }}productos/default.jpg" 
+        <img src="{{ MEDIA_URL }}productos/default.jpg"
              class="img-fluid rounded"
              style="height:180px; object-fit:cover;">
       {% endif %}
@@ -33,6 +35,8 @@
       </span>
 
     </div>
+
+    </a>
 
   </div>
   {% endfor %}

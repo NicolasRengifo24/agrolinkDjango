@@ -30,17 +30,19 @@
         {% csrf_token %}
         <input type="hidden"/>
 
-        {%if messages %}
+        <!-- [CAMBIADO] Messages: success se muestra verde, errores van inline por campo -->
+        {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
+                <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
         {% endif %}
 
-        <!-- Información Básica -->
+        <!-- ===== [CAMBIADO] Todos los campos ahora muestran errores inline y preservan valores POST ===== -->
+        <!-- ===== [CAMBIADO] Dirección: ahora usa campos detallados (tipo, número1, letra, número2, número3) como en RegistroUsuarioForm ===== -->
         <h5 class="text-success mb-3">
         <i class="bi bi-person-circle me-2"></i>
         Información Personal
@@ -49,25 +51,40 @@
         <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label fw-semibold">Nombre *</label>
-            <input type="text" name="txt_nombre" class="form-control" required placeholder="Ej: Juan" />
+            <input type="text" name="txt_nombre" class="form-control {% if form.txt_nombre.errors %}is-invalid{% endif %}" required placeholder="Ej: Juan" value="{{ form.data.txt_nombre|default:'' }}" />
+            {% if form.txt_nombre.errors %}
+            <div class="invalid-feedback">{{ form.txt_nombre.errors.0 }}</div>
+            {% endif %}
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Apellido *</label>
-            <input type="text" name="txt_apellido" class="form-control" required placeholder="Ej: Pérez" />
+            <input type="text" name="txt_apellido" class="form-control {% if form.txt_apellido.errors %}is-invalid{% endif %}" required placeholder="Ej: Pérez" value="{{ form.data.txt_apellido|default:'' }}" />
+            {% if form.txt_apellido.errors %}
+            <div class="invalid-feedback">{{ form.txt_apellido.errors.0 }}</div>
+            {% endif %}
         </div>
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Usuario *</label>
-            <input type="text" name="txt_nombreUsuario" class="form-control" required placeholder="Ej: juanperez" />
+            <input type="text" name="txt_nombreUsuario" class="form-control {% if form.txt_nombreUsuario.errors %}is-invalid{% endif %}" required placeholder="Ej: juanperez" value="{{ form.data.txt_nombreUsuario|default:'' }}" />
+            {% if form.txt_nombreUsuario.errors %}
+            <div class="invalid-feedback">{{ form.txt_nombreUsuario.errors.0 }}</div>
+            {% endif %}
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Correo electrónico *</label>
-            <input type="email" name="txt_correo" class="form-control" required placeholder="Ej: juan@ejemplo.com" />
+            <input type="email" name="txt_correo" class="form-control {% if form.txt_correo.errors %}is-invalid{% endif %}" required placeholder="Ej: juan@ejemplo.com" value="{{ form.data.txt_correo|default:'' }}" />
+            {% if form.txt_correo.errors %}
+            <div class="invalid-feedback">{{ form.txt_correo.errors.0 }}</div>
+            {% endif %}
         </div>
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Contraseña *</label>
-            <input type="password" name="txt_contrasena" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres" />
+            <input type="password" name="txt_contrasena" class="form-control {% if form.txt_contrasena.errors %}is-invalid{% endif %}" required minlength="6" placeholder="Mínimo 6 caracteres" />
+            {% if form.txt_contrasena.errors %}
+            <div class="invalid-feedback">{{ form.txt_contrasena.errors.0 }}</div>
+            {% endif %}
         </div>
         <div class="col-md-6">
           <label class="form-label fw-semibold">Confirmar contraseña *</label>
@@ -75,31 +92,90 @@
         </div>
         <div class="col-md-6">
             <label class="form-label fw-semibold">Teléfono</label>
-            <input type="text" name="txt_telefono" class="form-control" placeholder="Ej: 3001234567" />
+            <input type="text" name="txt_telefono" class="form-control {% if form.txt_telefono.errors %}is-invalid{% endif %}" placeholder="Ej: 3001234567" value="{{ form.data.txt_telefono|default:'' }}" />
+            {% if form.txt_telefono.errors %}
+            <div class="invalid-feedback">{{ form.txt_telefono.errors.0 }}</div>
+            {% endif %}
         </div>
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Cédula *</label>
-            <input type="text" name="txt_documento" class="form-control" required placeholder="Número de identificación" />
+            <input type="text" name="txt_documento" class="form-control {% if form.txt_documento.errors %}is-invalid{% endif %}" required placeholder="Número de identificación" value="{{ form.data.txt_documento|default:'' }}" />
+            {% if form.txt_documento.errors %}
+            <div class="invalid-feedback">{{ form.txt_documento.errors.0 }}</div>
+            {% endif %}
         </div>
+
         <div class="col-md-6">
           <label class="form-label fw-semibold">Ciudad *</label>
-            <input type="text" name="txt_ciudad" class="form-control" required placeholder="Ej: Bogotá" />
+            <select id="ciudad" name="txt_ciudad" class="form-select {% if form.txt_ciudad.errors %}is-invalid{% endif %}" required>
+              <option value="">Seleccione una ciudad</option>
+              {% if form.data.txt_ciudad %}
+              <option value="{{ form.data.txt_ciudad }}" selected>{{ form.data.txt_ciudad }}</option>
+              {% endif %}
+            </select>
+            {% if form.txt_ciudad.errors %}
+            <div class="invalid-feedback">{{ form.txt_ciudad.errors.0 }}</div>
+            {% endif %}
         </div>
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Departamento *</label>
-            <input type="text" name="txt_departamento" class="form-control" required placeholder="Ej: Cundinamarca" />
+            <input type="text" name="txt_departamento" class="form-control {% if form.txt_departamento.errors %}is-invalid{% endif %}" required placeholder="Ej: Cundinamarca" value="{{ form.data.txt_departamento|default:'' }}" />
+            {% if form.txt_departamento.errors %}
+            <div class="invalid-feedback">{{ form.txt_departamento.errors.0 }}</div>
+            {% endif %}
         </div>
-        <div class="col-md-6">
+
+        <!-- ===== [CAMBIADO] Dirección detallada (campos de RegistroUsuarioForm) ===== -->
+        <div class="col-12">
           <label class="form-label fw-semibold">Dirección *</label>
-            <input type="text" name="txt_direccion" class="form-control" required placeholder="Ej: Calle 10 #20-30" />
+          <div class="row g-2">
+            <div class="col-md-2">
+              <select name="txt_direccion_tipo" class="form-select {% if form.txt_direccion_tipo.errors %}is-invalid{% endif %}">
+                <option value="">Tipo</option>
+                {% for value, label in form.fields.txt_direccion_tipo.choices %}
+                <option value="{{ value }}" {% if form.data.txt_direccion_tipo == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              {% if form.txt_direccion_tipo.errors %}
+              <div class="invalid-feedback">{{ form.txt_direccion_tipo.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-2">
+              <input type="text" name="txt_direccion_numero1" class="form-control {% if form.txt_direccion_numero1.errors %}is-invalid{% endif %}" placeholder="N°" value="{{ form.data.txt_direccion_numero1|default:'' }}" />
+              {% if form.txt_direccion_numero1.errors %}
+              <div class="invalid-feedback">{{ form.txt_direccion_numero1.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-2">
+              <input type="text" name="txt_direccion_letra" class="form-control {% if form.txt_direccion_letra.errors %}is-invalid{% endif %}" placeholder="Letra" value="{{ form.data.txt_direccion_letra|default:'' }}" />
+              {% if form.txt_direccion_letra.errors %}
+              <div class="invalid-feedback">{{ form.txt_direccion_letra.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-2">
+              <input type="text" name="txt_direccion_numero2" class="form-control {% if form.txt_direccion_numero2.errors %}is-invalid{% endif %}" placeholder="#" value="{{ form.data.txt_direccion_numero2|default:'' }}" />
+              {% if form.txt_direccion_numero2.errors %}
+              <div class="invalid-feedback">{{ form.txt_direccion_numero2.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-2">
+              <input type="text" name="txt_direccion_numero3" class="form-control {% if form.txt_direccion_numero3.errors %}is-invalid{% endif %}" placeholder="-" value="{{ form.data.txt_direccion_numero3|default:'' }}" />
+              {% if form.txt_direccion_numero3.errors %}
+              <div class="invalid-feedback">{{ form.txt_direccion_numero3.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-2 d-flex align-items-center">
+              <span class="text-muted small">Ej: Cra 10A #20-30</span>
+            </div>
+          </div>
         </div>
         </div>
 
         <hr class="my-4">
 
-        <!-- Selección de Rol -->
+        <!-- ===== [CAMBIADO] Role select: error inline y SERVICIO corregido a ASESOR (coherente con el form) ===== -->
         <h5 class="text-success mb-3">
         <i class="bi bi-shield-check me-2"></i>
         Tipo de Cuenta
@@ -108,12 +184,15 @@
         <div class="row g-3">
         <div class="col-12">
           <label class="form-label fw-semibold">Selecciona tu rol *</label>
-            <select name="role" id="roleSelect" class="form-select form-select-lg" required>
-            <option value="CLIENTE" selected>Cliente - Comprador de productos</option>
-            <option value="PRODUCTOR">Productor - Vendo productos agrícolas</option>
-            <option value="TRANSPORTISTA">Transportista - Ofrezco servicio de transporte</option>
-            <option value="SERVICIO">Prestador de servicio - Ofrezco asesorías</option>
+            <select name="role" id="roleSelect" class="form-select form-select-lg {% if form.role.errors %}is-invalid{% endif %}" required>
+            <option value="CLIENTE" {% if form.data.role == 'CLIENTE' or not form.data.role %}selected{% endif %}>Cliente - Comprador de productos</option>
+            <option value="PRODUCTOR" {% if form.data.role == 'PRODUCTOR' %}selected{% endif %}>Productor - Vendo productos agrícolas</option>
+            <option value="TRANSPORTISTA" {% if form.data.role == 'TRANSPORTISTA' %}selected{% endif %}>Transportista - Ofrezco servicio de transporte</option>
+            <option value="ASESOR" {% if form.data.role == 'ASESOR' %}selected{% endif %}>Prestador de servicio - Ofrezco asesorías</option>
             </select>
+            {% if form.role.errors %}
+            <div class="invalid-feedback">{{ form.role.errors.0 }}</div>
+            {% endif %}
             <div class="form-text">
             <i class="bi bi-info-circle me-1"></i>
             Selecciona el rol que mejor describa tu actividad en la plataforma
@@ -135,7 +214,7 @@
             <div class="row g-3">
             <div class="col-12">
                 <label class="form-label fw-semibold">Preferencias de compra</label>
-                <textarea name="txt_preferencias" class="form-control" rows="3" placeholder="Ej: Prefiero productos orgánicos, entrega los fines de semana, etc.">Sin Preferencias</textarea>
+                <textarea name="txt_preferencias" class="form-control" rows="3" placeholder="Ej: Prefiero productos orgánicos, entrega los fines de semana, etc.">{{ form.data.txt_preferencias|default:'Sin Preferencias' }}</textarea>
                 <div class="form-text">
                 <i class="bi bi-lightbulb me-1"></i>
                 Cuéntanos tus preferencias para personalizar tu experiencia
@@ -155,10 +234,10 @@
               <label class="form-label fw-semibold">Tipo de cultivo principal *</label>
                 <select name="txt_tipoCultivo" class="form-select">
                 <option value="">Selecciona un tipo de cultivo</option>
-                <option value="Policultivo">Policultivo (produzco varios productos)</option>
-                <option value="Monocultivo">Monocultivo (produzco un solo producto)</option>
-                <option value="Huerta">Granos (produzco desde mi huerta uno o varios productos)</option>
-                <option value="Otros">Otros cultivos</option>
+                <option value="Policultivo" {% if form.data.txt_tipoCultivo == 'Policultivo' %}selected{% endif %}>Policultivo (produzco varios productos)</option>
+                <option value="Monocultivo" {% if form.data.txt_tipoCultivo == 'Monocultivo' %}selected{% endif %}>Monocultivo (produzco un solo producto)</option>
+                <option value="Huerta" {% if form.data.txt_tipoCultivo == 'Huerta' %}selected{% endif %}>Granos (produzco desde mi huerta uno o varios productos)</option>
+                <option value="Otros" {% if form.data.txt_tipoCultivo == 'Otros' %}selected{% endif %}>Otros cultivos</option>
                 </select>
                 <div class="form-text">
                 <i class="bi bi-info-circle me-1"></i>
@@ -177,7 +256,7 @@
             <div class="row g-3">
             <div class="col-12">
               <label class="form-label fw-semibold">Zonas de entrega / Cobertura *</label>
-                <textarea name="txt_zonasEntrega" class="form-control" rows="3" placeholder="Ej: Bogotá, Cundinamarca, Boyacá. Radio de 100km desde Bogotá."></textarea>
+                <textarea name="txt_zonasEntrega" class="form-control" rows="3" placeholder="Ej: Bogotá, Cundinamarca, Boyacá. Radio de 100km desde Bogotá.">{{ form.data.txt_zonasEntrega|default:'' }}</textarea>
                 <div class="form-text">
                 <i class="bi bi-geo-alt me-1"></i>
                 Especifica las ciudades, departamentos o regiones donde ofreces el servicio
@@ -197,16 +276,16 @@
               <label class="form-label fw-semibold">Tipo de asesoría que ofreces *</label>
                 <select name="txt_tipoAsesoria" class="form-select">
                 <option value="">Selecciona un tipo de asesoría</option>
-                <option value="Tecnica_Agricola">Técnica Agrícola</option>
-                <option value="Control_Plagas">Control de Plagas y Enfermedades</option>
-                <option value="Fertilizacion">Fertilización y Suelos</option>
-                <option value="Riego">Sistemas de Riego</option>
-                <option value="Cosecha">Cosecha y Postcosecha</option>
-                <option value="Organica">Agricultura Orgánica</option>
-                <option value="Certificaciones">Certificaciones (BPA, Orgánico, etc.)</option>
-                <option value="Financiera">Asesoría Financiera</option>
-                <option value="Comercializacion">Comercialización</option>
-                <option value="Otra">Otra especialidad</option>
+                <option value="Tecnica_Agricola" {% if form.data.txt_tipoAsesoria == 'Tecnica_Agricola' %}selected{% endif %}>Técnica Agrícola</option>
+                <option value="Control_Plagas" {% if form.data.txt_tipoAsesoria == 'Control_Plagas' %}selected{% endif %}>Control de Plagas y Enfermedades</option>
+                <option value="Fertilizacion" {% if form.data.txt_tipoAsesoria == 'Fertilizacion' %}selected{% endif %}>Fertilización y Suelos</option>
+                <option value="Riego" {% if form.data.txt_tipoAsesoria == 'Riego' %}selected{% endif %}>Sistemas de Riego</option>
+                <option value="Cosecha" {% if form.data.txt_tipoAsesoria == 'Cosecha' %}selected{% endif %}>Cosecha y Postcosecha</option>
+                <option value="Organica" {% if form.data.txt_tipoAsesoria == 'Organica' %}selected{% endif %}>Agricultura Orgánica</option>
+                <option value="Certificaciones" {% if form.data.txt_tipoAsesoria == 'Certificaciones' %}selected{% endif %}>Certificaciones (BPA, Orgánico, etc.)</option>
+                <option value="Financiera" {% if form.data.txt_tipoAsesoria == 'Financiera' %}selected{% endif %}>Asesoría Financiera</option>
+                <option value="Comercializacion" {% if form.data.txt_tipoAsesoria == 'Comercializacion' %}selected{% endif %}>Comercialización</option>
+                <option value="Otra" {% if form.data.txt_tipoAsesoria == 'Otra' %}selected{% endif %}>Otra especialidad</option>
                 </select>
                 <div class="form-text">
                 <i class="bi bi-award me-1"></i>
@@ -284,8 +363,8 @@
     // Agregar required solo a los campos del rol activo
     const activeFields = document.querySelector('.role-field.active');
     if (activeFields) {
-        activeFields.querySelectorAll('select, input[name="zonasEntrega"]').forEach(field => {
-        if (field.name !== 'preferencias') { // Preferencias no es obligatorio
+        activeFields.querySelectorAll('select, textarea').forEach(field => {
+        if (field.name !== 'txt_preferencias') { // Preferencias no es obligatorio
             field.setAttribute('required', 'required');
         }
         });
@@ -294,6 +373,46 @@
 
   // Inicializar los campos requeridos al cargar la página
     updateRequiredFields('CLIENTE');
+
+  // ===== [CAMBIADO] Validación de confirmación de contraseña en cliente =====
+  const password = document.querySelector('[name="txt_contrasena"]');
+  const confirmPassword = document.querySelector('[name="txt_contrasena_confirm"]');
+
+  function validatePasswordMatch() {
+    if (confirmPassword.value && password.value !== confirmPassword.value) {
+      confirmPassword.classList.add('is-invalid');
+      if (!confirmPassword.nextElementSibling || !confirmPassword.nextElementSibling.classList.contains('invalid-feedback')) {
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = 'Las contraseñas no coinciden.';
+        confirmPassword.parentNode.appendChild(feedback);
+      }
+    } else {
+      confirmPassword.classList.remove('is-invalid');
+    }
+  }
+
+  if (password && confirmPassword) {
+    password.addEventListener('input', validatePasswordMatch);
+    confirmPassword.addEventListener('input', validatePasswordMatch);
+  }
+
+  // ===== [CAMBIADO] Carga de ciudades desde el API de Cundinamarca =====
+  async function cargarCiudades() {
+    const res = await fetch("/api/cundinamarca/ciudades/");
+    const result = await res.json();
+    const select = document.getElementById("ciudad");
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">Seleccione una ciudad</option>';
+    if (result.data) {
+      result.data.forEach(c => {
+        select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+      });
+    }
+    select.innerHTML += `<option value="Bogotá">Bogotá</option>`;
+    if (currentValue) select.value = currentValue;
+  }
+  cargarCiudades();
 </script>
 
 </body>

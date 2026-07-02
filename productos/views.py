@@ -345,6 +345,39 @@ def agregar_al_carrito(request, producto_id):
         }
     )
 
+    # VALIDAR FINCA ÚNICA
+    from productos.models import ProductoFinca
+    nuevas_fincas = set(ProductoFinca.objects.filter(
+        id_producto=producto
+    ).values_list('id_finca_id', flat=True))
+
+    if not nuevas_fincas:
+        messages.error(
+            request,
+            "Este producto no tiene una finca asignada. No se puede agregar al carrito."
+        )
+        return redirect('carrito')
+
+    detalles_existentes = DetallesCompra.objects.filter(
+        id_compra=compra
+    ).exclude(id_producto=producto)
+
+    if detalles_existentes.exists():
+        fincas_existentes = set()
+        for det in detalles_existentes:
+            fincas = ProductoFinca.objects.filter(
+                id_producto=det.id_producto
+            ).values_list('id_finca_id', flat=True)
+            fincas_existentes.update(fincas)
+
+        if not (nuevas_fincas & fincas_existentes):
+            messages.error(
+                request,
+                "Solo puedes comprar productos de una misma finca por pedido. "
+                "Si deseas este producto, finaliza la compra actual o inicia una nueva."
+            )
+            return redirect('carrito')
+
     # DETALLE
     detalle, created = DetallesCompra.objects.get_or_create(
         id_compra=compra,
@@ -946,6 +979,14 @@ def mis_ventas(request):
 
     for p in pedidos_alistar:
         p.envio = envios_dict.get(p.id_compra)
+        for d in p.detallescompra_set.all():
+            stock_actual = d.id_producto.stock
+            if stock_actual is not None:
+                d.stock_antes = stock_actual + d.cantidad
+                d.stock_despues = stock_actual
+            else:
+                d.stock_antes = None
+                d.stock_despues = None
 
     #  GRÁFICA GENERAL
     ventas_chart = (

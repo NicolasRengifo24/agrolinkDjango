@@ -64,6 +64,37 @@ def carrito(request):
             lat_origen = finca.latitud
             lng_origen = finca.longitud
 
+    # 3b Verificar que todos los productos compartan al menos una finca
+    misma_finca = True
+    finca_comun_ids = None
+    if detalles:
+        from productos.models import ProductoFinca, Producto
+        fincas_por_detalle = []
+        for det in detalles:
+            fincas = set(ProductoFinca.objects.filter(
+                id_producto=det.id_producto
+            ).values_list('id_finca_id', flat=True))
+            fincas_por_detalle.append(fincas)
+
+        if fincas_por_detalle:
+            finca_comun_ids = fincas_por_detalle[0]
+            for f in fincas_por_detalle[1:]:
+                finca_comun_ids = finca_comun_ids & f
+                if not finca_comun_ids:
+                    misma_finca = False
+                    break
+
+    # Productos recomendados de la misma finca
+    productos_recomendados = []
+    if finca_comun_ids and detalles:
+        productos_ids = [d.id_producto.id_producto for d in detalles]
+        productos_recomendados = Producto.objects.filter(
+            fincas__in=finca_comun_ids,
+            estado=True
+        ).exclude(
+            id_producto__in=productos_ids
+        ).distinct()[:4]
+
     # 4️ Referencia única para ePayco
     referencia_unica = None
     if compra:
@@ -81,7 +112,9 @@ def carrito(request):
     'epayco_key': settings.EPAYCO_PUBLIC_KEY,
     'total_epayco': f"{compra.total:.2f}" if compra else '0.00',
 
-    
+    'misma_finca': misma_finca,
+    'productos_recomendados': productos_recomendados,
+
     'url_respuesta': f"{settings.BASE_URL}/respuesta-pago/",
     'url_confirmacion': f"{settings.BASE_URL}/confirmacion-pago/",
     'cart_count': cart_count,

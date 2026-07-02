@@ -77,8 +77,7 @@
                             <i class="bi bi-pencil"></i>
                         </a>
                         <a href="{% url 'toggle_estado_producto_admin' p.id_producto %}"
-                           class="btn btn-sm {% if p.estado %}btn-warning{% else %}btn-success{% endif %}"
-                           onclick="return confirm('¿{% if p.estado %}Inhabilitar{% else %}Habilitar{% endif %} este producto?')">
+                           class="btn btn-sm {% if p.estado %}btn-warning{% else %}btn-success{% endif %}">
                             {% if p.estado %}
                             <i class="bi bi-eye-slash"></i>
                             {% else %}

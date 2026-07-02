@@ -608,19 +608,51 @@ def toggle_estado_producto_admin(request, id):
     producto = get_object_or_404(Producto, id_producto=id)
     inhabilitando = producto.estado
 
-    producto.estado = not producto.estado
-    producto.save()
-
+    # Si se está inhabilitando, verificar pedidos pendientes de despacho
     if inhabilitando:
-        tiene_ordenes = DetallesCompra.objects.filter(
+        from django.db.models import Exists, OuterRef
+        envio_despachado = Envio.objects.filter(
+            id_compra=OuterRef('id_compra'),
+            estado_envio__in=['En_Transito', 'Entregado']
+        )
+        pedidos_pendientes = DetallesCompra.objects.filter(
             id_producto=producto,
             id_compra__estado__in=['pagado', 'pendiente'],
-        ).exists()
-        if tiene_ordenes:
-            messages.warning(
-                request,
-                f'El producto "{producto.nombre_producto}" está asociado a pedidos activos.'
-            )
+        ).annotate(
+            tiene_envio_despachado=Exists(envio_despachado)
+        ).filter(
+            tiene_envio_despachado=False
+        ).select_related(
+            'id_compra__id_cliente__id_usuario'
+        )
+
+        if pedidos_pendientes.exists():
+            if request.method == 'POST':
+                # Confirmación: inhabilitar
+                producto.estado = False
+                producto.save()
+                messages.success(request, f"Producto {producto.nombre_producto} inhabilitado correctamente")
+                return redirect('ver_lista_productos_admin')
+            else:
+                # Mostrar confirmación con pedidos afectados
+                pedidos_info = []
+                for det in pedidos_pendientes:
+                    envio = Envio.objects.filter(id_compra=det.id_compra).first()
+                    pedidos_info.append({
+                        'id_compra': det.id_compra.id_compra,
+                        'cliente': f"{det.id_compra.id_cliente.id_usuario.nombre} {det.id_compra.id_cliente.id_usuario.apellido}",
+                        'cantidad': det.cantidad,
+                        'fecha': det.id_compra.fecha_hora_compra,
+                        'estado_envio': envio.estado_envio if envio else 'Sin asignar',
+                    })
+                return render(request, 'admin_productos/confirmar_inhabilitar.html', {
+                    'producto': producto,
+                    'pedidos_info': pedidos_info,
+                })
+
+    # Sin pedidos pendientes → toggle directo
+    producto.estado = not producto.estado
+    producto.save()
 
     accion = "inhabilitado" if not producto.estado else "habilitado"
     messages.success(request, f"Producto {producto.nombre_producto} {accion} correctamente")
@@ -893,95 +925,86 @@ def cerrar_sesion(request):
     
 
 
-#admin crea usuario
+# ===== [CAMBIADO] crear_usuario_admin ahora usa RegistroUsuarioForm para validar =====
+# Antes: validaciones inline manuales con request.POST.get y messages.error
+# Ahora: usa RegistroUsuarioForm (mismas reglas que forms.py), errores inline en template
 
 #@admin_required
 def crear_usuario_admin(request):
     if request.method == 'POST':
-        nombre = request.POST.get('txt_nombre')
-        apellido = request.POST.get('txt_apellido')
-        username = request.POST.get('txt_nombreUsuario')
-        correo = request.POST.get('txt_correo')
-        password = request.POST.get('txt_contrasena')
+        form = RegistroUsuarioForm(request.POST)
+
+        # Validar confirmación de contraseña (no está en RegistroUsuarioForm)
         confirm_password = request.POST.get('txt_contrasena_confirm')
-        telefono = request.POST.get('txt_telefono')
-        documento = request.POST.get('txt_documento')
-        ciudad = request.POST.get('txt_ciudad')
-        departamento = request.POST.get('txt_departamento')
-        direccion = request.POST.get('txt_direccion')
-        rol = request.POST.get('role')
+        if confirm_password != request.POST.get('txt_contrasena'):
+            form.add_error('txt_contrasena', 'Las contraseñas no coinciden.')
 
-        #  Validaciones
-        errores = []
+        if form.is_valid():
+            cleaned = form.cleaned_data
 
-        if User.objects.filter(username=username).exists() or Usuario.objects.filter(nombre_usuario=username).exists():
-            errores.append("El nombre de usuario ya está registrado.")
+            # Construir dirección compuesta desde campos detallados del form
+            direccion_tipo = cleaned.get('txt_direccion_tipo', '')
+            direccion_numero1 = cleaned.get('txt_direccion_numero1', '')
+            direccion_letra = cleaned.get('txt_direccion_letra', '')
+            direccion_numero2 = cleaned.get('txt_direccion_numero2', '')
+            direccion_numero3 = cleaned.get('txt_direccion_numero3', '')
+            letra = f" {direccion_letra}" if direccion_letra else ""
+            direccion = f"{direccion_tipo} {direccion_numero1}{letra} #{direccion_numero2}-{direccion_numero3}"
 
-        if User.objects.filter(email=correo).exists() or Usuario.objects.filter(correo=correo).exists():
-            errores.append("El correo electrónico ya está registrado.")
-
-        if len(password) < 6:
-            errores.append("La contraseña debe tener al menos 6 caracteres.")
-
-        if password != confirm_password:
-            errores.append("Las contraseñas no coinciden.")
-
-        if errores:
-            for error in errores:
-                messages.error(request, error)
-            return redirect('crear_usuario')
-
-        #  Crear User estándar (contraseña encriptada automáticamente)
-        user = User.objects.create_user(
-            username=username,
-            email=correo,
-            password=password,   # Django la encripta
-            first_name=nombre,
-            last_name=apellido
-        )
-
-        #  Crear Usuario extendido (datos adicionales)
-        usuario = Usuario.objects.create(
-            user=user,
-            nombre=nombre,
-            apellido=apellido,
-            nombre_usuario=username,   # <- aquí llenas el campo único
-            correo=correo,
-            cedula=documento,
-            ciudad=ciudad,
-            departamento=departamento,
-            direccion=direccion,
-            telefono=telefono,
-            rol=rol,
-            estado=True
-        )
-
-        #  Crear según rol
-        if rol.upper() == "CLIENTE":
-            Cliente.objects.create(
-                id_usuario=usuario,
-                preferencias=request.POST.get("txt_preferencias")
-            )
-        elif rol.upper() == "PRODUCTOR":
-            Productor.objects.create(
-                id_usuario=usuario,
-                tipo_cultivo=request.POST.get("txt_tipoCultivo")
-            )
-        elif rol.upper() == "TRANSPORTISTA":
-            Transportista.objects.create(
-                id_usuario=usuario,
-                zonas_entrega=request.POST.get("txt_zonasEntrega")
-            )
-        elif rol.upper() == "ASESOR":
-            Asesor.objects.create(
-                id_usuario=usuario,
-                tipo_asesoria=request.POST.get("txt_tipoAsesoria")
+            # Crear User Django
+            user = User.objects.create_user(
+                username=cleaned['txt_nombreUsuario'],
+                email=cleaned['txt_correo'],
+                password=cleaned['txt_contrasena'],
+                first_name=cleaned['txt_nombre'],
+                last_name=cleaned['txt_apellido']
             )
 
-        messages.success(request, "Usuario registrado correctamente")
-        return redirect('ver_listas_usuarios_admin')
+            # Crear Usuario extendido
+            usuario = Usuario.objects.create(
+                user=user,
+                nombre=cleaned['txt_nombre'],
+                apellido=cleaned['txt_apellido'],
+                nombre_usuario=cleaned['txt_nombreUsuario'],
+                correo=cleaned['txt_correo'],
+                cedula=cleaned['txt_documento'],
+                ciudad=cleaned['txt_ciudad'],
+                departamento=cleaned['txt_departamento'],
+                direccion=direccion,
+                telefono=cleaned.get('txt_telefono', ''),
+                rol=cleaned['role'],
+                estado=True
+            )
 
-    return render(request, 'admin_usuarios/registrar_usuario.html')
+            # Crear según rol
+            rol = cleaned['role']
+            if rol == "CLIENTE":
+                Cliente.objects.create(
+                    id_usuario=usuario,
+                    preferencias=request.POST.get("txt_preferencias", "")
+                )
+            elif rol == "PRODUCTOR":
+                Productor.objects.create(
+                    id_usuario=usuario,
+                    tipo_cultivo=request.POST.get("txt_tipoCultivo", "")
+                )
+            elif rol == "TRANSPORTISTA":
+                Transportista.objects.create(
+                    id_usuario=usuario,
+                    zonas_entrega=request.POST.get("txt_zonasEntrega", "")
+                )
+            elif rol == "ASESOR":
+                Asesor.objects.create(
+                    id_usuario=usuario,
+                    tipo_asesoria=request.POST.get("txt_tipoAsesoria", "")
+                )
+
+            messages.success(request, "Usuario registrado correctamente")
+            return redirect('ver_listas_usuarios_admin')
+    else:
+        form = RegistroUsuarioForm()
+
+    return render(request, 'admin_usuarios/registrar_usuario.html', {'form': form})
 
 
 def editar_usuario_admin(request, id):

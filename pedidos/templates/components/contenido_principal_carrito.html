@@ -29,6 +29,29 @@
 
     {% else %}
 
+    <!-- INFO BANNER: Política de finca única -->
+    <div class="alert alert-info d-flex align-items-center" role="alert" data-aos="fade-down">
+        <i class="bi bi-truck fs-4 me-3"></i>
+        <div>
+            <strong>Recolección en una sola finca</strong><br>
+            Por logística de envío, todos los productos de un pedido deben pertenecer a la misma finca.
+            Si deseas productos de otra finca, realiza una compra separada.
+        </div>
+    </div>
+
+    <!-- WARNING: Productos de fincas mixtas -->
+    {% if not misma_finca %}
+    <div class="alert alert-danger d-flex align-items-center" role="alert" data-aos="fade-down">
+        <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+        <div>
+            <strong>Productos de diferentes fincas</strong><br>
+            Tu carrito contiene productos de distintas fincas.
+            Para continuar, elimina los productos que no correspondan a la
+            finca principal o realiza compras separadas.
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row g-4">
 
         <!-- PRODUCTOS -->
@@ -196,7 +219,7 @@
 
     <hr class="my-5">
 
-    {% include 'components/recomendados_carrito.html' %}
+    {% include 'components/recomendados_carrito.html' with productos=productos_recomendados %}
 
 </div>
 

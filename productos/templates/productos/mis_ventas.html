@@ -144,6 +144,8 @@
                         <th>Cliente</th>
                         <th>Producto</th>
                         <th>Cantidad</th>
+                        <th>Stock Antes</th>
+                        <th>Stock Actual</th>
                         <th>Transportista</th>
                         <th>Fecha recolección</th>
                         <th>Estado envío</th>
@@ -167,6 +169,12 @@
 
                         <!-- CANTIDAD -->
                         <td>{{ d.cantidad }}</td>
+
+                        <!-- STOCK ANTES DE LA COMPRA -->
+                        <td>{{ d.stock_antes|default:"-" }}</td>
+
+                        <!-- STOCK DESPUÉS DE LA COMPRA -->
+                        <td>{{ d.stock_despues|default:"-" }}</td>
 
                         <!-- TRANSPORTISTA -->
                         <td>
