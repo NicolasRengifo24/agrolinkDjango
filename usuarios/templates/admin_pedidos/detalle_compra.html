@@ -66,6 +66,8 @@
             <th>Cantidad</th>
             <th>Precio unitario</th>
             <th>Subtotal</th>
+            <th>Stock antes</th>
+            <th>Stock después</th>
           </tr>
         </thead>
 
@@ -99,10 +101,26 @@
             <td class="td-subtotal">
               ${{ d.subtotal|floatformat:0|intcomma }}
             </td>
+
+            <td class="td-stock">
+              {% if d.id_producto.stock is not None %}
+                {{ d.id_producto.stock|add:d.cantidad }}
+              {% else %}
+                <span class="text-muted">Ilimitado</span>
+              {% endif %}
+            </td>
+
+            <td class="td-stock">
+              {% if d.id_producto.stock is not None %}
+                {{ d.id_producto.stock }}
+              {% else %}
+                <span class="text-muted">Ilimitado</span>
+              {% endif %}
+            </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="6" style="text-align:center; padding:24px; color:gray;">
+            <td colspan="8" style="text-align:center; padding:24px; color:gray;">
               No hay productos en esta compra.
             </td>
           </tr>
