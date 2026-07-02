@@ -27,6 +27,7 @@ urlpatterns = [
     path('productor/productos/nuevo/', views.crear_producto, name='crear_producto'),
     path('productor/productos/buscar/', views.buscar_productos, name='buscar_productos'),
     path('productor/productos/toggle-estado/<int:producto_id>/', views.toggle_estado_producto, name='toggle_estado_producto'),
+    path('productor/productos/check-pedidos/<int:producto_id>/', views.check_pedidos_pendientes_api, name='check_pedidos_pendientes'),
     
     
     path('productos/<int:producto_id>/detalles/', views.ver_producto_detalles, name='ver_producto_detalles'),

@@ -875,16 +875,20 @@ def editar_producto(request, producto_id):
 
 @login_required
 def toggle_estado_producto(request, producto_id):
-    """Vista para inhabilitar/habilitar un producto (en lugar de eliminarlo)"""
+    """Vista para inhabilitar/habilitar un producto (soporta GET con redirect y POST JSON)"""
     producto = get_object_or_404(Producto, id_producto=producto_id)
     
     # Verificar permiso
     try:
         productor = request.user.usuario.productor
         if producto.id_usuario != productor:
+            if request.method == 'POST':
+                return JsonResponse({'error': 'No tienes permiso'}, status=403)
             messages.error(request, 'No tienes permiso para modificar este producto')
             return redirect('lista_productos')
     except (AttributeError, Productor.DoesNotExist):
+        if request.method == 'POST':
+            return JsonResponse({'error': 'No tienes permiso'}, status=403)
         messages.error(request, 'No tienes permiso para modificar productos')
         return redirect('lista_productos')
     
@@ -892,9 +896,53 @@ def toggle_estado_producto(request, producto_id):
     producto.estado = not producto.estado
     producto.save()
     
+    if request.method == 'POST':
+        return JsonResponse({
+            'success': True,
+            'estado': producto.estado,
+            'mensaje': f'Producto {"habilitado" if producto.estado else "inhabilitado"} correctamente'
+        })
+    
     accion = "inhabilitado" if not producto.estado else "habilitado"
     messages.success(request, f'Producto "{producto.nombre_producto}" {accion} correctamente')
     return redirect('lista_productos')
+
+
+@login_required
+def check_pedidos_pendientes_api(request, producto_id):
+    """API JSON: retorna pedidos pendientes de despacho de un producto"""
+    producto = get_object_or_404(Producto, id_producto=producto_id)
+    
+    from django.db.models import Exists, OuterRef
+    
+    envio_despachado = Envio.objects.filter(
+        id_compra=OuterRef('id_compra'),
+        estado_envio__in=['En_Transito', 'Entregado']
+    )
+    
+    pedidos_pendientes = DetallesCompra.objects.filter(
+        id_producto=producto,
+        id_compra__estado__in=['pagado', 'pendiente'],
+    ).annotate(
+        tiene_envio_despachado=Exists(envio_despachado)
+    ).filter(
+        tiene_envio_despachado=False
+    ).select_related(
+        'id_compra__id_cliente__id_usuario'
+    )
+    
+    data = []
+    for det in pedidos_pendientes:
+        envio = Envio.objects.filter(id_compra=det.id_compra).first()
+        data.append({
+            'id_compra': det.id_compra.id_compra,
+            'cliente': f"{det.id_compra.id_cliente.id_usuario.nombre} {det.id_compra.id_cliente.id_usuario.apellido}",
+            'cantidad': det.cantidad,
+            'fecha': det.id_compra.fecha_hora_compra.strftime('%d/%m/%Y %H:%M'),
+            'estado_envio': envio.estado_envio if envio else 'Sin asignar',
+        })
+    
+    return JsonResponse({'pendientes': data, 'total': len(data)})
 
 
 

@@ -3,6 +3,7 @@
 {% load humanize %}
 
 {% block content %}
+<form style="display:none;">{% csrf_token %}</form>
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-box-seam me-2"></i>Administra Tus Productos</h2>
@@ -257,11 +258,14 @@
                                 data-bs-target="#editarProductoModal" data-producto-id="{{ producto.id_producto }}">
                                 <i class="bi bi-pencil"></i> Editar
                             </button>
-                            <a href="{% url 'toggle_estado_producto' producto.id_producto %}"
-                               class="btn flex-fill {% if producto.estado %}btn-warning text-dark{% else %}btn-success{% endif %}">
+                            <button type="button"
+                               class="btn flex-fill {% if producto.estado %}btn-warning text-dark{% else %}btn-success{% endif %}"
+                               data-producto-id="{{ producto.id_producto }}"
+                               data-activo="{{ producto.estado|lower }}"
+                               onclick="inhabilitarProducto(this)">
                                 <i class="bi bi-{% if producto.estado %}eye-slash{% else %}eye{% endif %}"></i>
                                 {% if producto.estado %}Inhabilitar{% else %}Habilitar{% endif %}
-                            </a>
+                            </button>
                         </div>
 
                         <!-- Modal Ver Producto -->
@@ -320,13 +324,128 @@
         {% endfor %}
     </div>
 
-    <div class="mt-4">
-        <a href="{}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver al inicio
-        </a>
+    
+</div>
+
+<!-- Modal Confirmar Inhabilitación -->
+<div class="modal fade" id="modalConfirmarInhabilitar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i> Producto con pedidos pendientes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-3">
+                    <strong>Este producto tiene pedidos pendientes de despacho.</strong>
+                    Inhabilitarlo no cancelará estos pedidos, pero impedirá nuevas compras.
+                </div>
+                <div id="modalInhabilitarBody">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-warning" role="status"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning text-dark" id="btnConfirmarInhabilitar">
+                    <i class="bi bi-eye-slash"></i> Sí, inhabilitar producto
+                </button>
+            </div>
+        </div>
     </div>
 </div>
+
 <script>
+// Variable global para el productoId que se está inhabilitando
+var productoIdInhabilitar = null;
+
+function inhabilitarProducto(btn) {
+    var id = btn.getAttribute('data-producto-id');
+    var activo = btn.getAttribute('data-activo') === 'true';
+
+    // Si está inactivo (habilitar), redirigir directo
+    if (!activo) {
+        fetch("{% url 'toggle_estado_producto' 0 %}".replace('/0/', '/' + id + '/'), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) { location.reload(); }
+        });
+        return;
+    }
+
+    // Está activo → verificar pedidos pendientes
+    fetch("{% url 'check_pedidos_pendientes' 0 %}".replace('/0/', '/' + id + '/'))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.total > 0) {
+                productoIdInhabilitar = id;
+                var html = '<div class="table-responsive"><table class="table table-hover align-middle mb-0">';
+                html += '<thead class="table-dark"><tr><th># Pedido</th><th>Cliente</th><th>Cantidad</th><th>Fecha</th><th>Estado envío</th></tr></thead><tbody>';
+                data.pendientes.forEach(function(p) {
+                    var badge = 'bg-secondary';
+                    if (p.estado_envio === 'Asignado') badge = 'bg-info';
+                    else if (p.estado_envio === 'pendiente') badge = 'bg-warning text-dark';
+                    html += '<tr>';
+                    html += '<td><strong>#' + p.id_compra + '</strong></td>';
+                    html += '<td>' + p.cliente + '</td>';
+                    html += '<td>' + p.cantidad + '</td>';
+                    html += '<td>' + p.fecha + '</td>';
+                    html += '<td><span class="badge ' + badge + '">' + p.estado_envio + '</span></td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+                document.getElementById('modalInhabilitarBody').innerHTML = html;
+                var modal = new bootstrap.Modal(document.getElementById('modalConfirmarInhabilitar'));
+                modal.show();
+            } else {
+                // Sin pedidos pendientes → toggle directo via POST
+                fetch("{% url 'toggle_estado_producto' 0 %}".replace('/0/', '/' + id + '/'), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data.success) { location.reload(); }
+        });
+    }
+
+    // --- Modal: Confirmar inhabilitación ---
+    document.getElementById('btnConfirmarInhabilitar').addEventListener('click', function() {
+        if (!productoIdInhabilitar) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Inhabilitando...';
+        fetch("{% url 'toggle_estado_producto' 0 %}".replace('/0/', '/' + productoIdInhabilitar + '/'), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) {
+                var modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarInhabilitar'));
+                modal.hide();
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Error desconocido'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-eye-slash"></i> Sí, inhabilitar producto';
+            }
+        }).catch(function() {
+            alert('Error de conexión');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-eye-slash"></i> Sí, inhabilitar producto';
+        });
+    });
+});
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     console.log("JS cargado");
 
