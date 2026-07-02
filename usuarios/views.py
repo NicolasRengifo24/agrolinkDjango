@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from datetime import datetime
 from django.http import HttpResponse
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
@@ -401,18 +401,28 @@ def ver_lista_productos_admin(request):
     productos = Producto.objects.select_related('id_usuario', 'id_categoria').all()
     categorias = CategoriaProducto.objects.all()
     
-    total_producto = Producto.objects.filter().count()
-    stock_alto = Producto.objects.filter(stock__gte=100).count()
-    stock_bajo = Producto.objects.filter(stock__lt=50).count()
+    total_producto = Producto.objects.filter(estado=True, stock__gt=0).count()
+    stock_agotado = Producto.objects.filter(stock=0).count()
+    stock_bajo = Producto.objects.filter(stock__lt=10, stock__gt=0).count()
     productores_activos= Producto.objects.values('id_usuario').distinct().count()
+    
+    productores_data = (
+        Productor.objects.filter(id_usuario__estado=True)
+        .select_related('id_usuario')
+        .annotate(total_productos=Count('producto'))
+    )
+    
+    tipos = TipoProducto.objects.select_related('id_categoria').all().order_by('nombre')
     
     context = {
         'productos': productos,
         'categorias': categorias,
         'total_productos': total_producto,
-        'stock_alto': stock_alto,
+        'stock_agotado': stock_agotado,
         'stock_bajo': stock_bajo,
-        'productores_activos': productores_activos
+        'productores_activos': productores_activos,
+        'productores_data': productores_data,
+        'tipos': tipos,
     }
     
     return render(request, 'admin_productos/index.html', context )

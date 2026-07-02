@@ -24,6 +24,7 @@ urlpatterns = [
     path('productor/productos/', views.lista_productos, name='lista_productos'),
     path('variedades-por-tipo/', views.variedades_por_tipo, name='variedades_por_tipo'),
     path('crear-variedad/', views.crear_variedad, name='crear_variedad'),
+    path('crear-tipo-admin/', views.crear_tipo_admin, name='crear_tipo_admin'),
     path('productor/productos/nuevo/', views.crear_producto, name='crear_producto'),
     path('productor/productos/buscar/', views.buscar_productos, name='buscar_productos'),
     path('productor/productos/toggle-estado/<int:producto_id>/', views.toggle_estado_producto, name='toggle_estado_producto'),

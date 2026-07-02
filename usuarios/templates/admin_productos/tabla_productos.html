@@ -2,9 +2,14 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="mb-0">Catálogo de Productos</h5>
-        <a href="{% url 'reporte_inventario_admin_pdf' %}" class="btn btn-success btn-sm">
-            <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
-        </a>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalGestionProductos">
+                <i class="bi bi-gear"></i> Gestionar
+            </button>
+            <a href="{% url 'reporte_inventario_admin_pdf' %}" class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
+            </a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -26,7 +31,7 @@
             <tbody>
 
                 {% for p in productos %}
-                <tr class="producto-item" data-stock="{{ p.stock }}" data-categoria="{{ p.id_categoria_id }}" data-nombre="{{ p.nombre_producto|lower }}">
+                <tr class="producto-item" data-stock="{{ p.stock }}" data-estado="{{ p.estado|lower }}" data-categoria="{{ p.id_categoria_id }}" data-nombre="{{ p.nombre_producto|lower }}">
                     
                     <td>{{ p.id_producto }}</td>
 

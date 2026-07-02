@@ -17,4 +17,138 @@
 <!-- Scripts -->
 {% include "admin_productos/scripts.html" %}
 
+<!-- Modal Gestión Tipos y Variedades -->
+<div class="modal fade" id="modalGestionProductos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Gestionar Tipos y Variedades</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="gestionTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="nuevo-tipo-tab" data-bs-toggle="tab" data-bs-target="#nuevo-tipo" type="button" role="tab">Nuevo Tipo</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="nueva-variedad-tab" data-bs-toggle="tab" data-bs-target="#nueva-variedad" type="button" role="tab">Nueva Variedad</button>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <!-- Tab Nuevo Tipo -->
+                    <div class="tab-pane fade show active" id="nuevo-tipo" role="tabpanel">
+                        <form id="formCrearTipo">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Nombre del Tipo</label>
+                                <input type="text" class="form-control" name="nombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Categoría</label>
+                                <select class="form-select" name="id_categoria" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for cat in categorias %}
+                                    <option value="{{ cat.id_categoria }}">{{ cat.nombre_categoria }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descripción (opcional)</label>
+                                <textarea class="form-control" name="descripcion_general" rows="2"></textarea>
+                            </div>
+                            <div id="msgCrearTipo"></div>
+                            <button type="submit" class="btn btn-success w-100">Crear Tipo</button>
+                        </form>
+                    </div>
+                    <!-- Tab Nueva Variedad -->
+                    <div class="tab-pane fade" id="nueva-variedad" role="tabpanel">
+                        <form id="formCrearVariedad">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Tipo</label>
+                                <select class="form-select" name="id_tipo" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for t in tipos %}
+                                    <option value="{{ t.id_tipo }}">{{ t.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nombre de la Variedad</label>
+                                <input type="text" class="form-control" name="nombre" required>
+                            </div>
+                            <div id="msgCrearVariedad"></div>
+                            <button type="submit" class="btn btn-success w-100">Crear Variedad</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('formCrearTipo')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var msg = document.getElementById('msgCrearTipo');
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando...';
+    fetch('{% url "crear_tipo_admin" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value },
+        body: new FormData(form)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.created) {
+            msg.innerHTML = '<div class="alert alert-success py-2">Tipo "' + data.nombre + '" creado exitosamente.</div>';
+            form.reset();
+            setTimeout(function() { msg.innerHTML = ''; }, 3000);
+        } else {
+            msg.innerHTML = '<div class="alert alert-warning py-2">El tipo "' + data.nombre + '" ya existe.</div>';
+        }
+    })
+    .catch(function() {
+        msg.innerHTML = '<div class="alert alert-danger py-2">Error al crear el tipo.</div>';
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Crear Tipo';
+    });
+});
+
+document.getElementById('formCrearVariedad')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var msg = document.getElementById('msgCrearVariedad');
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando...';
+    fetch('{% url "crear_variedad" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value },
+        body: new FormData(form)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.created) {
+            msg.innerHTML = '<div class="alert alert-success py-2">Variedad "' + data.nombre + '" creada exitosamente.</div>';
+            form.reset();
+            setTimeout(function() { msg.innerHTML = ''; }, 3000);
+        } else {
+            msg.innerHTML = '<div class="alert alert-warning py-2">La variedad "' + data.nombre + '" ya existe para este tipo.</div>';
+        }
+    })
+    .catch(function() {
+        msg.innerHTML = '<div class="alert alert-danger py-2">Error al crear la variedad.</div>';
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Crear Variedad';
+    });
+});
+</script>
+
 {% endblock %}

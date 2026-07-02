@@ -1,27 +1,54 @@
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 
-function filtrar() {
-    let cat = document.getElementById('categoriaFilter').value;
-    let stock = document.getElementById('stockFilter').value;
-    let nombre = document.getElementById('nombreFilter').value.toLowerCase().trim();
+function filtrar(opciones) {
+    let cat = (opciones && opciones.categoria !== undefined) ? opciones.categoria : document.getElementById('categoriaFilter').value;
+    let stock = (opciones && opciones.stock !== undefined) ? opciones.stock : document.getElementById('stockFilter').value;
+    let nombre = (opciones && opciones.nombre !== undefined) ? opciones.nombre : document.getElementById('nombreFilter').value.toLowerCase().trim();
+    let estado = (opciones && opciones.estado !== undefined) ? opciones.estado : '';
 
     document.querySelectorAll('.producto-item').forEach(function(r) {
         let pasaCat = !cat || r.dataset.categoria === cat;
+        let pasaEstado = !estado || (r.dataset.estado === estado);
 
         let s = parseInt(r.dataset.stock);
         let pasaStock = !stock ||
             (stock === 'disponible' && s >= 10) ||
             (stock === 'bajo' && s > 0 && s < 10) ||
-            (stock === 'agotado' && s === 0);
+            (stock === 'agotado' && s === 0) ||
+            (stock === 'agotado_kpi' && s === 0) ||
+            (stock === 'bajo_kpi' && s > 0 && s < 10) ||
+            (stock === 'disponible_kpi' && s > 0);
 
         let pasaNombre = !nombre || (r.dataset.nombre && r.dataset.nombre.includes(nombre));
 
-        r.style.display = (pasaCat && pasaStock && pasaNombre) ? '' : 'none';
+        r.style.display = (pasaCat && pasaEstado && pasaStock && pasaNombre) ? '' : 'none';
     });
+}
+
+function filtrarPorKPI(tipo) {
+    console.log('filtrarPorKPI:', tipo);
+    document.getElementById('categoriaFilter').value = '';
+    document.getElementById('nombreFilter').value = '';
+    if (tipo === 'total') {
+        filtrar({ stock: 'disponible_kpi', estado: 'true', categoria: '', nombre: '' });
+    } else if (tipo === 'agotado') {
+        filtrar({ stock: 'agotado_kpi', categoria: '', nombre: '' });
+    } else if (tipo === 'bajo') {
+        filtrar({ stock: 'bajo_kpi', categoria: '', nombre: '' });
+    }
 }
 
 document.getElementById('categoriaFilter')?.addEventListener('change', filtrar);
 document.getElementById('stockFilter')?.addEventListener('change', filtrar);
 document.getElementById('nombreFilter')?.addEventListener('input', filtrar);
 
+document.querySelectorAll('.kpi-stock').forEach(function(el) {
+    el.addEventListener('click', function() {
+        console.log('KPI click:', this.dataset.kpi);
+        filtrarPorKPI(this.dataset.kpi);
+    });
+});
+
+});
 </script>

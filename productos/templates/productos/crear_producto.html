@@ -852,6 +852,12 @@ Este peso se usa para calcular el costo de envío."></i>
                 btnGuardarVariedad.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
                 return;
             }
+            if (!data.created) {
+                variedadFeedback.innerHTML = '<span class="text-warning fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>La variedad "' + data.nombre + '" ya existe</span>';
+                btnGuardarVariedad.disabled = false;
+                btnGuardarVariedad.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
+                return;
+            }
             // Agregar al dropdown y seleccionar
             var opt = document.createElement('option');
             opt.value = data.id_variedad;

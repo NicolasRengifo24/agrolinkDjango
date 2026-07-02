@@ -41,4 +41,24 @@
 <!-- Modales -->
 {% include "admin_usuarios/modales.html" %}
 
+<style>
+    .kpi-clickable { cursor: pointer; transition: transform 0.2s; }
+    .kpi-clickable:hover { transform: translateY(-3px); }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.kpi-clickable').forEach(function(el) {
+            el.addEventListener('click', function() {
+                var target = this.dataset.bsTarget;
+                var tabId = target.replace('#', '') + '-tab';
+                var tabBtn = document.getElementById(tabId);
+                if (tabBtn) {
+                    tabBtn.click();
+                }
+            });
+        });
+    });
+</script>
+
 {% endblock %}

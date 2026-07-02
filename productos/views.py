@@ -670,6 +670,29 @@ def crear_variedad(request):
     })
 
 
+@csrf_exempt
+def crear_tipo_admin(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    nombre = request.POST.get('nombre', '').strip().capitalize()
+    id_categoria = request.POST.get('id_categoria')
+    descripcion = request.POST.get('descripcion_general', '')
+    if not nombre or not id_categoria:
+        return JsonResponse({'error': 'Faltan datos'}, status=400)
+    tipo, created = TipoProducto.objects.get_or_create(
+        nombre=nombre,
+        defaults={
+            'id_categoria_id': id_categoria,
+            'descripcion_general': descripcion,
+        }
+    )
+    return JsonResponse({
+        'id_tipo': tipo.id_tipo,
+        'nombre': tipo.nombre,
+        'created': created,
+    })
+
+
 @login_required
 def buscar_productos(request):
     """Vista para buscar productos del productor"""
