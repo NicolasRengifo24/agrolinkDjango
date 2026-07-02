@@ -11,7 +11,7 @@
 
     {% if page_obj %}
     {% for envio in page_obj %}
-    {% with detalle=envio.id_compra.detallescompra_set.first %}
+    {% with detalles=envio.id_compra.detallescompra_set.all %}
     <div class="card card-viaje mb-3 shadow-sm border-0">
         <div class="card-body">
             <div class="row g-3">
@@ -23,18 +23,22 @@
                             <span class="badge bg-success mb-2">
                                 <i class="bi bi-check-circle-fill me-1"></i>Disponible
                             </span>
-                            <h5 class="card-title mb-1">{{ detalle.id_producto.nombre_producto }}</h5>
-                            {% if detalle.id_producto.id_categoria %}
-                            <span class="badge bg-light text-muted border">{{ detalle.id_producto.id_categoria.nombre_categoria }}</span>
-                            {% endif %}
+                            {% for det in detalles %}
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="fw-semibold">{{ det.id_producto.nombre_producto }}</span>
+                                <small class="text-muted">×{{ det.cantidad }}</small>
+                            </div>
+                            {% endfor %}
                         </div>
                         <h4 class="text-success fw-bold mb-0">${{ envio.costo_total|floatformat:0|intcomma }}</h4>
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center mb-3">
+                        {% with det=detalles.0 %}
                         <span class="badge bg-success bg-opacity-10 text-success border border-success small px-2 py-1">
-                            <i class="bi bi-geo-alt-fill me-1"></i>{{ detalle.id_producto.finca.ciudad|default:"Origen" }}
+                            <i class="bi bi-geo-alt-fill me-1"></i>{{ det.id_producto.finca.ciudad|default:"Origen" }}
                         </span>
+                        {% endwith %}
                         <i class="bi bi-arrow-right mx-2 text-muted"></i>
                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger small px-2 py-1">
                             <i class="bi bi-flag-fill me-1"></i>{{ envio.id_compra.id_cliente.id_usuario.ciudad|default:"Destino" }}
@@ -60,16 +64,18 @@
                         <div class="col-md-6">
                             <div class="border-start border-success border-3 ps-3 h-100">
                                 <h6 class="text-success small mb-2"><i class="bi bi-shop me-1"></i>Vendedor</h6>
+                                {% with det=detalles.0 %}
                                 <p class="mb-1 fw-semibold">
-                                    {{ detalle.id_producto.id_usuario.id_usuario.nombre }}
-                                    {{ detalle.id_producto.id_usuario.id_usuario.apellido }}
+                                    {{ det.id_producto.id_usuario.id_usuario.nombre }}
+                                    {{ det.id_producto.id_usuario.id_usuario.apellido }}
                                 </p>
                                 <p class="mb-1 small text-muted">
-                                    <i class="bi bi-telephone me-1"></i>{{ detalle.id_producto.id_usuario.id_usuario.telefono }}
+                                    <i class="bi bi-telephone me-1"></i>{{ det.id_producto.id_usuario.id_usuario.telefono }}
                                 </p>
                                 <p class="mb-0 small text-muted">
-                                    <i class="bi bi-house-door me-1"></i>{{ detalle.id_producto.finca.nombre_finca|default:"Finca no especificada" }}
+                                    <i class="bi bi-house-door me-1"></i>{{ det.id_producto.finca.nombre_finca|default:"Finca no especificada" }}
                                 </p>
+                                {% endwith %}
                             </div>
                         </div>
                     </div>

@@ -25,6 +25,8 @@ def inicio_transportista(request):
         "id_compra__id_cliente",
         "id_vehiculo",
         "id_transportista"
+    ).prefetch_related(
+        'id_compra__detallescompra_set__id_producto'
     ).filter(id_transportista__isnull=True,estado_envio="pendiente").order_by('-id_envio')
     
     # Obtener vehículos activos del transportista actual
